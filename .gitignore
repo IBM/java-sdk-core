@@ -1,0 +1,10 @@
+.DS_Store
+/.idea
+/target/
+.classpath
+.project
+.settings/
+venv
+.factorypath
+/test-output/
+config
