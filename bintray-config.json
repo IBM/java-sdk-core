@@ -1,0 +1,27 @@
+{
+  "package": {
+    "vcs_url": "https://github.com/watson-developer-cloud/java-sdk-core.git",
+    "repo": "maven",
+    "issue_tracker_url": "https://github.com/watson-developer-cloud/java-sdk-core/issues",
+    "subject": "milbuild",
+    "website_url": "https://github.com/watson-developer-cloud/java-sdk-core",
+    "name": "java-sdk-core"
+  },
+
+  "version": {
+    "name": "0.0.1"
+  },
+
+  "files": [
+    {
+      "uploadPattern": "com/ibm/watson/developer_cloud/java-sdk-core/0.0.1/java-sdk-core-0.0.1.jar",
+      "includePattern": "target/java-sdk-core-0.0.1.jar"
+    },
+    {
+      "uploadPattern": "com/ibm/watson/developer_cloud/java-sdk-core/0.0.1/java-sdk-core-0.0.1.pom",
+      "includePattern": "pom.xml"
+    }
+  ],
+  
+  "publish": true
+}
