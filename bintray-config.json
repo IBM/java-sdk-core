@@ -9,16 +9,16 @@
   },
 
   "version": {
-    "name": "0.0.1"
+    "name": "0.0.2"
   },
 
   "files": [
     {
-      "uploadPattern": "com/ibm/watson/developer_cloud/java-sdk-core/0.0.1/java-sdk-core-0.0.1.jar",
-      "includePattern": "target/java-sdk-core-0.0.1.jar"
+      "uploadPattern": "com/ibm/watson/developer_cloud/java-sdk-core/0.0.2/java-sdk-core-0.0.2.jar",
+      "includePattern": "target/java-sdk-core-0.0.2.jar"
     },
     {
-      "uploadPattern": "com/ibm/watson/developer_cloud/java-sdk-core/0.0.1/java-sdk-core-0.0.1.pom",
+      "uploadPattern": "com/ibm/watson/developer_cloud/java-sdk-core/0.0.2/java-sdk-core-0.0.2.pom",
       "includePattern": "pom.xml"
     }
   ],
