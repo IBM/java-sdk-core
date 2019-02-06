@@ -1,9 +1,9 @@
 {
   "package": {
     "vcs_url": "https://github.com/watson-developer-cloud/java-sdk-core.git",
-    "repo": "maven",
+    "repo": "sdk-maven-repo",
     "issue_tracker_url": "https://github.com/watson-developer-cloud/java-sdk-core/issues",
-    "subject": "milbuild",
+    "subject": "padamstx",
     "website_url": "https://github.com/watson-developer-cloud/java-sdk-core",
     "name": "java-sdk-core"
   },
