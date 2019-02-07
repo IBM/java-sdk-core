@@ -16,7 +16,8 @@ install: true
 
 before_script:
 - env
-- '[ !-z "${TRAVIS_TAG}" ] && mvn versions:set -DnewVersion=${TRAVIS_TAG} -DgenerateBackupPoms=false'
+- echo "TRAVIS_TAG = '${TRAVIS_TAG}'"
+- '[ "${TRAVIS_TAG}" = "" ] && mvn versions:set -DnewVersion=${TRAVIS_TAG} -DgenerateBackupPoms=false'
 
 script:
 - mvn clean package
