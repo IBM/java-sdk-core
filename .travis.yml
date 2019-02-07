@@ -25,7 +25,8 @@ script:
 
 # If we're going to deploy, we first resolve variables in our bintray config.
 before_deploy:
-- cat bintray-config.template | envsubst > bintray-config.json
+- cat bintray-config.template | envsubst >bintray-config.json
+- cat bintray-config.json
 
 deploy:
   - provider: bintray
@@ -35,17 +36,14 @@ deploy:
     skip_cleanup: true
     on:
       tags: true
-      repo: watson-developer-cloud/java-sdk-core
 #   - provider: releases
 #     api_key: $GITHUB_OAUTH_TOKEN
+#     file_glob: true
 #     file:
-#       - target/java-sdk-core-${TRAVIS_TAG}.jar
-#       - target/java-sdk-core-${TRAVIS_TAG}-sources.jar
-#       - target/java-sdk-core-${TRAVIS_TAG}-javadoc.jar
+#       - target/java-sdk-core-*.jar
 #     skip_cleanup: true
 #     on:
 #       tags: true
-#       repo: watson-developer-cloud/java-sdk-core
 #     dry_run: true
 
 notifications:
