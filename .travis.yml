@@ -14,17 +14,18 @@ cache:
 
 install: true
 
+# For a tagged build, we'll set the maven artifact version #.
 before_script:
 - env
 - echo "TRAVIS_TAG = '${TRAVIS_TAG}'"
-- '[ "${TRAVIS_TAG}" = "" ] && mvn versions:set -DnewVersion=${TRAVIS_TAG} -DgenerateBackupPoms=false'
+- '[ "${TRAVIS_TAG}" != "" ] && mvn versions:set -DnewVersion=${TRAVIS_TAG} -DgenerateBackupPoms=false'
 
 script:
 - mvn clean package
 
+# If we're going to deploy, we first resolve variables in our bintray config.
 before_deploy:
 - cat bintray-config.template | envsubst > bintray-config.json
-
 
 deploy:
   - provider: bintray
