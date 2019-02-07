@@ -14,11 +14,16 @@ cache:
 
 install: true
 
-script:
-- mvn clean install
+before_script:
+- env
+- '[ !-z "${TRAVIS_TAG}" ] && mvn versions:set -DnewVersion=${TRAVIS_TAG} -DgenerateBackupPoms=false
 
-#after_success:
-# - bash <(curl -s https://codecov.io/bash)
+script:
+- mvn clean package
+
+before_deploy:
+- cat bintray-config.template | envsubst > bintray-config.json
+
 
 deploy:
   - provider: bintray
@@ -29,14 +34,17 @@ deploy:
     on:
       tags: true
       repo: watson-developer-cloud/java-sdk-core
-#   - provider: releases
-#     api_key: $GITHUB_OAUTH_TOKEN
-#     file: xxx
-#     skip_cleanup: true
-#     on:
-#       tags: true
-#       repo: watson-developer-cloud/java-sdk-core
-#     dry_run: true
+  - provider: releases
+    api_key: $GITHUB_OAUTH_TOKEN
+    file:
+      - target/java-sdk-core-${TRAVIS_TAG}.jar
+      - target/java-sdk-core-${TRAVIS_TAG}-sources.jar
+      - target/java-sdk-core-${TRAVIS_TAG}-javadoc.jar
+    skip_cleanup: true
+    on:
+      tags: true
+      repo: watson-developer-cloud/java-sdk-core
+    dry_run: true
 
 notifications:
   email: true
