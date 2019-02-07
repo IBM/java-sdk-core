@@ -14,20 +14,20 @@
 
   "files": [
     {
-      "includePattern": "target/java-sdk-core-${TRAVIS_TAG}.jar"
-      "uploadPattern": "com/ibm/cloud/sdk/java-sdk-core/${TRAVIS_TAG}/java-sdk-core-${TRAVIS_TAG}.jar",
+      "includePattern": "target/java-sdk-core-${TRAVIS_TAG}.jar",
+      "uploadPattern": "com/ibm/cloud/sdk/java-sdk-core/${TRAVIS_TAG}/java-sdk-core-${TRAVIS_TAG}.jar"
     },
     {
-      "includePattern": "target/java-sdk-core-${TRAVIS_TAG}-sources.jar"
-      "uploadPattern": "com/ibm/cloud/sdk/java-sdk-core/${TRAVIS_TAG}/java-sdk-core-${TRAVIS_TAG}-sources.jar",
+      "includePattern": "target/java-sdk-core-${TRAVIS_TAG}-sources.jar",
+      "uploadPattern": "com/ibm/cloud/sdk/java-sdk-core/${TRAVIS_TAG}/java-sdk-core-${TRAVIS_TAG}-sources.jar"
     },
     {
-      "includePattern": "target/java-sdk-core-${TRAVIS_TAG}-javadoc.jar"
-      "uploadPattern": "com/ibm/cloud/sdk/java-sdk-core/${TRAVIS_TAG}/java-sdk-core-${TRAVIS_TAG}-javadoc.jar",
+      "includePattern": "target/java-sdk-core-${TRAVIS_TAG}-javadoc.jar",
+      "uploadPattern": "com/ibm/cloud/sdk/java-sdk-core/${TRAVIS_TAG}/java-sdk-core-${TRAVIS_TAG}-javadoc.jar"
     },
     {
-      "uploadPattern": "com/ibm/watson/developer_cloud/java-sdk-core/${TRAVIS_TAG}/java-sdk-core-${TRAVIS_TAG}.pom",
-      "includePattern": "pom.xml"
+      "includePattern": "pom.xml",
+      "uploadPattern": "com/ibm/watson/developer_cloud/java-sdk-core/${TRAVIS_TAG}/java-sdk-core-${TRAVIS_TAG}.pom"
     }
   ],
   
