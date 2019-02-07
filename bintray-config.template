@@ -27,7 +27,7 @@
     },
     {
       "includePattern": "pom.xml",
-      "uploadPattern": "com/ibm/watson/developer_cloud/java-sdk-core/${TRAVIS_TAG}/java-sdk-core-${TRAVIS_TAG}.pom"
+      "uploadPattern": "com/ibm/cloud/sdk/java-sdk-core/${TRAVIS_TAG}/java-sdk-core-${TRAVIS_TAG}.pom"
     }
   ],
   

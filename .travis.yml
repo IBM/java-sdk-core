@@ -36,15 +36,14 @@ deploy:
     skip_cleanup: true
     on:
       tags: true
-#   - provider: releases
-#     api_key: $GITHUB_OAUTH_TOKEN
-#     file_glob: true
-#     file:
-#       - target/java-sdk-core-*.jar
-#     skip_cleanup: true
-#     on:
-#       tags: true
-#     dry_run: true
+  - provider: releases
+    api_key: $GITHUB_OAUTH_TOKEN
+    file_glob: true
+    file:
+      - target/java-sdk-core-*.jar
+    skip_cleanup: true
+    on:
+      tags: true
 
 notifications:
   email: true
