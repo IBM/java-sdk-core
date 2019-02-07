@@ -36,17 +36,17 @@ deploy:
     on:
       tags: true
       repo: watson-developer-cloud/java-sdk-core
-  - provider: releases
-    api_key: $GITHUB_OAUTH_TOKEN
-    file:
-      - target/java-sdk-core-${TRAVIS_TAG}.jar
-      - target/java-sdk-core-${TRAVIS_TAG}-sources.jar
-      - target/java-sdk-core-${TRAVIS_TAG}-javadoc.jar
-    skip_cleanup: true
-    on:
-      tags: true
-      repo: watson-developer-cloud/java-sdk-core
-    dry_run: true
+#   - provider: releases
+#     api_key: $GITHUB_OAUTH_TOKEN
+#     file:
+#       - target/java-sdk-core-${TRAVIS_TAG}.jar
+#       - target/java-sdk-core-${TRAVIS_TAG}-sources.jar
+#       - target/java-sdk-core-${TRAVIS_TAG}-javadoc.jar
+#     skip_cleanup: true
+#     on:
+#       tags: true
+#       repo: watson-developer-cloud/java-sdk-core
+#     dry_run: true
 
 notifications:
   email: true

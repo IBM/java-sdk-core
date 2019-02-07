@@ -97,6 +97,8 @@ public final class ResponseConverterUtils {
 
   /**
    * Creates a generic {@link ResponseConverter} for a non-object response.
+   * @param <T> the generic type
+   * @param type the type
    *
    * @return the response converter
    */
@@ -111,7 +113,6 @@ public final class ResponseConverterUtils {
 
   /**
    * Gets the void converter.
-   *
    * @return the void converter
    */
   public static ResponseConverter<Void> getVoid() {
