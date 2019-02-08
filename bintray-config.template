@@ -5,7 +5,7 @@
     "issue_tracker_url": "https://github.com/watson-developer-cloud/java-sdk-core/issues",
     "subject": "padamstx",
     "website_url": "https://github.com/watson-developer-cloud/java-sdk-core",
-    "name": "java-sdk-core"
+    "name": "com.ibm.cloud.sdk:java-sdk-core"
   },
 
   "version": {
