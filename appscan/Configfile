@@ -10,9 +10,9 @@ APPSCAN_CLIENT_URL ?= https://appscan.ibmcloud.com/api/SCX/StaticAnalyzer/SAClie
 OS ?= linux
 APPSCAN_TOOL := $(APPSCAN_CLIENT_URL)$(OS)
 
-GIT_REPO ?= git@github.com:watson-developer-cloud/java-sdk.git
+GIT_REPO ?= git@github.com:IBM/java-sdk-core.git
 
-PROJECT_NAME ?= java-sdk
+PROJECT_NAME ?= java-sdk-core
 
 # Headers added to curl command
 CONTENT_HEADER_JSON := --header 'Content-Type: application/json'

@@ -1,10 +1,10 @@
 {
   "package": {
-    "vcs_url": "https://github.com/watson-developer-cloud/java-sdk-core.git",
+    "vcs_url": "https://github.com/IBM/java-sdk-core.git",
     "repo": "sdk-maven-repo",
-    "issue_tracker_url": "https://github.com/watson-developer-cloud/java-sdk-core/issues",
+    "issue_tracker_url": "https://github.com/IBM/java-sdk-core/issues",
     "subject": "padamstx",
-    "website_url": "https://github.com/watson-developer-cloud/java-sdk-core",
+    "website_url": "https://github.com/IBM/java-sdk-core",
     "name": "com.ibm.cloud.sdk:java-sdk-core"
   },
 

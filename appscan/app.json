@@ -20,7 +20,7 @@
     "ComplianceStatuses": [],
     "CanBeDeleted": true,
     "LockedToSubscription": false,
-    "Name": "Watson Java SDK",
+    "Name": "IBM Cloud Java SDK Core",
     "AssetGroupId": null,
     "BusinessImpact": "Unspecified",
     "Url": null,
