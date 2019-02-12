@@ -45,5 +45,8 @@ deploy:
     on:
       tags: true
 
+after_deploy:
+- build/sync2MC.sh $BINTRAY_USER $BINTRAY_APIKEY sdk-maven-repo com.ibm.cloud.sdk:java-sdk-core $TRAVIS_TAG
+
 notifications:
   email: true
