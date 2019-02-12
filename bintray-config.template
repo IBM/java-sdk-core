@@ -11,7 +11,7 @@
   "version": {
     "name": "${TRAVIS_TAG}"
   },
-
+ 
   "files": [
     {
       "includePattern": "target/java-sdk-core-${TRAVIS_TAG}.jar",
