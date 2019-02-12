@@ -1,5 +1,6 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.ibm.cloud.sdk</groupId>
     <artifactId>java-sdk-core</artifactId>
@@ -10,16 +11,16 @@
     <url>https://github.com/IBM/java-sdk-core</url>
 
     <licenses>
-      <license>
-        <name>Apache License, Version 2.0</name>
-        <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
-      </license>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
     </licenses>
 
     <scm>
         <connection>scm:git:https://github.com/IBM/java-sdk-core</connection>
         <developerConnection>scm:git:https://github.com/IBM/java-sdk-core</developerConnection>
-	<url>https://github.com/IBM/java-sdk-core/tree/master</url>
+        <url>https://github.com/IBM/java-sdk-core/tree/master</url>
     </scm>
 
     <issueManagement>
@@ -50,7 +51,7 @@
         <jersey-version>2.25.1</jersey-version>
     </properties>
 
-    <!-- we use the travis providers for deployment -->
+    <!-- we use the travis providers for deployment so don't need to specify repositories here -->
     <distributionManagement>
     </distributionManagement>
 
@@ -162,7 +163,7 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin> 
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
@@ -178,7 +179,7 @@
                 </executions>
                 <configuration>
                     <failsOnError>true</failsOnError>
-                    <configLocation>checkstyle.xml</configLocation>
+                    <configLocation>build/checkstyle.xml</configLocation>
                     <consoleOutput>true</consoleOutput>
                 </configuration>
             </plugin>
@@ -188,7 +189,7 @@
                 <version>${findbugs-plugin-version}</version>
                 <configuration>
                     <xmlOutput>true</xmlOutput>
-                    <excludeFilterFile>findbugs-exclude.xml</excludeFilterFile>
+                    <excludeFilterFile>build/findbugs-exclude.xml</excludeFilterFile>
                     <effort>Max</effort>
                     <threshold>Low</threshold>
                 </configuration>
@@ -228,7 +229,8 @@
                         <configuration>
                             <append>true</append>
                             <destFile>${sonar.jacoco.reportPath}</destFile>
-                            <!-- Sets the VM argument line used when unit tests are run. -->
+                            <!-- Sets the VM argument line used when unit 
+                                tests are run. -->
                             <propertyName>surefireArgLine</propertyName>
                         </configuration>
                     </execution>
@@ -252,14 +254,9 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${surefire-version}</version>
-                <!-- 
-                     <configuration>
-                     <suiteXmlFiles>
-                     <suiteXmlFile>src/test/java/testng.xml</suiteXmlFile>
-                     </suiteXmlFiles>
-                     </configuration>
-                -->
-            </plugin>   
+                <!-- <configuration> <suiteXmlFiles> <suiteXmlFile>src/test/java/testng.xml</suiteXmlFile> 
+                    </suiteXmlFiles> </configuration> -->
+            </plugin>
         </plugins>
     </build>
 

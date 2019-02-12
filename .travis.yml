@@ -25,7 +25,7 @@ script:
 
 # If we're going to deploy, we first resolve variables in our bintray config.
 before_deploy:
-- cat bintray-config.template | envsubst >bintray-config.json
+- cat build/bintray-config.template | envsubst >bintray-config.json
 - cat bintray-config.json
 
 deploy:
