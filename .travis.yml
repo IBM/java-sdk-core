@@ -4,6 +4,14 @@ dist: trusty
 jdk:
 - oraclejdk8
 
+notifications:
+  email: true
+
+env:
+  global:
+    - BINTRAY_REPO=sdk-maven-repo
+    - BINTRAY_PACKAGE=com.ibm.cloud.sdk:java-sdk-core
+
 branches:
   except:
   - gh-pages
@@ -18,15 +26,17 @@ install: true
 before_script:
 - env
 - echo "TRAVIS_TAG = '${TRAVIS_TAG}'"
-- '[ "${TRAVIS_TAG}" != "" ] && mvn versions:set -DnewVersion=${TRAVIS_TAG} -DgenerateBackupPoms=false || true'
+- '[ "${TRAVIS_TAG}" != "" ] 
+  && mvn versions:set -DnewVersion=${TRAVIS_TAG} -DgenerateBackupPoms=false 
+  || true'
+- '[ "${TRAVIS_TAG}" != "" ] 
+  && cat build/bintray-config.template | envsubst >bintray-config.json 
+  && echo "Contents of bintray-config.json:" 
+  && cat bintray-config.json 
+  || true'
 
 script:
 - mvn clean package
-
-# If we're going to deploy, we first resolve variables in our bintray config.
-before_deploy:
-- cat build/bintray-config.template | envsubst >bintray-config.json
-- cat bintray-config.json
 
 deploy:
   - provider: bintray
@@ -45,8 +55,7 @@ deploy:
     on:
       tags: true
 
-after_deploy:
-- build/sync2MC.sh $BINTRAY_USER $BINTRAY_APIKEY sdk-maven-repo com.ibm.cloud.sdk:java-sdk-core $TRAVIS_TAG
-
-notifications:
-  email: true
+# Ask bintray to sync the just-deployed artifact to maven central
+after_script:
+- '[ "${TRAVIS_TAG}" != "" ] 
+  && build/sync2MC.sh $BINTRAY_USER $BINTRAY_APIKEY $BINTRAY_REPO $BINTRAY_PACKAGE $TRAVIS_TAG'
