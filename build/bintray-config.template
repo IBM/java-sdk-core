@@ -1,11 +1,11 @@
 {
   "package": {
     "vcs_url": "https://github.com/IBM/java-sdk-core.git",
-    "repo": "sdk-maven-repo",
+    "repo": "ibm-cloud-sdk-repo",
     "issue_tracker_url": "https://github.com/IBM/java-sdk-core/issues",
     "subject": "padamstx",
     "website_url": "https://github.com/IBM/java-sdk-core",
-    "name": "com.ibm.cloud.sdk:java-sdk-core"
+    "name": "com.ibm.cloud:sdk-core"
   },
 
   "version": {
@@ -14,20 +14,20 @@
  
   "files": [
     {
-      "includePattern": "target/java-sdk-core-${TRAVIS_TAG}.jar",
-      "uploadPattern": "com/ibm/cloud/sdk/java-sdk-core/${TRAVIS_TAG}/java-sdk-core-${TRAVIS_TAG}.jar"
+      "includePattern": "target/sdk-core-${TRAVIS_TAG}.jar",
+      "uploadPattern": "com/ibm/cloud/sdk-core/${TRAVIS_TAG}/sdk-core-${TRAVIS_TAG}.jar"
     },
     {
-      "includePattern": "target/java-sdk-core-${TRAVIS_TAG}-sources.jar",
-      "uploadPattern": "com/ibm/cloud/sdk/java-sdk-core/${TRAVIS_TAG}/java-sdk-core-${TRAVIS_TAG}-sources.jar"
+      "includePattern": "target/sdk-core-${TRAVIS_TAG}-sources.jar",
+      "uploadPattern": "com/ibm/cloud/sdk-core/${TRAVIS_TAG}/sdk-core-${TRAVIS_TAG}-sources.jar"
     },
     {
-      "includePattern": "target/java-sdk-core-${TRAVIS_TAG}-javadoc.jar",
-      "uploadPattern": "com/ibm/cloud/sdk/java-sdk-core/${TRAVIS_TAG}/java-sdk-core-${TRAVIS_TAG}-javadoc.jar"
+      "includePattern": "target/sdk-core-${TRAVIS_TAG}-javadoc.jar",
+      "uploadPattern": "com/ibm/cloud/sdk-core/${TRAVIS_TAG}/sdk-core-${TRAVIS_TAG}-javadoc.jar"
     },
     {
       "includePattern": "pom.xml",
-      "uploadPattern": "com/ibm/cloud/sdk/java-sdk-core/${TRAVIS_TAG}/java-sdk-core-${TRAVIS_TAG}.pom"
+      "uploadPattern": "com/ibm/cloud/sdk-core/${TRAVIS_TAG}/sdk-core-${TRAVIS_TAG}.pom"
     }
   ],
   
