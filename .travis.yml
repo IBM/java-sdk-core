@@ -14,19 +14,21 @@ cache:
 
 install: true
 
-# For a tagged build, we'll set the maven artifact version #.
+env:
+  global:
+    - BINTRAY_REPO=ibm-cloud-sdk-repo
+    - BINTRAY_PKGNAME=com.ibm.cloud:sdk-core
+
+# For a tagged build, we'll set the maven artifact version #
+# and resolve the variable references in the bintray config.
 before_script:
 - env
 - echo "TRAVIS_TAG = '${TRAVIS_TAG}'"
 - '[ "${TRAVIS_TAG}" != "" ] && mvn versions:set -DnewVersion=${TRAVIS_TAG} -DgenerateBackupPoms=false || true'
+- cat build/bintray-config.template | envsubst >bintray-config.json
 
 script:
 - mvn clean package
-
-# If we're going to deploy, we first resolve variables in our bintray config.
-before_deploy:
-- cat build/bintray-config.template | envsubst >bintray-config.json
-- cat bintray-config.json
 
 deploy:
   - provider: bintray
@@ -40,13 +42,13 @@ deploy:
     api_key: $GITHUB_OAUTH_TOKEN
     file_glob: true
     file:
-      - target/java-sdk-core-*.jar
+      - target/sdk-core-*.jar
     skip_cleanup: true
     on:
       tags: true
 
-after_deploy:
-- build/sync2MC.sh $BINTRAY_USER $BINTRAY_APIKEY sdk-maven-repo com.ibm.cloud.sdk:java-sdk-core $TRAVIS_TAG
+after_script:
+- build/sync2MC.sh $BINTRAY_USER $BINTRAY_APIKEY $BINTRAY_REPONAME $BINTRAY_PKGNAME $TRAVIS_TAG
 
 notifications:
   email: true

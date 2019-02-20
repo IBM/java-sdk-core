@@ -1,11 +1,11 @@
 {
   "package": {
     "vcs_url": "https://github.com/IBM/java-sdk-core.git",
-    "repo": "ibm-cloud-sdk-repo",
+    "repo": "${BINTRAY_REPONAME}",
     "issue_tracker_url": "https://github.com/IBM/java-sdk-core/issues",
-    "subject": "padamstx",
+    "subject": "${BINTRAY_USER}",
     "website_url": "https://github.com/IBM/java-sdk-core",
-    "name": "com.ibm.cloud:sdk-core"
+    "name": "${BINTRAY_PKGNAME}"
   },
 
   "version": {
