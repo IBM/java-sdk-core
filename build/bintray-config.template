@@ -3,7 +3,7 @@
     "vcs_url": "https://github.com/IBM/java-sdk-core.git",
     "repo": "${BINTRAY_REPONAME}",
     "issue_tracker_url": "https://github.com/IBM/java-sdk-core/issues",
-    "subject": "ibm-cloud-sdks",
+    "subject": "${BINTRAY_REPO_OWNER}",
     "website_url": "https://github.com/IBM/java-sdk-core",
     "name": "${BINTRAY_PKGNAME}"
   },
