@@ -14,6 +14,25 @@ If you want to contribute to the repository, here's a quick guide:
   4. Commit your changes  
   5. Push to your fork and submit a pull request to the **master** branch
 
+# Creating a release
+
+To create a release from the most recent commit in the master branch, follow these steps:
+  1. In your local copy of the repo (a clone, not a fork), checkout the master branch:
+     ```
+          git checkout master
+     ```
+  2. Add the tag (this example creates the 1.2.0 tag):
+     ```
+          git tag 1.2.0
+     ```
+     Note: specify the appropriate three-level version # (1.2.0, 1.3.1, 2.0.0, etc.)
+  3. Push the tag to remote:
+     ```
+          git push --tags
+     ```
+     This will trigger a tagged build in Travis, which will perform the deployment steps to deploy the build outputs to bintray (and maven central) and the github project's `Releases` page.
+
+
 # Developer's Certificate of Origin 1.1
 
 By making a contribution to this project, I certify that:
