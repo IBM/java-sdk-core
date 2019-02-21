@@ -10,8 +10,8 @@ notifications:
 env:
   global:
     - BINTRAY_REPO_OWNER=ibm-cloud-sdks
-    - BINTRAY_REPONAME=ibm-cloud-sdk-repo
-    - BINTRAY_PKGNAME=com.ibm.cloud:sdk-core
+    - BINTRAY_REPO_NAME=ibm-cloud-sdk-repo
+    - BINTRAY_PKG_NAME=com.ibm.cloud:sdk-core
 
 branches:
   except:
@@ -59,4 +59,4 @@ deploy:
 # Ask bintray to sync the just-deployed artifact to maven central
 after_script:
 - '[ "${TRAVIS_TAG}" != "" ] 
-  && build/sync2MC.sh $BINTRAY_USER $BINTRAY_APIKEY $BINTRAY_REPONAME $BINTRAY_PKGNAME $TRAVIS_TAG'
+  && build/sync2MC.sh $BINTRAY_USER $BINTRAY_APIKEY $BINTRAY_REPO_OWNER $BINTRAY_REPO_NAME $BINTRAY_PKG_NAME $TRAVIS_TAG'
