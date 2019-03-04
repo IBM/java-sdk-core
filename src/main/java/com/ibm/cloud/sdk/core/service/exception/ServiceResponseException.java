@@ -29,12 +29,12 @@ public class ServiceResponseException extends RuntimeException {
   /** The Constant serialVersionUID. */
   private static final long serialVersionUID = 1L;
 
-  /** Potential error message keys */
+  /** Potential error message keys. */
   private static final String MESSAGE_ERROR = "error";
   private static final String MESSAGE_ERROR_2 = "error_message";
   private static final String MESSAGE_ERROR_3 = "message";
 
-  private static final Type debuggingInfoType = new TypeToken<Map<String, String>>() {}.getType();
+  private static final Type debuggingInfoType = new TypeToken<Map<String, String>>() { }.getType();
 
   /** The status code. */
   private final int statusCode;
