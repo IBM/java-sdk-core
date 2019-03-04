@@ -29,11 +29,10 @@ public class ConflictException extends ServiceResponseException {
   /**
    * Instantiates a new Forbidden Exception.
    *
-   * @param message the error message
    * @param response the HTTP response
    */
-  public ConflictException(String message, Response response) {
-    super(HttpStatus.CONFLICT, message, response);
+  public ConflictException(Response response) {
+    super(HttpStatus.CONFLICT, response);
   }
 
 }

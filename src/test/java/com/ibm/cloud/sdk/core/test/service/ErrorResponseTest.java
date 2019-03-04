@@ -44,11 +44,11 @@ public class ErrorResponseTest extends WatsonServiceUnitTest {
 
     private static final String SERVICE_NAME = "test";
 
-    public TestService() {
+    TestService() {
       super(SERVICE_NAME);
     }
 
-    public ServiceCall<GenericModel> testMethod() {
+    ServiceCall<GenericModel> testMethod() {
       RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getEndPoint() + "/v1/test"));
       return createServiceCall(builder.build(), ResponseConverterUtils.getObject(GenericModel.class));
     }
@@ -110,7 +110,7 @@ public class ErrorResponseTest extends WatsonServiceUnitTest {
       assertTrue(e instanceof UnauthorizedException);
       UnauthorizedException ex = (UnauthorizedException) e;
       assertEquals(401, ex.getStatusCode());
-      assertTrue(ex.getMessage().startsWith("Unauthorized: Access is denied due to invalid credentials."));
+      assertEquals(message, ex.getMessage());
     }
   }
 
@@ -146,7 +146,8 @@ public class ErrorResponseTest extends WatsonServiceUnitTest {
     server.enqueue(new MockResponse()
         .setResponseCode(404)
         .addHeader(CONTENT_TYPE, HttpMediaType.APPLICATION_JSON)
-        .setBody("{\"error\": \"" + message + "\"}"));
+        .setBody("{\"error\": \"" + message + "\", \"level\": \"ERROR\"," +
+            " \"correlationId\": \"c8a0293e-3378-4ef4-9226-2bcce44b4ee7\"}"));
 
     try {
       service.testMethod().execute();

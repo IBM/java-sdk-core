@@ -29,11 +29,10 @@ public class ForbiddenException extends ServiceResponseException {
   /**
    * Instantiates a new Forbidden Exception.
    *
-   * @param message the error message
    * @param response the HTTP response
    */
-  public ForbiddenException(String message, Response response) {
-    super(HttpStatus.FORBIDDEN, message, response);
+  public ForbiddenException(Response response) {
+    super(HttpStatus.FORBIDDEN, response);
   }
 
 }

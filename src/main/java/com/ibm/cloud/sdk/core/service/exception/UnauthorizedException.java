@@ -29,11 +29,10 @@ public class UnauthorizedException extends ServiceResponseException {
   /**
    * Instantiates a new Unauthorized Exception.
    *
-   * @param message the error message
    * @param response the HTTP response
    */
-  public UnauthorizedException(String message, Response response) {
-    super(HttpStatus.UNAUTHORIZED, message, response);
+  public UnauthorizedException(Response response) {
+    super(HttpStatus.UNAUTHORIZED, response);
   }
 
 }

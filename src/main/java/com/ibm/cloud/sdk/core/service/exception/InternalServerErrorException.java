@@ -29,11 +29,10 @@ public class InternalServerErrorException extends ServiceResponseException {
   /**
    * Instantiates a new Internal Server Error Exception.
    *
-   * @param message the error message
    * @param response the HTTP response
    */
-  public InternalServerErrorException(String message, Response response) {
-    super(HttpStatus.INTERNAL_SERVER_ERROR, message, response);
+  public InternalServerErrorException(Response response) {
+    super(HttpStatus.INTERNAL_SERVER_ERROR, response);
   }
 
 }

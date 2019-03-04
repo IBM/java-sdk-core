@@ -29,11 +29,10 @@ public class UnsupportedException extends ServiceResponseException {
   /**
    * Instantiates a new unsupported Exception.
    *
-   * @param message the message
    * @param response the HTTP response
    */
-  public UnsupportedException(String message, Response response) {
-    super(HttpStatus.UNSUPPORTED_MEDIA_TYPE, message, response);
+  public UnsupportedException(Response response) {
+    super(HttpStatus.UNSUPPORTED_MEDIA_TYPE, response);
   }
 
 }
