@@ -146,8 +146,7 @@ public class ErrorResponseTest extends WatsonServiceUnitTest {
     server.enqueue(new MockResponse()
         .setResponseCode(404)
         .addHeader(CONTENT_TYPE, HttpMediaType.APPLICATION_JSON)
-        .setBody("{\"error\": \"" + message + "\", \"level\": \"ERROR\"," +
-            " \"correlationId\": \"c8a0293e-3378-4ef4-9226-2bcce44b4ee7\"}"));
+        .setBody("{\"error\": \"" + message + "\"}"));
 
     try {
       service.testMethod().execute();
@@ -288,6 +287,30 @@ public class ErrorResponseTest extends WatsonServiceUnitTest {
       ServiceUnavailableException ex = (ServiceUnavailableException) e;
       assertEquals(503, ex.getStatusCode());
       assertEquals(message, ex.getMessage());
+    }
+  }
+
+  @Test
+  public void testDebuggingInfo() {
+    String message = "The request failed because the moon is full.";
+    String level = "ERROR";
+    String correlationId = "123456789-abcdefghi";
+    server.enqueue(new MockResponse()
+        .setResponseCode(500)
+        .addHeader(CONTENT_TYPE, HttpMediaType.APPLICATION_JSON)
+        .setBody("{\"error\": \"" + message + "\"," +
+            "\"level\": \"" + level + "\"," +
+            "\"correlation_id\": \"" + correlationId + "\"}"));
+
+    try {
+      service.testMethod().execute();
+    } catch (Exception e) {
+      assertTrue(e instanceof InternalServerErrorException);
+      InternalServerErrorException ex = (InternalServerErrorException) e;
+      assertEquals(500, ex.getStatusCode());
+      assertEquals(message, ex.getMessage());
+      assertEquals(level, ex.getDebuggingInfo().get("level"));
+      assertEquals(correlationId, ex.getDebuggingInfo().get("correlation_id"));
     }
   }
 }
