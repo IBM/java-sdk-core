@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ $# -lt 5 ]
+if [ $# -lt 6 ]
 then
     echo "
  Syntax:  
