@@ -29,7 +29,6 @@ import com.ibm.cloud.sdk.core.service.exception.UnsupportedException;
 import com.ibm.cloud.sdk.core.service.model.GenericModel;
 import com.ibm.cloud.sdk.core.test.WatsonServiceUnitTest;
 import com.ibm.cloud.sdk.core.util.ResponseConverterUtils;
-
 import okhttp3.HttpUrl;
 import okhttp3.mockwebserver.MockResponse;
 import org.junit.Before;
@@ -287,6 +286,8 @@ public class ErrorResponseTest extends WatsonServiceUnitTest {
       ServiceUnavailableException ex = (ServiceUnavailableException) e;
       assertEquals(503, ex.getStatusCode());
       assertEquals(message, ex.getMessage());
+      assertTrue(ex.getHeaders().names().contains(CONTENT_TYPE));
+      assertTrue(ex.getHeaders().values(CONTENT_TYPE).contains(HttpMediaType.APPLICATION_JSON));
     }
   }
 
