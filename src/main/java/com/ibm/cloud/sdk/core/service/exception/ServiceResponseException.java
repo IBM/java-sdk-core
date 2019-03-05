@@ -34,13 +34,13 @@ public class ServiceResponseException extends RuntimeException {
   private static final String MESSAGE_ERROR_2 = "error_message";
   private static final String MESSAGE_ERROR_3 = "message";
 
-  private static final Type debuggingInfoType = new TypeToken<Map<String, String>>() { }.getType();
+  private static final Type debuggingInfoType = new TypeToken<Map<String, Object>>() { }.getType();
 
   /** The status code. */
   private final int statusCode;
 
   private String message;
-  private Map<String, String> debuggingInfo;
+  private Map<String, Object> debuggingInfo;
 
   /**
    * Instantiates a new Service Response Exception.
@@ -92,7 +92,7 @@ public class ServiceResponseException extends RuntimeException {
    *
    * @return the response information other than the error message
    */
-  public Map<String, String> getDebuggingInfo() {
+  public Map<String, Object> getDebuggingInfo() {
     return debuggingInfo;
   }
 }
