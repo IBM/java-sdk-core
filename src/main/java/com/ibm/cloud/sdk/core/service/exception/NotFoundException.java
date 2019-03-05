@@ -29,11 +29,13 @@ public class NotFoundException extends ServiceResponseException {
   /**
    * Instantiates a new not found exception.
    *
-   * @param message the message
    * @param response the HTTP response
    */
-  public NotFoundException(String message, Response response) {
-    super(HttpStatus.NOT_FOUND, message, response);
+  public NotFoundException(Response response) {
+    super(HttpStatus.NOT_FOUND, response);
+    if (this.getMessage() == null) {
+      this.setMessage("Not found");
+    }
   }
 
 }

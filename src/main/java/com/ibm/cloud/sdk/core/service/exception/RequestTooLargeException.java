@@ -29,11 +29,13 @@ public class RequestTooLargeException extends ServiceResponseException {
   /**
    * Instantiates a new Request Too Large Exception.
    *
-   * @param message the error message
    * @param response the HTTP response
    */
-  public RequestTooLargeException(String message, Response response) {
-    super(HttpStatus.REQUEST_TOO_LONG, message, response);
+  public RequestTooLargeException(Response response) {
+    super(HttpStatus.REQUEST_TOO_LONG, response);
+    if (this.getMessage() == null) {
+      this.setMessage("Request too large: The request entity is larger than the server is able to process");
+    }
   }
 
 }

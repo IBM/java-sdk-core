@@ -12,7 +12,6 @@
  */
 package com.ibm.cloud.sdk.core.service;
 
-import com.google.gson.JsonObject;
 import com.ibm.cloud.sdk.core.http.HttpClientSingleton;
 import com.ibm.cloud.sdk.core.http.HttpConfigOptions;
 import com.ibm.cloud.sdk.core.http.HttpHeaders;
@@ -39,8 +38,6 @@ import com.ibm.cloud.sdk.core.service.security.IamTokenManager;
 import com.ibm.cloud.sdk.core.util.CredentialUtils;
 import com.ibm.cloud.sdk.core.util.RequestUtils;
 import com.ibm.cloud.sdk.core.util.ResponseConverterUtils;
-import com.ibm.cloud.sdk.core.util.ResponseUtils;
-
 import jersey.repackaged.jsr166e.CompletableFuture;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -54,7 +51,6 @@ import okhttp3.Response;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
@@ -68,8 +64,6 @@ public abstract class WatsonService {
   private static final String URL = "url";
   private static final String PATH_AUTHORIZATION_V1_TOKEN = "/v1/token";
   private static final String AUTHORIZATION = "authorization";
-  private static final String MESSAGE_ERROR_3 = "message";
-  private static final String MESSAGE_ERROR_2 = "error_message";
   private static final String BASIC = "Basic ";
   private static final String BEARER = "Bearer ";
   private static final String APIKEY_AS_USERNAME = "apikey";
@@ -98,8 +92,6 @@ public abstract class WatsonService {
   /** The Constant MESSAGE_CODE. */
   protected static final String MESSAGE_CODE = "code";
 
-  /** The Constant MESSAGE_ERROR. */
-  protected static final String MESSAGE_ERROR = "error";
 
   /** The Constant VERSION. */
   protected static final String VERSION = "version";
@@ -309,38 +301,6 @@ public abstract class WatsonService {
   }
 
   /**
-   * Gets the error message from a JSON response.
-   *
-   * <pre>
-   * {
-   *   code: 400
-   *   error: 'bad request'
-   * }
-   * </pre>
-   *
-   * @param response the HTTP response
-   * @return the error message from the JSON object
-   */
-  private String getErrorMessage(Response response) {
-    String error = ResponseUtils.getString(response);
-    try {
-
-      final JsonObject jsonObject = ResponseUtils.getJsonObject(error);
-      if (jsonObject.has(MESSAGE_ERROR)) {
-        error = jsonObject.get(MESSAGE_ERROR).getAsString();
-      } else if (jsonObject.has(MESSAGE_ERROR_2)) {
-        error = jsonObject.get(MESSAGE_ERROR_2).getAsString();
-      } else if (jsonObject.has(MESSAGE_ERROR_3)) {
-        error = jsonObject.get(MESSAGE_ERROR_3).getAsString();
-      }
-    } catch (final Exception e) {
-      // Ignore any kind of exception parsing the json and use fallback String version of response
-    }
-
-    return error;
-  }
-
-  /**
    * Gets the name.
    *
    * @return the name
@@ -494,39 +454,31 @@ public abstract class WatsonService {
       return converter.convert(response);
     }
 
-    // There was a Client Error 4xx or a Server Error 5xx
-    // Get the error message and create the exception
-    final String error = getErrorMessage(response);
-    LOG.log(Level.SEVERE, response.request().method() + " " + response.request().url().toString() + ", status: "
-        + response.code() + ", error: " + error);
-
     switch (response.code()) {
       case HttpStatus.BAD_REQUEST: // HTTP 400
-        throw new BadRequestException(error != null ? error : "Bad Request", response);
+        throw new BadRequestException(response);
       case HttpStatus.UNAUTHORIZED: // HTTP 401
-        throw new UnauthorizedException("Unauthorized: Access is denied due to invalid credentials. "
-                                        + "Tip: Did you set the Endpoint?", response);
+        throw new UnauthorizedException(response);
       case HttpStatus.FORBIDDEN: // HTTP 403
-        throw new ForbiddenException(error != null ? error : "Forbidden: Service refuse the request", response);
+        throw new ForbiddenException(response);
       case HttpStatus.NOT_FOUND: // HTTP 404
-        throw new NotFoundException(error != null ? error : "Not found", response);
+        throw new NotFoundException(response);
       case HttpStatus.NOT_ACCEPTABLE: // HTTP 406
-        throw new ForbiddenException(error != null ? error : "Forbidden: Service refuse the request", response);
+        throw new ForbiddenException(response);
       case HttpStatus.CONFLICT: // HTTP 409
-        throw new ConflictException(error != null ? error : "", response);
+        throw new ConflictException(response);
       case HttpStatus.REQUEST_TOO_LONG: // HTTP 413
-        throw new RequestTooLargeException(error != null ? error
-            : "Request too large: " + "The request entity is larger than the server is able to process", response);
+        throw new RequestTooLargeException(response);
       case HttpStatus.UNSUPPORTED_MEDIA_TYPE: // HTTP 415
-        throw new UnsupportedException(error != null ? error : "Unsupported Media Type", response);
+        throw new UnsupportedException(response);
       case HttpStatus.TOO_MANY_REQUESTS: // HTTP 429
-        throw new TooManyRequestsException(error != null ? error : "Too many requests", response);
+        throw new TooManyRequestsException(response);
       case HttpStatus.INTERNAL_SERVER_ERROR: // HTTP 500
-        throw new InternalServerErrorException(error != null ? error : "Internal Server Error", response);
+        throw new InternalServerErrorException(response);
       case HttpStatus.SERVICE_UNAVAILABLE: // HTTP 503
-        throw new ServiceUnavailableException(error != null ? error : "Service Unavailable", response);
+        throw new ServiceUnavailableException(response);
       default: // other errors
-        throw new ServiceResponseException(response.code(), error, response);
+        throw new ServiceResponseException(response.code(), response);
     }
   }
 

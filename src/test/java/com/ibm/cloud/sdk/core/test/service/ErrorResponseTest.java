@@ -29,7 +29,6 @@ import com.ibm.cloud.sdk.core.service.exception.UnsupportedException;
 import com.ibm.cloud.sdk.core.service.model.GenericModel;
 import com.ibm.cloud.sdk.core.test.WatsonServiceUnitTest;
 import com.ibm.cloud.sdk.core.util.ResponseConverterUtils;
-
 import okhttp3.HttpUrl;
 import okhttp3.mockwebserver.MockResponse;
 import org.junit.Before;
@@ -44,11 +43,11 @@ public class ErrorResponseTest extends WatsonServiceUnitTest {
 
     private static final String SERVICE_NAME = "test";
 
-    public TestService() {
+    TestService() {
       super(SERVICE_NAME);
     }
 
-    public ServiceCall<GenericModel> testMethod() {
+    ServiceCall<GenericModel> testMethod() {
       RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getEndPoint() + "/v1/test"));
       return createServiceCall(builder.build(), ResponseConverterUtils.getObject(GenericModel.class));
     }
@@ -110,7 +109,7 @@ public class ErrorResponseTest extends WatsonServiceUnitTest {
       assertTrue(e instanceof UnauthorizedException);
       UnauthorizedException ex = (UnauthorizedException) e;
       assertEquals(401, ex.getStatusCode());
-      assertTrue(ex.getMessage().startsWith("Unauthorized: Access is denied due to invalid credentials."));
+      assertEquals(message, ex.getMessage());
     }
   }
 
@@ -287,6 +286,32 @@ public class ErrorResponseTest extends WatsonServiceUnitTest {
       ServiceUnavailableException ex = (ServiceUnavailableException) e;
       assertEquals(503, ex.getStatusCode());
       assertEquals(message, ex.getMessage());
+      assertTrue(ex.getHeaders().names().contains(CONTENT_TYPE));
+      assertTrue(ex.getHeaders().values(CONTENT_TYPE).contains(HttpMediaType.APPLICATION_JSON));
+    }
+  }
+
+  @Test
+  public void testDebuggingInfo() {
+    String message = "The request failed because the moon is full.";
+    String level = "ERROR";
+    String correlationId = "123456789-abcdefghi";
+    server.enqueue(new MockResponse()
+        .setResponseCode(500)
+        .addHeader(CONTENT_TYPE, HttpMediaType.APPLICATION_JSON)
+        .setBody("{\"error\": \"" + message + "\"," +
+            "\"level\": \"" + level + "\"," +
+            "\"correlation_id\": \"" + correlationId + "\"}"));
+
+    try {
+      service.testMethod().execute();
+    } catch (Exception e) {
+      assertTrue(e instanceof InternalServerErrorException);
+      InternalServerErrorException ex = (InternalServerErrorException) e;
+      assertEquals(500, ex.getStatusCode());
+      assertEquals(message, ex.getMessage());
+      assertEquals(level, ex.getDebuggingInfo().get("level"));
+      assertEquals(correlationId, ex.getDebuggingInfo().get("correlation_id"));
     }
   }
 }

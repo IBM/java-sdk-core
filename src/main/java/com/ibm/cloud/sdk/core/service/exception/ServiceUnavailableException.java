@@ -29,11 +29,13 @@ public class ServiceUnavailableException extends ServiceResponseException {
   /**
    * Instantiates a new Service Unavailable Exception.
    *
-   * @param message the error message
    * @param response the HTTP response
    */
-  public ServiceUnavailableException(String message, Response response) {
-    super(HttpStatus.SERVICE_UNAVAILABLE, message, response);
+  public ServiceUnavailableException(Response response) {
+    super(HttpStatus.SERVICE_UNAVAILABLE, response);
+    if (this.getMessage() == null) {
+      this.setMessage("Service unavailable");
+    }
   }
 
 }

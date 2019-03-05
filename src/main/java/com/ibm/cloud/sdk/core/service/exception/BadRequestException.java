@@ -27,11 +27,13 @@ public class BadRequestException extends ServiceResponseException {
   /**
    * Instantiates a new BadRequest Exception. HTTP 400
    *
-   * @param message the error message
    * @param response the HTTP response
    */
-  public BadRequestException(String message, Response response) {
-    super(HttpStatus.BAD_REQUEST, message, response);
+  public BadRequestException(Response response) {
+    super(HttpStatus.BAD_REQUEST, response);
+    if (this.getMessage() == null) {
+      this.setMessage("Bad request");
+    }
   }
 
 }

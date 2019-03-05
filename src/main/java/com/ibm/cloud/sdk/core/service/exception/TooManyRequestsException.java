@@ -28,11 +28,13 @@ public class TooManyRequestsException extends ServiceResponseException {
   /**
    * Instantiates a new Too Many Requests Exception.
    *
-   * @param message the error message
    * @param response the HTTP response
    */
-  public TooManyRequestsException(String message, Response response) {
-    super(TOO_MANY_REQUESTS, message, response);
+  public TooManyRequestsException(Response response) {
+    super(TOO_MANY_REQUESTS, response);
+    if (this.getMessage() == null) {
+      this.setMessage("Too many requests");
+    }
   }
 
 }

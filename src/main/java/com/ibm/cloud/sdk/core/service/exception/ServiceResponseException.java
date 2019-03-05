@@ -12,7 +12,15 @@
  */
 package com.ibm.cloud.sdk.core.service.exception;
 
+import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
+import com.ibm.cloud.sdk.core.http.Headers;
+import com.ibm.cloud.sdk.core.util.GsonSingleton;
+import com.ibm.cloud.sdk.core.util.ResponseUtils;
 import okhttp3.Response;
+
+import java.lang.reflect.Type;
+import java.util.Map;
 
 /**
  * Generic Service Response Exception.
@@ -22,23 +30,46 @@ public class ServiceResponseException extends RuntimeException {
   /** The Constant serialVersionUID. */
   private static final long serialVersionUID = 1L;
 
+  /** Potential error message keys. */
+  private static final String MESSAGE_ERROR = "error";
+  private static final String MESSAGE_ERROR_2 = "error_message";
+  private static final String MESSAGE_ERROR_3 = "message";
+  private static final String[] ERROR_KEYS = { MESSAGE_ERROR, MESSAGE_ERROR_2, MESSAGE_ERROR_3 };
+
+  private static final Type debuggingInfoType = new TypeToken<Map<String, Object>>() { }.getType();
+
   /** The status code. */
   private final int statusCode;
 
-  /** The HTTP response. */
-  private final Response response;
+  private String message;
+  private Headers headers;
+  private Map<String, Object> debuggingInfo;
 
   /**
    * Instantiates a new Service Response Exception.
    *
    * @param statusCode the status code
-   * @param message the error message
    * @param response the HTTP response
    */
-  public ServiceResponseException(int statusCode, String message, Response response) {
-    super(message);
+  public ServiceResponseException(int statusCode, Response response) {
+    super();
     this.statusCode = statusCode;
-    this.response = response;
+    this.headers = new Headers(response.headers());
+
+    String responseString = ResponseUtils.getString(response);
+    try {
+      final JsonObject jsonObject = ResponseUtils.getJsonObject(responseString);
+      for (String errorKey : ERROR_KEYS) {
+        if (jsonObject.has(errorKey)) {
+          this.message = jsonObject.remove(errorKey).getAsString();
+          break;
+        }
+      }
+      this.debuggingInfo = GsonSingleton.getGson().fromJson(jsonObject, debuggingInfoType);
+    } catch (final Exception e) {
+      // Ignore any kind of exception parsing the json and use fallback String version of response
+      this.message = responseString;
+    }
   }
 
   /**
@@ -51,11 +82,38 @@ public class ServiceResponseException extends RuntimeException {
   }
 
   /**
-   * Gets the HTTP response.
+   * Gets the error message.
    *
-   * @return the HTTP response
+   * @return the error message
    */
-  public Response getResponse() {
-    return response;
+  public String getMessage() {
+    return message;
+  }
+
+  /**
+   * Sets the error message.
+   *
+   * @param message the error message
+   */
+  protected void setMessage(String message) {
+    this.message = message;
+  }
+
+  /**
+   * Gets the headers.
+   *
+   * @return the headers
+   */
+  public Headers getHeaders() {
+    return headers;
+  }
+
+  /**
+   * Gets the response information other than the error message.
+   *
+   * @return the response information other than the error message
+   */
+  public Map<String, Object> getDebuggingInfo() {
+    return debuggingInfo;
   }
 }
