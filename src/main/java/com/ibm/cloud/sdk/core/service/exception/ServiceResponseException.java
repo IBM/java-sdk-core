@@ -14,6 +14,7 @@ package com.ibm.cloud.sdk.core.service.exception;
 
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
+import com.ibm.cloud.sdk.core.http.Headers;
 import com.ibm.cloud.sdk.core.util.GsonSingleton;
 import com.ibm.cloud.sdk.core.util.ResponseUtils;
 import okhttp3.Response;
@@ -40,6 +41,7 @@ public class ServiceResponseException extends RuntimeException {
   private final int statusCode;
 
   private String message;
+  private Headers headers;
   private Map<String, Object> debuggingInfo;
 
   /**
@@ -51,6 +53,7 @@ public class ServiceResponseException extends RuntimeException {
   public ServiceResponseException(int statusCode, Response response) {
     super();
     this.statusCode = statusCode;
+    this.headers = new Headers(response.headers());
 
     String responseString = ResponseUtils.getString(response);
     try {
@@ -85,6 +88,15 @@ public class ServiceResponseException extends RuntimeException {
    */
   public String getMessage() {
     return message;
+  }
+
+  /**
+   * Gets the headers.
+   *
+   * @return the headers
+   */
+  public Headers getHeaders() {
+    return headers;
   }
 
   /**
