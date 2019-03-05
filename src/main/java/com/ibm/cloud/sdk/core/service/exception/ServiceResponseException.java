@@ -91,6 +91,15 @@ public class ServiceResponseException extends RuntimeException {
   }
 
   /**
+   * Sets the error message.
+   *
+   * @param message the error message
+   */
+  protected void setMessage(String message) {
+    this.message = message;
+  }
+
+  /**
    * Gets the headers.
    *
    * @return the headers

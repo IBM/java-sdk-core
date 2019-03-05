@@ -32,6 +32,9 @@ public class TooManyRequestsException extends ServiceResponseException {
    */
   public TooManyRequestsException(Response response) {
     super(TOO_MANY_REQUESTS, response);
+    if (this.getMessage() == null) {
+      this.setMessage("Too many requests");
+    }
   }
 
 }

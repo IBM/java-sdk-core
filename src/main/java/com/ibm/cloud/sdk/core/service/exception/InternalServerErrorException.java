@@ -33,6 +33,9 @@ public class InternalServerErrorException extends ServiceResponseException {
    */
   public InternalServerErrorException(Response response) {
     super(HttpStatus.INTERNAL_SERVER_ERROR, response);
+    if (this.getMessage() == null) {
+      this.setMessage("Internal server error");
+    }
   }
 
 }

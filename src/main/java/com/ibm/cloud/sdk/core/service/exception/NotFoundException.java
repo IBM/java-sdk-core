@@ -33,6 +33,9 @@ public class NotFoundException extends ServiceResponseException {
    */
   public NotFoundException(Response response) {
     super(HttpStatus.NOT_FOUND, response);
+    if (this.getMessage() == null) {
+      this.setMessage("Not found");
+    }
   }
 
 }

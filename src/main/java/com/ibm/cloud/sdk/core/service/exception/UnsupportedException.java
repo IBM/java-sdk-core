@@ -33,6 +33,9 @@ public class UnsupportedException extends ServiceResponseException {
    */
   public UnsupportedException(Response response) {
     super(HttpStatus.UNSUPPORTED_MEDIA_TYPE, response);
+    if (this.getMessage() == null) {
+      this.setMessage("Unsupported media type");
+    }
   }
 
 }

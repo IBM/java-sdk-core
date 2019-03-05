@@ -31,6 +31,9 @@ public class BadRequestException extends ServiceResponseException {
    */
   public BadRequestException(Response response) {
     super(HttpStatus.BAD_REQUEST, response);
+    if (this.getMessage() == null) {
+      this.setMessage("Bad request");
+    }
   }
 
 }

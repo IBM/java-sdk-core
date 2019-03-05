@@ -33,6 +33,9 @@ public class ForbiddenException extends ServiceResponseException {
    */
   public ForbiddenException(Response response) {
     super(HttpStatus.FORBIDDEN, response);
+    if (this.getMessage() == null) {
+      this.setMessage("Forbidden: Service refused the request");
+    }
   }
 
 }

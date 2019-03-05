@@ -33,6 +33,9 @@ public class ConflictException extends ServiceResponseException {
    */
   public ConflictException(Response response) {
     super(HttpStatus.CONFLICT, response);
+    if (this.getMessage() == null) {
+      this.setMessage("");
+    }
   }
 
 }

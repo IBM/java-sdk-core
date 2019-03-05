@@ -33,6 +33,9 @@ public class UnauthorizedException extends ServiceResponseException {
    */
   public UnauthorizedException(Response response) {
     super(HttpStatus.UNAUTHORIZED, response);
+    if (this.getMessage() == null) {
+      this.setMessage("Unauthorized: Access is denied due to invalid credentials. Tip: Did you set the endpoint?");
+    }
   }
 
 }

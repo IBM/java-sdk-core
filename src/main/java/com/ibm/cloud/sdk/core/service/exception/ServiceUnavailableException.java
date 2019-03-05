@@ -33,6 +33,9 @@ public class ServiceUnavailableException extends ServiceResponseException {
    */
   public ServiceUnavailableException(Response response) {
     super(HttpStatus.SERVICE_UNAVAILABLE, response);
+    if (this.getMessage() == null) {
+      this.setMessage("Service unavailable");
+    }
   }
 
 }
