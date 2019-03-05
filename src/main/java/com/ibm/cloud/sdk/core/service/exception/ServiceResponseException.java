@@ -34,6 +34,7 @@ public class ServiceResponseException extends RuntimeException {
   private static final String MESSAGE_ERROR = "error";
   private static final String MESSAGE_ERROR_2 = "error_message";
   private static final String MESSAGE_ERROR_3 = "message";
+  private static final String[] ERROR_KEYS = { MESSAGE_ERROR, MESSAGE_ERROR_2, MESSAGE_ERROR_3 };
 
   private static final Type debuggingInfoType = new TypeToken<Map<String, Object>>() { }.getType();
 
@@ -58,12 +59,11 @@ public class ServiceResponseException extends RuntimeException {
     String responseString = ResponseUtils.getString(response);
     try {
       final JsonObject jsonObject = ResponseUtils.getJsonObject(responseString);
-      if (jsonObject.has(MESSAGE_ERROR)) {
-        this.message = jsonObject.remove(MESSAGE_ERROR).getAsString();
-      } else if (jsonObject.has(MESSAGE_ERROR_2)) {
-        this.message = jsonObject.remove(MESSAGE_ERROR_2).getAsString();
-      } else if (jsonObject.has(MESSAGE_ERROR_3)) {
-        this.message = jsonObject.remove(MESSAGE_ERROR_3).getAsString();
+      for (String errorKey : ERROR_KEYS) {
+        if (jsonObject.has(errorKey)) {
+          this.message = jsonObject.remove(errorKey).getAsString();
+          break;
+        }
       }
       this.debuggingInfo = GsonSingleton.getGson().fromJson(jsonObject, debuggingInfoType);
     } catch (final Exception e) {
