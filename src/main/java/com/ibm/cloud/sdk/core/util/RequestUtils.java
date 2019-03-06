@@ -12,6 +12,8 @@
  */
 package com.ibm.cloud.sdk.core.util;
 
+import com.ibm.cloud.sdk.core.http.HttpMediaType;
+import com.ibm.cloud.sdk.core.http.InputStreamRequestBody;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 
@@ -133,7 +135,7 @@ public final class RequestUtils {
     return sb.toString();
   }
 
-  private static String loadSdkVersion() {
+  public static String loadCoreVersion() {
     ClassLoader classLoader = RequestUtils.class.getClassLoader();
     InputStream inputStream = classLoader.getResourceAsStream("version.properties");
     Properties properties = new Properties();
