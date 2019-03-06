@@ -19,17 +19,12 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import com.ibm.cloud.sdk.core.http.HttpMediaType;
-import com.ibm.cloud.sdk.core.http.InputStreamRequestBody;
 
 /**
  * Utility functions to use when creating a {@link com.ibm.cloud.sdk.core.http.RequestBuilder }.
@@ -38,10 +33,6 @@ import com.ibm.cloud.sdk.core.http.InputStreamRequestBody;
 public final class RequestUtils {
 
   private static final Logger LOG = Logger.getLogger(RequestUtils.class.getName());
-
-  private static final String[] properties =
-      new String[] { "java.vendor", "java.version", "os.arch", "os.name", "os.version" };
-  private static String userAgent;
 
   private RequestUtils() {
     // This is a utility class - no instantiation allowed.
@@ -142,18 +133,6 @@ public final class RequestUtils {
     return sb.toString();
   }
 
-  /**
-   * Gets the user agent.
-   *
-   * @return the user agent
-   */
-  public static synchronized String getUserAgent() {
-    if (userAgent == null) {
-      userAgent = buildUserAgent();
-    }
-    return userAgent;
-  }
-
   private static String loadSdkVersion() {
     ClassLoader classLoader = RequestUtils.class.getClassLoader();
     InputStream inputStream = classLoader.getResourceAsStream("version.properties");
@@ -166,20 +145,6 @@ public final class RequestUtils {
     }
 
     return properties.getProperty("version", "unknown-version");
-  }
-
-  /**
-   * Builds the user agent using System properties.
-   *
-   * @return the string that represents the user agent
-   */
-  private static String buildUserAgent() {
-    final List<String> details = new ArrayList<String>();
-    for (String propertyName : properties) {
-      details.add(propertyName + "=" + System.getProperty(propertyName));
-    }
-
-    return "watson-apis-java-sdk/" + loadSdkVersion() + " (" + RequestUtils.join(details, "; ") + ")";
   }
 
   /**

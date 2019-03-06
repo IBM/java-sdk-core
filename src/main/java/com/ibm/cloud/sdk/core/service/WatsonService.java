@@ -36,7 +36,6 @@ import com.ibm.cloud.sdk.core.service.exception.UnsupportedException;
 import com.ibm.cloud.sdk.core.service.security.IamOptions;
 import com.ibm.cloud.sdk.core.service.security.IamTokenManager;
 import com.ibm.cloud.sdk.core.util.CredentialUtils;
-import com.ibm.cloud.sdk.core.util.RequestUtils;
 import com.ibm.cloud.sdk.core.util.ResponseConverterUtils;
 import jersey.repackaged.jsr166e.CompletableFuture;
 import okhttp3.Call;
@@ -208,17 +207,11 @@ public abstract class WatsonService {
    * @param builder the new default headers
    */
   protected void setDefaultHeaders(final Request.Builder builder) {
-    String userAgent = RequestUtils.getUserAgent();
-
     if (defaultHeaders != null) {
       for (String key : defaultHeaders.names()) {
         builder.header(key, defaultHeaders.get(key));
       }
-      if (defaultHeaders.get(HttpHeaders.USER_AGENT) != null) {
-        userAgent += " " + defaultHeaders.get(HttpHeaders.USER_AGENT);
-      }
     }
-    builder.header(HttpHeaders.USER_AGENT, userAgent);
   }
 
   /**

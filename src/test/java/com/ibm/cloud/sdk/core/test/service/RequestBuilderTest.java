@@ -15,8 +15,6 @@ package com.ibm.cloud.sdk.core.test.service;
 import com.google.gson.JsonObject;
 import com.ibm.cloud.sdk.core.http.HttpMediaType;
 import com.ibm.cloud.sdk.core.http.RequestBuilder;
-import com.ibm.cloud.sdk.core.util.RequestUtils;
-
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.Request;
@@ -30,7 +28,6 @@ import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * The Class RequestBuilderTest.
@@ -246,14 +243,4 @@ public class RequestBuilderTest {
     final Request request = RequestBuilder.get(HttpUrl.parse(url)).query("ä&ö", "ö=ü").build();
     assertEquals(url + "?%C3%A4%26%C3%B6=%C3%B6%3D%C3%BC", request.url().toString());
   }
-
-  /**
-   * Test user agent.
-   */
-  @Test
-  public void testUserAgent() {
-    assertNotNull(RequestUtils.getUserAgent());
-    assertTrue(RequestUtils.getUserAgent().startsWith("watson-apis-java-sdk/"));
-  }
-
 }
