@@ -21,6 +21,8 @@ import org.junit.Test;
 import com.google.common.collect.Lists;
 import com.ibm.cloud.sdk.core.util.RequestUtils;
 
+import static com.ibm.cloud.sdk.core.util.RequestUtils.loadCoreVersion;
+
 /**
  * The Class RequestUtilsTest.
  *
@@ -101,4 +103,9 @@ public class RequestUtilsTest {
     Assert.assertNull(RequestUtils.pick(null));
   }
 
+  @Test
+  public void testLoadCoreVersion() {
+    String version = RequestUtils.loadCoreVersion();
+    Assert.assertEquals("99-SNAPSHOT", version);
+  }
 }
