@@ -12,16 +12,16 @@
  */
 package com.ibm.cloud.sdk.core.test.util;
 
-import java.util.HashMap;
-import java.util.Map;
-
+import com.google.common.collect.Lists;
+import com.ibm.cloud.sdk.core.util.RequestUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.google.common.collect.Lists;
-import com.ibm.cloud.sdk.core.util.RequestUtils;
+import java.util.HashMap;
+import java.util.Map;
 
-import static com.ibm.cloud.sdk.core.util.RequestUtils.loadCoreVersion;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * The Class RequestUtilsTest.
@@ -53,12 +53,12 @@ public class RequestUtilsTest {
 
     Map<String, Object> omitted = RequestUtils.omit(params, "A");
 
-    Assert.assertTrue(omitted.keySet().containsAll(Lists.newArrayList("B", "C", "D")));
-    Assert.assertTrue(omitted.values().containsAll(Lists.newArrayList(2, 3, 4)));
+    assertTrue(omitted.keySet().containsAll(Lists.newArrayList("B", "C", "D")));
+    assertTrue(omitted.values().containsAll(Lists.newArrayList(2, 3, 4)));
 
     omitted = RequestUtils.omit(params, "F");
-    Assert.assertTrue(omitted.keySet().containsAll(Lists.newArrayList("A", "B", "C", "D")));
-    Assert.assertTrue(omitted.values().containsAll(Lists.newArrayList(1, 2, 3, 4)));
+    assertTrue(omitted.keySet().containsAll(Lists.newArrayList("A", "B", "C", "D")));
+    assertTrue(omitted.values().containsAll(Lists.newArrayList(1, 2, 3, 4)));
   }
 
   /**
@@ -103,9 +103,12 @@ public class RequestUtilsTest {
     Assert.assertNull(RequestUtils.pick(null));
   }
 
+  /**
+   * Test user agent.
+   */
   @Test
-  public void testLoadCoreVersion() {
-    String version = RequestUtils.loadCoreVersion();
-    Assert.assertEquals("99-SNAPSHOT", version);
+  public void testUserAgent() {
+    assertNotNull(RequestUtils.getUserAgent());
+    assertTrue(RequestUtils.getUserAgent().startsWith("ibm-java-sdk-core/99-SNAPSHOT"));
   }
 }
