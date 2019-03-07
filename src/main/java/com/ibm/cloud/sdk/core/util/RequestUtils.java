@@ -12,6 +12,8 @@
  */
 package com.ibm.cloud.sdk.core.util;
 
+import com.ibm.cloud.sdk.core.http.HttpMediaType;
+import com.ibm.cloud.sdk.core.http.InputStreamRequestBody;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 
@@ -28,9 +30,6 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.ibm.cloud.sdk.core.http.HttpMediaType;
-import com.ibm.cloud.sdk.core.http.InputStreamRequestBody;
-
 /**
  * Utility functions to use when creating a {@link com.ibm.cloud.sdk.core.http.RequestBuilder }.
  *
@@ -38,7 +37,6 @@ import com.ibm.cloud.sdk.core.http.InputStreamRequestBody;
 public final class RequestUtils {
 
   private static final Logger LOG = Logger.getLogger(RequestUtils.class.getName());
-
   private static final String[] properties =
       new String[] { "java.vendor", "java.version", "os.arch", "os.name", "os.version" };
   private static String userAgent;
@@ -142,27 +140,15 @@ public final class RequestUtils {
     return sb.toString();
   }
 
-  /**
-   * Gets the user agent.
-   *
-   * @return the user agent
-   */
-  public static synchronized String getUserAgent() {
-    if (userAgent == null) {
-      userAgent = buildUserAgent();
-    }
-    return userAgent;
-  }
-
-  private static String loadSdkVersion() {
+  private static String loadCoreVersion() {
     ClassLoader classLoader = RequestUtils.class.getClassLoader();
-    InputStream inputStream = classLoader.getResourceAsStream("version.properties");
+    InputStream inputStream = classLoader.getResourceAsStream("sdk-core-version.properties");
     Properties properties = new Properties();
 
     try {
       properties.load(inputStream);
     } catch (Exception e) {
-      LOG.log(Level.WARNING, "Could not load version.properties", e);
+      LOG.log(Level.WARNING, "Could not load sdk-core-version.properties", e);
     }
 
     return properties.getProperty("version", "unknown-version");
@@ -174,12 +160,24 @@ public final class RequestUtils {
    * @return the string that represents the user agent
    */
   private static String buildUserAgent() {
-    final List<String> details = new ArrayList<String>();
+    final List<String> details = new ArrayList<>();
     for (String propertyName : properties) {
       details.add(propertyName + "=" + System.getProperty(propertyName));
     }
 
-    return "watson-apis-java-sdk/" + loadSdkVersion() + " (" + RequestUtils.join(details, "; ") + ")";
+    return "ibm-java-sdk-core/" + loadCoreVersion() + " (" + RequestUtils.join(details, "; ") + ")";
+  }
+
+  /**
+   * Gets the user agent.
+   *
+   * @return the user agent
+   */
+  public static synchronized String getUserAgent() {
+    if (userAgent == null) {
+      userAgent = buildUserAgent();
+    }
+    return userAgent;
   }
 
   /**
