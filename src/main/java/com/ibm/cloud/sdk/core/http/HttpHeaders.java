@@ -153,9 +153,6 @@ public interface HttpHeaders {
    */
   String WWW_AUTHENTICATE = "WWW-Authenticate";
 
-  /** Header containing analytics info. */
-  String X_IBMCLOUD_SDK_ANALYTICS = "X-IBMCloud-SDK-Analytics";
-
   /** The Authorization token header. */
   String X_WATSON_AUTHORIZATION_TOKEN = "X-Watson-Authorization-Token";
 
