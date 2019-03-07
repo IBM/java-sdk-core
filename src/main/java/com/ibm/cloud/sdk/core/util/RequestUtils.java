@@ -137,13 +137,13 @@ public final class RequestUtils {
 
   public static String loadCoreVersion() {
     ClassLoader classLoader = RequestUtils.class.getClassLoader();
-    InputStream inputStream = classLoader.getResourceAsStream("version.properties");
+    InputStream inputStream = classLoader.getResourceAsStream("sdk-core-version.properties");
     Properties properties = new Properties();
 
     try {
       properties.load(inputStream);
     } catch (Exception e) {
-      LOG.log(Level.WARNING, "Could not load version.properties", e);
+      LOG.log(Level.WARNING, "Could not load sdk-core-version.properties", e);
     }
 
     return properties.getProperty("version", "unknown-version");
