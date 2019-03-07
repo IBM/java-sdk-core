@@ -21,8 +21,10 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -35,6 +37,9 @@ import java.util.logging.Logger;
 public final class RequestUtils {
 
   private static final Logger LOG = Logger.getLogger(RequestUtils.class.getName());
+  private static final String[] properties =
+      new String[] { "java.vendor", "java.version", "os.arch", "os.name", "os.version" };
+  private static String userAgent;
 
   private RequestUtils() {
     // This is a utility class - no instantiation allowed.
@@ -135,7 +140,7 @@ public final class RequestUtils {
     return sb.toString();
   }
 
-  public static String loadCoreVersion() {
+  private static String loadCoreVersion() {
     ClassLoader classLoader = RequestUtils.class.getClassLoader();
     InputStream inputStream = classLoader.getResourceAsStream("sdk-core-version.properties");
     Properties properties = new Properties();
@@ -147,6 +152,32 @@ public final class RequestUtils {
     }
 
     return properties.getProperty("version", "unknown-version");
+  }
+
+  /**
+   * Builds the user agent using System properties.
+   *
+   * @return the string that represents the user agent
+   */
+  private static String buildUserAgent() {
+    final List<String> details = new ArrayList<>();
+    for (String propertyName : properties) {
+      details.add(propertyName + "=" + System.getProperty(propertyName));
+    }
+
+    return "ibm-java-sdk-core/" + loadCoreVersion() + " (" + RequestUtils.join(details, "; ") + ")";
+  }
+
+  /**
+   * Gets the user agent.
+   *
+   * @return the user agent
+   */
+  public static synchronized String getUserAgent() {
+    if (userAgent == null) {
+      userAgent = buildUserAgent();
+    }
+    return userAgent;
   }
 
   /**
