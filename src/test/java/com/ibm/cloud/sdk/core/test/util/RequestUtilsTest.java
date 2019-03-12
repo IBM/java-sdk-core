@@ -109,6 +109,6 @@ public class RequestUtilsTest {
   @Test
   public void testUserAgent() {
     assertNotNull(RequestUtils.getUserAgent());
-    assertTrue(RequestUtils.getUserAgent().startsWith("ibm-java-sdk-core/"));
+    assertTrue(RequestUtils.getUserAgent().startsWith("ibm-java-sdk-core-"));
   }
 }
