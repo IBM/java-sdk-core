@@ -26,10 +26,6 @@
       "uploadPattern": "com/ibm/cloud/sdk-core/${TRAVIS_TAG}/sdk-core-${TRAVIS_TAG}-javadoc.jar"
     },
     {
-      "includePattern": "target/sdk-core-${TRAVIS_TAG}-tests.jar",
-      "uploadPattern": "com/ibm/cloud/sdk-core/${TRAVIS_TAG}/sdk-core-${TRAVIS_TAG}-tests.jar"
-    },
-    {
       "includePattern": "pom.xml",
       "uploadPattern": "com/ibm/cloud/sdk-core/${TRAVIS_TAG}/sdk-core-${TRAVIS_TAG}.pom"
     }
