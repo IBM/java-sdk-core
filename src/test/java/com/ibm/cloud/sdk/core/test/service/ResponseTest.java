@@ -16,12 +16,10 @@ import com.ibm.cloud.sdk.core.http.RequestBuilder;
 import com.ibm.cloud.sdk.core.http.Response;
 import com.ibm.cloud.sdk.core.http.ServiceCall;
 import com.ibm.cloud.sdk.core.http.ServiceCallbackWithDetails;
-import com.ibm.cloud.sdk.core.service.WatsonService;
+import com.ibm.cloud.sdk.core.service.BaseService;
 import com.ibm.cloud.sdk.core.service.model.GenericModel;
-import com.ibm.cloud.sdk.core.test.WatsonServiceUnitTest;
+import com.ibm.cloud.sdk.core.test.BaseServiceUnitTest;
 import com.ibm.cloud.sdk.core.util.ResponseConverterUtils;
-
-import jersey.repackaged.jsr166e.CompletableFuture;
 import okhttp3.Headers;
 import okhttp3.HttpUrl;
 import okhttp3.mockwebserver.MockResponse;
@@ -34,11 +32,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-public class ResponseTest extends WatsonServiceUnitTest {
+public class ResponseTest extends BaseServiceUnitTest {
 
   private class TestModel extends GenericModel { }
 
-  public class TestService extends WatsonService {
+  public class TestService extends BaseService {
 
     private static final String SERVICE_NAME = "test";
 
@@ -117,12 +115,9 @@ public class ResponseTest extends WatsonServiceUnitTest {
   public void testRxWithDetailsCallback() throws InterruptedException {
     server.enqueue(new MockResponse().setBody("{\"test_key\": \"test_value\"}"));
 
-    service.testMethod().rxWithDetails().thenAccept(new CompletableFuture.Action<Response<TestModel>>() {
-      @Override
-      public void accept(Response<TestModel> response) {
-        assertNotNull(response.getResult());
-        assertNotNull(response.getHeaders());
-      }
+    service.testMethod().rxWithDetails().thenAccept(response -> {
+      assertNotNull(response.getResult());
+      assertNotNull(response.getHeaders());
     });
   }
 
@@ -135,12 +130,9 @@ public class ResponseTest extends WatsonServiceUnitTest {
   public void testRxWithDetailsAsync() throws InterruptedException {
     server.enqueue(new MockResponse().setBody("{\"test_key\": \"test_value\"}"));
 
-    service.testMethod().rxWithDetails().thenAcceptAsync(new CompletableFuture.Action<Response<TestModel>>() {
-      @Override
-      public void accept(Response<TestModel> response) {
-        assertNotNull(response.getResult());
-        assertNotNull(response.getHeaders());
-      }
+    service.testMethod().rxWithDetails().thenAcceptAsync(response -> {
+      assertNotNull(response.getResult());
+      assertNotNull(response.getHeaders());
     });
   }
 

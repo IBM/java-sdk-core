@@ -10,7 +10,7 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package com.ibm.cloud.sdk.core.test.util;
+package com.ibm.cloud.sdk.core.test;
 
 import com.ibm.cloud.sdk.core.util.GsonSingleton;
 import org.junit.Ignore;
@@ -28,16 +28,19 @@ import java.io.InputStreamReader;
 @Ignore
 public final class TestUtils {
   /** The Constant DELETE. */
-  protected static final String DELETE = "DELETE";
+  public static final String DELETE = "DELETE";
+
+  /** The Constant HEAD. */
+  public static final String HEAD = "HEAD";
 
   /** The Constant GET. */
-  protected static final String GET = "GET";
+  public static final String GET = "GET";
 
   /** The Constant POST. */
-  protected static final String POST = "POST";
+  public static final String POST = "POST";
 
   /** The Constant PUT. */
-  protected static final String PUT = "PUT";
+  public static final String PUT = "PUT";
 
   /**
    * Private constructor.
@@ -50,7 +53,7 @@ public final class TestUtils {
    * @param is the input stream
    * @return the string from input stream
    */
-  static String getStringFromInputStream(InputStream is) {
+  public static String getStringFromInputStream(InputStream is) {
     BufferedReader br = null;
     final StringBuilder sb = new StringBuilder();
 

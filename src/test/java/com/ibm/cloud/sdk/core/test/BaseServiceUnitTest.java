@@ -1,4 +1,4 @@
-package com.ibm.cloud.sdk.core.test.service;
+package com.ibm.cloud.sdk.core.test;
 
 import com.google.gson.Gson;
 import com.ibm.cloud.sdk.core.http.HttpMediaType;
@@ -13,18 +13,6 @@ import java.io.IOException;
 import static com.ibm.cloud.sdk.core.http.HttpHeaders.CONTENT_TYPE;
 
 public class BaseServiceUnitTest {
-  /** The Constant DELETE. */
-  protected static final String DELETE = "DELETE";
-
-  /** The Constant GET. */
-  protected static final String GET = "GET";
-
-  /** The Constant POST. */
-  protected static final String POST = "POST";
-
-  /** The Constant PUT. */
-  protected static final String PUT = "PUT";
-
   private static final Gson GSON = GsonSingleton.getGson();
 
   /** The server. */
@@ -35,7 +23,6 @@ public class BaseServiceUnitTest {
    *
    * @throws Exception the exception
    */
-  @Override
   public void setUp() throws Exception {
     server = new MockWebServer();
     server.start();

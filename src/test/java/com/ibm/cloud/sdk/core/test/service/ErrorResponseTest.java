@@ -15,7 +15,7 @@ package com.ibm.cloud.sdk.core.test.service;
 import com.ibm.cloud.sdk.core.http.HttpMediaType;
 import com.ibm.cloud.sdk.core.http.RequestBuilder;
 import com.ibm.cloud.sdk.core.http.ServiceCall;
-import com.ibm.cloud.sdk.core.service.WatsonService;
+import com.ibm.cloud.sdk.core.service.BaseService;
 import com.ibm.cloud.sdk.core.service.exception.BadRequestException;
 import com.ibm.cloud.sdk.core.service.exception.ConflictException;
 import com.ibm.cloud.sdk.core.service.exception.ForbiddenException;
@@ -27,19 +27,20 @@ import com.ibm.cloud.sdk.core.service.exception.TooManyRequestsException;
 import com.ibm.cloud.sdk.core.service.exception.UnauthorizedException;
 import com.ibm.cloud.sdk.core.service.exception.UnsupportedException;
 import com.ibm.cloud.sdk.core.service.model.GenericModel;
-import com.ibm.cloud.sdk.core.test.WatsonServiceUnitTest;
+import com.ibm.cloud.sdk.core.test.BaseServiceUnitTest;
 import com.ibm.cloud.sdk.core.util.ResponseConverterUtils;
 import okhttp3.HttpUrl;
 import okhttp3.mockwebserver.MockResponse;
 import org.junit.Before;
 import org.junit.Test;
 
+import static com.ibm.cloud.sdk.core.http.HttpHeaders.CONTENT_TYPE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class ErrorResponseTest extends WatsonServiceUnitTest {
+public class ErrorResponseTest extends BaseServiceUnitTest {
 
-  public class TestService extends WatsonService {
+  public class TestService extends BaseService {
 
     private static final String SERVICE_NAME = "test";
 

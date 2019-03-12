@@ -15,6 +15,7 @@ package com.ibm.cloud.sdk.core.test.service;
 import com.google.gson.JsonObject;
 import com.ibm.cloud.sdk.core.http.HttpMediaType;
 import com.ibm.cloud.sdk.core.http.RequestBuilder;
+import com.ibm.cloud.sdk.core.test.TestUtils;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.Request;
@@ -54,7 +55,7 @@ public class RequestBuilderTest {
             .header(X_TOKEN, "token1");
     final Request request = builder.build();
 
-    assertEquals("POST", request.method());
+    assertEquals(TestUtils.POST, request.method());
     assertEquals("token1", request.header(xToken));
     assertNotNull(builder.toString());
   }
@@ -73,7 +74,7 @@ public class RequestBuilderTest {
   @Test
   public void testDelete() {
     final Request request = RequestBuilder.delete(HttpUrl.parse(urlWithQuery)).build();
-    assertEquals("DELETE", request.method());
+    assertEquals(TestUtils.DELETE, request.method());
     assertEquals(urlWithQuery, request.url().toString());
   }
 
@@ -83,7 +84,7 @@ public class RequestBuilderTest {
   @Test
   public void testGet() {
     final Request request = RequestBuilder.get(HttpUrl.parse(urlWithQuery)).build();
-    assertEquals("GET", request.method());
+    assertEquals(TestUtils.GET, request.method());
     assertEquals(urlWithQuery, request.url().toString());
   }
 
@@ -93,7 +94,7 @@ public class RequestBuilderTest {
   @Test
   public void testHead() {
     final Request request = RequestBuilder.head(HttpUrl.parse(urlWithQuery)).build();
-    assertEquals("HEAD", request.method());
+    assertEquals(TestUtils.HEAD, request.method());
     assertEquals(urlWithQuery, request.url().toString());
   }
 
@@ -120,7 +121,7 @@ public class RequestBuilderTest {
   @Test
   public void testPost() {
     final Request request = RequestBuilder.post(HttpUrl.parse(url)).build();
-    assertEquals("POST", request.method());
+    assertEquals(TestUtils.POST, request.method());
     assertEquals(url, request.url().toString());
   }
 
@@ -130,7 +131,7 @@ public class RequestBuilderTest {
   @Test
   public void testPut() {
     final Request request = RequestBuilder.put(HttpUrl.parse(urlWithQuery)).build();
-    assertEquals("PUT", request.method());
+    assertEquals(TestUtils.PUT, request.method());
     assertEquals(urlWithQuery, request.url().toString());
   }
 

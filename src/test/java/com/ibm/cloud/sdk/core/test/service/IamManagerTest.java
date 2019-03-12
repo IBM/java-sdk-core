@@ -15,14 +15,15 @@ package com.ibm.cloud.sdk.core.test.service;
 import com.ibm.cloud.sdk.core.service.security.IamOptions;
 import com.ibm.cloud.sdk.core.service.security.IamToken;
 import com.ibm.cloud.sdk.core.service.security.IamTokenManager;
-import com.ibm.cloud.sdk.core.test.WatsonServiceUnitTest;
 
+import com.ibm.cloud.sdk.core.test.BaseServiceUnitTest;
 import org.junit.Before;
 import org.junit.Test;
 
+import static com.ibm.cloud.sdk.core.test.TestUtils.loadFixture;
 import static org.junit.Assert.assertEquals;
 
-public class IamManagerTest extends WatsonServiceUnitTest {
+public class IamManagerTest extends BaseServiceUnitTest {
 
   private IamToken expiredTokenData;
   private IamToken validTokenData;

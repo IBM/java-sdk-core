@@ -12,21 +12,20 @@
  */
 package com.ibm.cloud.sdk.core.http;
 
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-
 import com.google.gson.JsonObject;
-import com.ibm.cloud.sdk.core.service.WatsonService;
+import com.ibm.cloud.sdk.core.service.BaseService;
 import com.ibm.cloud.sdk.core.util.GsonSingleton;
 import com.ibm.cloud.sdk.core.util.StringHelper;
 import com.ibm.cloud.sdk.core.util.Validator;
-
 import okhttp3.FormBody;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
+
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Convenience class for constructing HTTP/HTTPS requests.
@@ -334,10 +333,10 @@ public class RequestBuilder {
   public RequestBuilder bodyContent(String contentType, Object jsonContent, Object jsonPatchContent,
     InputStream nonJsonContent) {
     if (contentType != null) {
-      if (WatsonService.isJsonMimeType(contentType)) {
+      if (BaseService.isJsonMimeType(contentType)) {
         this.bodyContent(
           GsonSingleton.getGson().toJsonTree(jsonContent).getAsJsonObject().toString(), contentType);
-      } else if (WatsonService.isJsonPatchMimeType(contentType)) {
+      } else if (BaseService.isJsonPatchMimeType(contentType)) {
         this.bodyContent(
           GsonSingleton.getGson().toJsonTree(jsonPatchContent).getAsJsonObject().toString(), contentType);
       } else {
