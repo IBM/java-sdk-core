@@ -55,15 +55,10 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 /**
- * Watson service abstract common functionality of various Watson Services. It handle authentication and default url.
- *
- * @see <a href="http://www.ibm.com/watson/developercloud/"> IBM Watson Developer Cloud</a>
+ * Abstracts common functionality of various IBM Cloud services.
  */
 public abstract class BaseService {
 
-  private static final String URL = "url";
-  private static final String PATH_AUTHORIZATION_V1_TOKEN = "/v1/token";
-  private static final String AUTHORIZATION = "authorization";
   private static final String BASIC = "Basic ";
   private static final String BEARER = "Bearer ";
   private static final String APIKEY_AS_USERNAME = "apikey";
@@ -80,17 +75,10 @@ public abstract class BaseService {
   private OkHttpClient client;
 
   /** The default headers. */
-  protected Headers defaultHeaders = null;
+  private Headers defaultHeaders = null;
 
   /** The skip authentication. */
-  protected boolean skipAuthentication = false;
-
-  /** The Constant MESSAGE_CODE. */
-  protected static final String MESSAGE_CODE = "code";
-
-
-  /** The Constant VERSION. */
-  protected static final String VERSION = "version";
+  private boolean skipAuthentication = false;
 
 
   // Regular expression for JSON-related mimetypes.
@@ -274,23 +262,6 @@ public abstract class BaseService {
    */
   public String getEndPoint() {
     return endPoint;
-  }
-
-  /**
-   * Gets an authorization token that can be use to authorize API calls.
-   *
-   *
-   * @return the token
-   */
-  public ServiceCall<String> getToken() {
-    HttpUrl url = HttpUrl.parse(getEndPoint()).newBuilder()
-        .setPathSegment(0, AUTHORIZATION)
-        .addPathSegment(PATH_AUTHORIZATION_V1_TOKEN)
-        .build();
-    Request request = RequestBuilder.get(url)
-        .header(HttpHeaders.ACCEPT, HttpMediaType.TEXT_PLAIN).query(URL, getEndPoint()).build();
-
-    return createServiceCall(request, ResponseConverterUtils.getString());
   }
 
   /**
