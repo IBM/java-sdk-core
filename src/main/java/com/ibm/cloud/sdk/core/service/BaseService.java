@@ -59,7 +59,7 @@ import java.util.regex.Pattern;
  *
  * @see <a href="http://www.ibm.com/watson/developercloud/"> IBM Watson Developer Cloud</a>
  */
-public abstract class WatsonService {
+public abstract class BaseService {
 
   private static final String URL = "url";
   private static final String PATH_AUTHORIZATION_V1_TOKEN = "/v1/token";
@@ -68,11 +68,7 @@ public abstract class WatsonService {
   private static final String BEARER = "Bearer ";
   private static final String APIKEY_AS_USERNAME = "apikey";
   private static final String ICP_PREFIX = "icp-";
-  private static final Logger LOG = Logger.getLogger(WatsonService.class.getName());
-  private static final String AUTH_HEADER_DEPRECATION_MESSAGE = "Authenticating with the X-Watson-Authorization-Token"
-      + "header is deprecated. The token continues to work with Cloud Foundry services, but is not supported for "
-      + "services that use Identity and Access Management (IAM) authentication. For details see the IAM "
-      + "authentication section in the README.";
+  private static final Logger LOG = Logger.getLogger(BaseService.class.getName());
   private String apiKey;
   private String username;
   private String password;
@@ -104,11 +100,11 @@ public abstract class WatsonService {
     Pattern.compile("(?i)application\\/json\\-patch\\+json(;.*)?");
 
   /**
-   * Instantiates a new Watson service.
+   * Instantiates a new IBM Cloud service.
    *
    * @param name the service name
    */
-  public WatsonService(final String name) {
+  public BaseService(final String name) {
     this.name = name;
 
     // file credentials take precedence
@@ -343,10 +339,6 @@ public abstract class WatsonService {
       builder.addHeader(HttpHeaders.AUTHORIZATION, BEARER + accessToken);
     } else if (getApiKey() == null) {
       if (skipAuthentication) {
-        Headers currentHeaders = builder.build().headers();
-        if (currentHeaders.get(HttpHeaders.X_WATSON_AUTHORIZATION_TOKEN) != null) {
-          LOG.warning(AUTH_HEADER_DEPRECATION_MESSAGE);
-        }
         return;
       }
       throw new IllegalArgumentException("apiKey or username and password were not specified");
