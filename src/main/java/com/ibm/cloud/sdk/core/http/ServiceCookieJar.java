@@ -28,7 +28,7 @@ public final class ServiceCookieJar implements CookieJar {
   private JavaNetCookieJar adapter;
 
   /**
-   * Instantiates a new Watson cookie jar.
+   * Instantiates a new ServiceCookieJar.
    *
    * @param cookieHandler the cookie handler
    */
