@@ -12,7 +12,6 @@
  */
 package com.ibm.cloud.sdk.core.test.util;
 
-import com.ibm.cloud.sdk.core.test.WatsonServiceTest;
 import com.ibm.cloud.sdk.core.util.CredentialUtils;
 
 import org.junit.Before;
@@ -21,6 +20,7 @@ import org.junit.Test;
 import java.io.InputStream;
 import java.util.Hashtable;
 
+import static com.ibm.cloud.sdk.core.test.TestUtils.getStringFromInputStream;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -29,7 +29,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * The Class CredentialUtilsTest.
  */
-public class CredentialUtilsTest extends WatsonServiceTest {
+public class CredentialUtilsTest {
   private static final String SERVICE_NAME = "personality_insights";
   private static final String VCAP_SERVICES = "vcap_services.json";
   private static final String APIKEY = "apikey";

@@ -152,14 +152,4 @@ public interface HttpHeaders {
    * See <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.47">HTTP/1.1 documentation</a>.
    */
   String WWW_AUTHENTICATE = "WWW-Authenticate";
-
-  /** The Authorization token header. */
-  String X_WATSON_AUTHORIZATION_TOKEN = "X-Watson-Authorization-Token";
-
-  /** Allow Watson to collect the payload. */
-  String X_WATSON_LEARNING_OPT_OUT = "X-Watson-Learning-Opt-Out";
-
-  /** Mark Bluemix interactions from tests. */
-  String X_WATSON_TEST = "X-Watson-Test";
-
 }

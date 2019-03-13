@@ -12,10 +12,9 @@
  */
 package com.ibm.cloud.sdk.core.http;
 
-import com.ibm.cloud.sdk.core.service.WatsonService;
+import com.ibm.cloud.sdk.core.service.BaseService;
 import com.ibm.cloud.sdk.core.service.security.DelegatingSSLSocketFactory;
 import com.ibm.cloud.sdk.core.util.HttpLogging;
-
 import okhttp3.ConnectionSpec;
 import okhttp3.OkHttpClient;
 import okhttp3.OkHttpClient.Builder;
@@ -52,7 +51,7 @@ import java.util.logging.Logger;
 public class HttpClientSingleton {
   private static HttpClientSingleton instance = null;
 
-  private static final Logger LOG = Logger.getLogger(WatsonService.class.getName());
+  private static final Logger LOG = Logger.getLogger(BaseService.class.getName());
 
   /**
    * TrustManager for disabling SSL verification, which essentially lets everything through.
@@ -130,7 +129,7 @@ public class HttpClientSingleton {
     final CookieManager cookieManager = new CookieManager();
     cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
 
-    builder.cookieJar(new WatsonCookieJar(cookieManager));
+    builder.cookieJar(new ServiceCookieJar(cookieManager));
   }
 
   /**
@@ -213,7 +212,7 @@ public class HttpClientSingleton {
   }
 
   /**
-   * Creates an {@link OkHttpClient} instance with a new {@link WatsonCookieJar}.
+   * Creates an {@link OkHttpClient} instance with a new {@link ServiceCookieJar}.
    *
    * @return the client
    */

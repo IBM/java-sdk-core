@@ -174,7 +174,7 @@ public final class CredentialUtils {
 
   /**
    * Calls methods to parse VCAP_SERVICES and retrieve credential values. For some values, if VCAP_SERVICES aren't
-   * present, it'll fall back to checking JDNI.
+   * present, it'll fall back to checking JNDI.
    *
    * @param serviceName the service name
    * @return ServiceCredentials object containing parsed values
@@ -184,12 +184,12 @@ public final class CredentialUtils {
     String password = getVcapValue(serviceName, PASSWORD);
     String oldApiKey = getVcapValue(serviceName, OLD_APIKEY);
     if (username == null && password == null && oldApiKey == null) {
-      oldApiKey = getJdniValue(serviceName, LOOKUP_NAME_EXTENSION_API_KEY);
+      oldApiKey = getJndiValue(serviceName, LOOKUP_NAME_EXTENSION_API_KEY);
     }
 
     String url = getVcapValue(serviceName, URL);
     if (url == null) {
-      url = getJdniValue(serviceName, LOOKUP_NAME_EXTENSION_URL);
+      url = getJndiValue(serviceName, LOOKUP_NAME_EXTENSION_URL);
     }
 
     String iamApiKey = getVcapValue(serviceName, IAM_APIKEY);
@@ -199,15 +199,15 @@ public final class CredentialUtils {
   }
 
   /**
-   * Builds the lookup name to be searched for in JDNI
-   * and uses it to call the overloaded JDNI method.
+   * Builds the lookup name to be searched for in JNDI
+   * and uses it to call the overloaded JNDI method.
    *
    * @param serviceName Name of the bluemix service
-   * @param lookupNameExtension Extension to determine which value should be retrieved through JDNI
+   * @param lookupNameExtension Extension to determine which value should be retrieved through JNDI
    * @return The encoded desired value
    */
-  private static String getJdniValue(String serviceName, String lookupNameExtension) {
-    return getJdniValue("watson-developer-cloud/" + serviceName + lookupNameExtension);
+  private static String getJndiValue(String serviceName, String lookupNameExtension) {
+    return getJndiValue("watson-developer-cloud/" + serviceName + lookupNameExtension);
   }
 
   /**
@@ -215,10 +215,10 @@ public final class CredentialUtils {
    *
    * This method should always return null on Android due to the javax functions being unsupported
    *
-   * @param lookupName Key to lookup in JDNI
+   * @param lookupName Key to lookup in JNDI
    * @return The encoded desired value
    */
-  private static String getJdniValue(String lookupName) {
+  private static String getJndiValue(String lookupName) {
     if (!isClassAvailable("javax.naming.Context") || !isClassAvailable("javax.naming.InitialContext")) {
       log.info("JNDI string lookups is not available.");
       return null;
@@ -297,7 +297,7 @@ public final class CredentialUtils {
 
   /**
    * Returns the value associated with the provided key from the VCAP_SERVICES, or null if it doesn't exist. In the
-   * case of the API URL, if VCAP_SERVICES aren't present, this method will also search in JDNI.
+   * case of the API URL, if VCAP_SERVICES aren't present, this method will also search in JNDI.
    *
    * @param serviceName the service name
    * @param key the key whose value should be returned
@@ -333,7 +333,7 @@ public final class CredentialUtils {
   }
 
   /**
-   * Sets the context variable for JDNI. This is a utility method for testing.
+   * Sets the context variable for JNDI. This is a utility method for testing.
    *
    * @param env Configuration options for the context
    */
@@ -341,7 +341,7 @@ public final class CredentialUtils {
     try {
       CredentialUtils.context = new InitialContext(env);
     } catch (Exception e) {
-      log.fine("Error setting up JDNI context: " + e.getMessage());
+      log.fine("Error setting up JNDI context: " + e.getMessage());
     }
   }
 

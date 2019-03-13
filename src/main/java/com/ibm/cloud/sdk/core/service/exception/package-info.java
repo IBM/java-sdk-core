@@ -12,7 +12,7 @@
  */
 
 /**
- * This package contains a collection of runtime exceptions thrown by the Watson services.
+ * This package contains a collection of runtime exceptions thrown by IBM Cloud services.
  */
 package com.ibm.cloud.sdk.core.service.exception;
 

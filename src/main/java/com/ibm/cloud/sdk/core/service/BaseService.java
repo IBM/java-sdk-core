@@ -15,9 +15,7 @@ package com.ibm.cloud.sdk.core.service;
 import com.ibm.cloud.sdk.core.http.HttpClientSingleton;
 import com.ibm.cloud.sdk.core.http.HttpConfigOptions;
 import com.ibm.cloud.sdk.core.http.HttpHeaders;
-import com.ibm.cloud.sdk.core.http.HttpMediaType;
 import com.ibm.cloud.sdk.core.http.HttpStatus;
-import com.ibm.cloud.sdk.core.http.RequestBuilder;
 import com.ibm.cloud.sdk.core.http.ResponseConverter;
 import com.ibm.cloud.sdk.core.http.ServiceCall;
 import com.ibm.cloud.sdk.core.http.ServiceCallback;
@@ -37,13 +35,11 @@ import com.ibm.cloud.sdk.core.service.security.IamOptions;
 import com.ibm.cloud.sdk.core.service.security.IamTokenManager;
 import com.ibm.cloud.sdk.core.util.CredentialUtils;
 import com.ibm.cloud.sdk.core.util.RequestUtils;
-import com.ibm.cloud.sdk.core.util.ResponseConverterUtils;
 import jersey.repackaged.jsr166e.CompletableFuture;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Credentials;
 import okhttp3.Headers;
-import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Request.Builder;
@@ -55,24 +51,15 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 /**
- * Watson service abstract common functionality of various Watson Services. It handle authentication and default url.
- *
- * @see <a href="http://www.ibm.com/watson/developercloud/"> IBM Watson Developer Cloud</a>
+ * Abstracts common functionality of various IBM Cloud services.
  */
-public abstract class WatsonService {
+public abstract class BaseService {
 
-  private static final String URL = "url";
-  private static final String PATH_AUTHORIZATION_V1_TOKEN = "/v1/token";
-  private static final String AUTHORIZATION = "authorization";
   private static final String BASIC = "Basic ";
   private static final String BEARER = "Bearer ";
   private static final String APIKEY_AS_USERNAME = "apikey";
   private static final String ICP_PREFIX = "icp-";
-  private static final Logger LOG = Logger.getLogger(WatsonService.class.getName());
-  private static final String AUTH_HEADER_DEPRECATION_MESSAGE = "Authenticating with the X-Watson-Authorization-Token"
-      + "header is deprecated. The token continues to work with Cloud Foundry services, but is not supported for "
-      + "services that use Identity and Access Management (IAM) authentication. For details see the IAM "
-      + "authentication section in the README.";
+  private static final Logger LOG = Logger.getLogger(BaseService.class.getName());
   private String apiKey;
   private String username;
   private String password;
@@ -84,17 +71,10 @@ public abstract class WatsonService {
   private OkHttpClient client;
 
   /** The default headers. */
-  protected Headers defaultHeaders = null;
+  private Headers defaultHeaders = null;
 
   /** The skip authentication. */
-  protected boolean skipAuthentication = false;
-
-  /** The Constant MESSAGE_CODE. */
-  protected static final String MESSAGE_CODE = "code";
-
-
-  /** The Constant VERSION. */
-  protected static final String VERSION = "version";
+  private boolean skipAuthentication = false;
 
 
   // Regular expression for JSON-related mimetypes.
@@ -104,11 +84,11 @@ public abstract class WatsonService {
     Pattern.compile("(?i)application\\/json\\-patch\\+json(;.*)?");
 
   /**
-   * Instantiates a new Watson service.
+   * Instantiates a new IBM Cloud service.
    *
    * @param name the service name
    */
-  public WatsonService(final String name) {
+  public BaseService(final String name) {
     this.name = name;
 
     // file credentials take precedence
@@ -281,23 +261,6 @@ public abstract class WatsonService {
   }
 
   /**
-   * Gets an authorization token that can be use to authorize API calls.
-   *
-   *
-   * @return the token
-   */
-  public ServiceCall<String> getToken() {
-    HttpUrl url = HttpUrl.parse(getEndPoint()).newBuilder()
-        .setPathSegment(0, AUTHORIZATION)
-        .addPathSegment(PATH_AUTHORIZATION_V1_TOKEN)
-        .build();
-    Request request = RequestBuilder.get(url)
-        .header(HttpHeaders.ACCEPT, HttpMediaType.TEXT_PLAIN).query(URL, getEndPoint()).build();
-
-    return createServiceCall(request, ResponseConverterUtils.getString());
-  }
-
-  /**
    * Checks the status of the tokenManager.
    *
    * @return true if the tokenManager has been set
@@ -343,10 +306,6 @@ public abstract class WatsonService {
       builder.addHeader(HttpHeaders.AUTHORIZATION, BEARER + accessToken);
     } else if (getApiKey() == null) {
       if (skipAuthentication) {
-        Headers currentHeaders = builder.build().headers();
-        if (currentHeaders.get(HttpHeaders.X_WATSON_AUTHORIZATION_TOKEN) != null) {
-          LOG.warning(AUTH_HEADER_DEPRECATION_MESSAGE);
-        }
         return;
       }
       throw new IllegalArgumentException("apiKey or username and password were not specified");

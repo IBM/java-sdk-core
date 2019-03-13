@@ -29,7 +29,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 
 /**
- * Date deserializer for different date format across all the Watson APIs.
+ * Date deserializer for different date formats across various IBM Cloud APIs.
  */
 public class DateDeserializer implements JsonDeserializer<Date> {
   private static final String DATE_FROM_ALCHEMY = "yyyyMMdd'T'HHmmss";

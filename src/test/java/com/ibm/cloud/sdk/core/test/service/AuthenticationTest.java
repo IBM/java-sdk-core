@@ -1,12 +1,11 @@
 package com.ibm.cloud.sdk.core.test.service;
 
-import com.ibm.cloud.sdk.core.service.WatsonService;
+import com.ibm.cloud.sdk.core.service.BaseService;
 import com.ibm.cloud.sdk.core.util.CredentialUtils;
-
 import org.junit.Test;
 
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class AuthenticationTest {
   private static final String APIKEY_USERNAME = "apikey";
@@ -14,7 +13,7 @@ public class AuthenticationTest {
   private static final String ICP_APIKEY = "icp-12345";
   private static final String BASIC_USERNAME = "basicUser";
 
-  public class TestService extends WatsonService {
+  public class TestService extends BaseService {
     private static final String SERVICE_NAME = "test";
 
     public TestService() {
