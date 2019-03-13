@@ -165,7 +165,16 @@ public final class RequestUtils {
       details.add(propertyName + "=" + System.getProperty(propertyName));
     }
 
-    return "ibm-java-sdk-core/" + loadCoreVersion() + " (" + RequestUtils.join(details, "; ") + ")";
+    return "ibm-java-sdk-core-" + loadCoreVersion() + " " + getSystemInfo();
+  }
+
+  public static String getSystemInfo() {
+    final List<String> details = new ArrayList<>();
+    for (String propertyName : properties) {
+      details.add(propertyName + "=" + System.getProperty(propertyName));
+    }
+
+    return "(" + RequestUtils.join(details, "; ") + ")";
   }
 
   /**
