@@ -13,7 +13,6 @@
 package com.ibm.cloud.sdk.core.http;
 
 import io.reactivex.Single;
-import jersey.repackaged.jsr166e.CompletableFuture;
 
 /**
  * Service Call.
@@ -61,21 +60,6 @@ public interface ServiceCall<T> {
    * @param callback the callback
    */
   void enqueueWithDetails(ServiceCallbackWithDetails<T> callback);
-
-  /**
-   * Reactive requests, in this case, you could take advantage both synchronous and asynchronous.
-   *
-   * @return a CompletableFuture wrapper for your response
-   */
-  CompletableFuture<T> rx();
-
-  /**
-   * Reactive requests with added HTTP information. In this case, you could take advantage both synchronous and
-   * asynchronous.
-   *
-   * @return a CompletableFuture wrapper for your response
-   */
-  CompletableFuture<Response<T>> rxWithDetails();
 
   /**
    * Reactive request using the RxJava 2 library. See https://github.com/ReactiveX/RxJava.

@@ -36,7 +36,6 @@ import com.ibm.cloud.sdk.core.service.security.IamTokenManager;
 import com.ibm.cloud.sdk.core.util.CredentialUtils;
 import com.ibm.cloud.sdk.core.util.RequestUtils;
 import io.reactivex.Single;
-import jersey.repackaged.jsr166e.CompletableFuture;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Credentials;
@@ -538,54 +537,6 @@ public abstract class BaseService {
           }
         }
       });
-    }
-
-    @Override
-    public CompletableFuture<T> rx() {
-      final CompletableFuture<T> completableFuture = new CompletableFuture<T>();
-
-      call.enqueue(new Callback() {
-        @Override
-        public void onFailure(Call call, IOException e) {
-          completableFuture.completeExceptionally(e);
-        }
-
-        @Override
-        public void onResponse(Call call, Response response) {
-          try {
-            completableFuture.complete(processServiceCall(converter, response));
-          } catch (Exception e) {
-            completableFuture.completeExceptionally(e);
-          }
-        }
-      });
-
-      return completableFuture;
-    }
-
-    @Override
-    public CompletableFuture<com.ibm.cloud.sdk.core.http.Response<T>> rxWithDetails() {
-      final CompletableFuture<com.ibm.cloud.sdk.core.http.Response<T>> completableFuture
-          = new CompletableFuture<>();
-
-      call.enqueue(new Callback() {
-        @Override
-        public void onFailure(Call call, IOException e) {
-          completableFuture.completeExceptionally(e);
-        }
-
-        @Override
-        public void onResponse(Call call, Response response) {
-          try {
-            T responseModel = processServiceCall(converter, response);
-            completableFuture.complete(new com.ibm.cloud.sdk.core.http.Response<>(responseModel, response));
-          } catch (Exception e) {
-            completableFuture.completeExceptionally(e);
-          }
-        }
-      });
-
-      return completableFuture;
     }
 
     @Override

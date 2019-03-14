@@ -107,51 +107,6 @@ public class ResponseTest extends BaseServiceUnitTest {
   }
 
   /**
-   * Test that all fields are populated when calling rxWithDetails() using a callback.
-   *
-   * @throws InterruptedException the interrupted exception
-   */
-  @Test
-  public void testRxWithDetailsCallback() throws InterruptedException {
-    server.enqueue(new MockResponse().setBody("{\"test_key\": \"test_value\"}"));
-
-    service.testMethod().rxWithDetails().thenAccept(response -> {
-      assertNotNull(response.getResult());
-      assertNotNull(response.getHeaders());
-    });
-  }
-
-  /**
-   * Test that all fields are populated when calling rxWithDetails() using an asynchronous callback.
-   *
-   * @throws InterruptedException the interrupted exception
-   */
-  @Test
-  public void testRxWithDetailsAsync() throws InterruptedException {
-    server.enqueue(new MockResponse().setBody("{\"test_key\": \"test_value\"}"));
-
-    service.testMethod().rxWithDetails().thenAcceptAsync(response -> {
-      assertNotNull(response.getResult());
-      assertNotNull(response.getHeaders());
-    });
-  }
-
-  /**
-   * Test that all fields are populated when calling rxWjthDetails() synchronously.
-   *
-   * @throws InterruptedException the interrupted exception
-   * @throws ExecutionException the execution exception
-   */
-  @Test
-  public void testRxWithDetailsSync() throws InterruptedException, ExecutionException {
-    server.enqueue(new MockResponse().setBody("{\"test_key\": \"test_value\"}"));
-
-    Response<TestModel> response = service.testMethod().rxWithDetails().get();
-    assertNotNull(response.getResult());
-    assertNotNull(response.getHeaders());
-  }
-
-  /**
    * Test that headers are accessible from a HEAD method call using executeWithDetails().
    *
    * @throws InterruptedException the interrupted exception
