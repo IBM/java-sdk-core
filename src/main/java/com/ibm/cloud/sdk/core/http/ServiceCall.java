@@ -12,6 +12,7 @@
  */
 package com.ibm.cloud.sdk.core.http;
 
+import io.reactivex.Single;
 import jersey.repackaged.jsr166e.CompletableFuture;
 
 /**
@@ -75,4 +76,19 @@ public interface ServiceCall<T> {
    * @return a CompletableFuture wrapper for your response
    */
   CompletableFuture<Response<T>> rxWithDetails();
+
+  /**
+   * Reactive request using the RxJava 2 library. See https://github.com/ReactiveX/RxJava.
+   *
+   * @return a Single object containing the service call to be observed/subscribed to
+   */
+  Single<T> reactiveRequest();
+
+  /**
+   * Reactive request using the RxJava 2 library. See https://github.com/ReactiveX/RxJava. In addition, the wrapped
+   * service call will contain added HTTP information.
+   *
+   * @return a Single object containing the service call to be observed/subscribed to
+   */
+  Single<Response<T>> reactiveRequestWithDetails();
 }

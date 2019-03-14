@@ -35,6 +35,7 @@ import com.ibm.cloud.sdk.core.service.security.IamOptions;
 import com.ibm.cloud.sdk.core.service.security.IamTokenManager;
 import com.ibm.cloud.sdk.core.util.CredentialUtils;
 import com.ibm.cloud.sdk.core.util.RequestUtils;
+import io.reactivex.Single;
 import jersey.repackaged.jsr166e.CompletableFuture;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -47,6 +48,7 @@ import okhttp3.Response;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
@@ -584,6 +586,29 @@ public abstract class BaseService {
       });
 
       return completableFuture;
+    }
+
+    @Override
+    public Single<T> reactiveRequest() {
+      return Single.fromCallable(new Callable<T>() {
+        @Override
+        public T call() throws Exception {
+          Response response = call.execute();
+          return processServiceCall(converter, response);
+        }
+      });
+    }
+
+    @Override
+    public Single<com.ibm.cloud.sdk.core.http.Response<T>> reactiveRequestWithDetails() {
+      return Single.fromCallable(new Callable<com.ibm.cloud.sdk.core.http.Response<T>>() {
+        @Override
+        public com.ibm.cloud.sdk.core.http.Response<T> call() throws Exception {
+          Response httpResponse = call.execute();
+          T responseModel = processServiceCall(converter, httpResponse);
+          return new com.ibm.cloud.sdk.core.http.Response<>(responseModel, httpResponse);
+        }
+      });
     }
 
     @Override
