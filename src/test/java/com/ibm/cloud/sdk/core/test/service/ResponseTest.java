@@ -20,42 +20,54 @@ import com.ibm.cloud.sdk.core.service.BaseService;
 import com.ibm.cloud.sdk.core.service.model.GenericModel;
 import com.ibm.cloud.sdk.core.test.BaseServiceUnitTest;
 import com.ibm.cloud.sdk.core.util.ResponseConverterUtils;
+import io.reactivex.Single;
+import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
 import okhttp3.Headers;
 import okhttp3.HttpUrl;
 import okhttp3.mockwebserver.MockResponse;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.concurrent.ExecutionException;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 public class ResponseTest extends BaseServiceUnitTest {
+  private class TestModel extends GenericModel {
+    String city;
 
-  private class TestModel extends GenericModel { }
+    String getKey() {
+      return city;
+    }
+  }
 
   public class TestService extends BaseService {
 
     private static final String SERVICE_NAME = "test";
 
-    public TestService() {
+    TestService() {
       super(SERVICE_NAME);
     }
 
-    public ServiceCall<TestModel> testMethod() {
+    ServiceCall<TestModel> testMethod() {
       RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getEndPoint() + "/v1/test"));
       return createServiceCall(builder.build(), ResponseConverterUtils.getObject(TestModel.class));
     }
 
-    public ServiceCall<Void> testHeadMethod() {
+    ServiceCall<Void> testHeadMethod() {
       RequestBuilder builder = RequestBuilder.head(HttpUrl.parse(getEndPoint() + "/v1/test"));
       return createServiceCall(builder.build(), ResponseConverterUtils.getVoid());
     }
   }
 
   private TestService service;
+  private String testResponseKey = "city";
+  private String testResponseValue = "Columbus";
+  private String testResponseBody = "{\"" + testResponseKey + "\": \"" + testResponseValue + "\"}";
+
+  // used for a specific test so we don't run into any weirdness with final, one-element, generic arrays
+  private Response<TestModel> testResponseModel = null;
 
   /*
    * (non-Javadoc)
@@ -78,10 +90,11 @@ public class ResponseTest extends BaseServiceUnitTest {
    */
   @Test
   public void testExecuteWithDetails() throws InterruptedException {
-    server.enqueue(new MockResponse().setBody("{\"test_key\": \"test_value\"}"));
+    server.enqueue(new MockResponse().setBody(testResponseBody));
 
     Response<TestModel> response = service.testMethod().executeWithDetails();
     assertNotNull(response.getResult());
+    assertEquals(testResponseValue, response.getResult().getKey());
     assertNotNull(response.getHeaders());
   }
 
@@ -92,18 +105,67 @@ public class ResponseTest extends BaseServiceUnitTest {
    */
   @Test
   public void testEnqueueWithDetails() throws InterruptedException {
-    server.enqueue(new MockResponse().setBody("{\"test_key\": \"test_value\"}"));
+    server.enqueue(new MockResponse().setBody(testResponseBody));
 
     service.testMethod().enqueueWithDetails(new ServiceCallbackWithDetails<TestModel>() {
       @Override
       public void onResponse(Response<TestModel> response) {
         assertNotNull(response.getResult());
+        assertEquals(testResponseValue, response.getResult().getKey());
         assertNotNull(response.getHeaders());
       }
 
       @Override
       public void onFailure(Exception e) { }
     });
+
+    Thread.sleep(2000);
+  }
+
+  @Test
+  public void testReactiveRequest() throws InterruptedException {
+    server.enqueue(new MockResponse().setBody(testResponseBody));
+
+    final TestModel[] responseValue = new TestModel[1];
+    Single<TestModel> observableRequest = service.testMethod().reactiveRequest();
+
+    observableRequest
+        .subscribeOn(Schedulers.single())
+        .subscribe(new Consumer<TestModel>() {
+          @Override
+          public void accept(TestModel testModel) throws Exception {
+            responseValue[0] = testModel;
+          }
+        });
+
+    // asynchronous, so test that we continued without a value yet
+    assertNull(responseValue[0]);
+    Thread.sleep(2000);
+    assertNotNull(responseValue[0]);
+    assertEquals(testResponseValue, responseValue[0].getKey());
+  }
+
+  @Test
+  public void testReactiveRequestWithDetails() throws InterruptedException {
+    server.enqueue(new MockResponse().setBody(testResponseBody));
+
+    Single<Response<TestModel>> observableRequest = service.testMethod().reactiveRequestWithDetails();
+
+    observableRequest
+        .subscribeOn(Schedulers.single())
+        .subscribe(new Consumer<Response<TestModel>>() {
+          @Override
+          public void accept(Response<TestModel> testModel) throws Exception {
+            testResponseModel = testModel;
+          }
+        });
+
+    // asynchronous, so test that we continued without a value yet
+    assertNull(testResponseModel);
+    Thread.sleep(2000);
+    assertNotNull(testResponseModel);
+    assertEquals(testResponseValue, testResponseModel.getResult().getKey());
+    assertNotNull(testResponseModel.getHeaders());
   }
 
   /**
