@@ -19,12 +19,12 @@ import com.ibm.cloud.sdk.core.http.RequestBuilder;
 import com.ibm.cloud.sdk.core.http.ResponseConverter;
 import com.ibm.cloud.sdk.core.util.CredentialUtils;
 import com.ibm.cloud.sdk.core.util.ResponseConverterUtils;
-
 import okhttp3.Call;
 import okhttp3.FormBody;
 import okhttp3.Request;
 
 import java.io.IOException;
+import java.util.logging.Logger;
 
 /**
  * Retrieves, stores, and refreshes IAM tokens.
@@ -35,6 +35,8 @@ public class IamTokenManager {
   private String url;
   private IamToken tokenData;
 
+  private static final Logger LOG = Logger.getLogger(IamTokenManager.class.getName());
+  private static final String ERROR_MESSAGE = "Error getting IAM token from API";
   private static final String DEFAULT_AUTHORIZATION = "Basic Yng6Yng=";
   private static final String DEFAULT_IAM_URL = "https://iam.bluemix.net/identity/token";
   private static final String GRANT_TYPE = "grant_type";
@@ -181,14 +183,32 @@ public class IamTokenManager {
    * @return object containing requested IAM token information
    */
   private IamToken callIamApi(Request request) {
-    Call call = HttpClientSingleton.getInstance().createHttpClient().newCall(request);
-    ResponseConverter<IamToken> converter = ResponseConverterUtils.getObject(IamToken.class);
+    final IamToken[] returnToken = new IamToken[1];
 
+    Thread iamApiCall = new Thread(new Runnable() {
+      @Override
+      public void run() {
+        Call call = HttpClientSingleton.getInstance().createHttpClient().newCall(request);
+        ResponseConverter<IamToken> converter = ResponseConverterUtils.getObject(IamToken.class);
+
+        try {
+          okhttp3.Response response = call.execute();
+          returnToken[0] = converter.convert(response);
+        } catch (IOException e) {
+          LOG.severe(ERROR_MESSAGE);
+          e.printStackTrace();
+          throw new RuntimeException(e);
+        }
+      }
+    });
+
+    iamApiCall.start();
     try {
-      okhttp3.Response response = call.execute();
-      return converter.convert(response);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
+      iamApiCall.join();
+    } catch (InterruptedException e) {
+      LOG.severe(ERROR_MESSAGE);
+      e.printStackTrace();
     }
+    return returnToken[0];
   }
 }
