@@ -19,7 +19,6 @@ import com.ibm.cloud.sdk.core.http.HttpStatus;
 import com.ibm.cloud.sdk.core.http.ResponseConverter;
 import com.ibm.cloud.sdk.core.http.ServiceCall;
 import com.ibm.cloud.sdk.core.http.ServiceCallback;
-import com.ibm.cloud.sdk.core.http.ServiceCallbackWithDetails;
 import com.ibm.cloud.sdk.core.service.exception.BadRequestException;
 import com.ibm.cloud.sdk.core.service.exception.ConflictException;
 import com.ibm.cloud.sdk.core.service.exception.ForbiddenException;
@@ -480,21 +479,11 @@ public abstract class BaseService {
     }
 
     @Override
-    public T execute() {
+    public com.ibm.cloud.sdk.core.http.Response<T> execute() {
       try {
         Response response = call.execute();
-        return processServiceCall(converter, response);
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-    }
-
-    @Override
-    public com.ibm.cloud.sdk.core.http.Response<T> executeWithDetails() throws RuntimeException {
-      try {
-        Response httpResponse = call.execute();
-        T responseModel = processServiceCall(converter, httpResponse);
-        return new com.ibm.cloud.sdk.core.http.Response<>(responseModel, httpResponse);
+        T responseModel = processServiceCall(converter, response);
+        return new com.ibm.cloud.sdk.core.http.Response<>(responseModel, response);
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
@@ -502,25 +491,6 @@ public abstract class BaseService {
 
     @Override
     public void enqueue(final ServiceCallback<? super T> callback) {
-      call.enqueue(new Callback() {
-        @Override
-        public void onFailure(Call call, IOException e) {
-          callback.onFailure(e);
-        }
-
-        @Override
-        public void onResponse(Call call, Response response) {
-          try {
-            callback.onResponse(processServiceCall(converter, response));
-          } catch (Exception e) {
-            callback.onFailure(e);
-          }
-        }
-      });
-    }
-
-    @Override
-    public void enqueueWithDetails(final ServiceCallbackWithDetails<T> callback) {
       call.enqueue(new Callback() {
         @Override
         public void onFailure(Call call, IOException e) {
@@ -540,24 +510,13 @@ public abstract class BaseService {
     }
 
     @Override
-    public Single<T> reactiveRequest() {
-      return Single.fromCallable(new Callable<T>() {
-        @Override
-        public T call() throws Exception {
-          Response response = call.execute();
-          return processServiceCall(converter, response);
-        }
-      });
-    }
-
-    @Override
-    public Single<com.ibm.cloud.sdk.core.http.Response<T>> reactiveRequestWithDetails() {
+    public Single<com.ibm.cloud.sdk.core.http.Response<T>> reactiveRequest() {
       return Single.fromCallable(new Callable<com.ibm.cloud.sdk.core.http.Response<T>>() {
         @Override
         public com.ibm.cloud.sdk.core.http.Response<T> call() throws Exception {
-          Response httpResponse = call.execute();
-          T responseModel = processServiceCall(converter, httpResponse);
-          return new com.ibm.cloud.sdk.core.http.Response<>(responseModel, httpResponse);
+          Response response = call.execute();
+          T responseModel = processServiceCall(converter, response);
+          return new com.ibm.cloud.sdk.core.http.Response<>(responseModel, response);
         }
       });
     }
