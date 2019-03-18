@@ -12,7 +12,7 @@
  */
 package com.ibm.cloud.sdk.core.http;
 
-import jersey.repackaged.jsr166e.CompletableFuture;
+import io.reactivex.Single;
 
 /**
  * Service Call.
@@ -33,46 +33,24 @@ public interface ServiceCall<T> {
   /**
    * Synchronous request.
    *
-   * @return the generic type
+   * @return a Response object with the generic response model and various HTTP information fields
    * @throws RuntimeException the exception from HTTP request
    */
-  T execute() throws RuntimeException;
+  Response<T> execute() throws RuntimeException;
 
   /**
-   * Synchronous request with added HTTP information.
-   *
-   * @return a Response object with the generic response model and various HTTP information fields
-   * @throws RuntimeException the exception from the HTTP request
-   */
-  Response<T> executeWithDetails() throws RuntimeException;
-
-  /**
-   * Asynchronous requests, in this case, you receive a callback when the data has been received.
+   * Asynchronous request with added HTTP information. In this case, you receive a callback when the data has been
+   * received.
    *
    * @param callback the callback
    */
   void enqueue(ServiceCallback<? super T> callback);
 
   /**
-   * Asynchronous requests with added HTTP information. In this case, you receive a callback when the data has been
-   * received.
+   * Reactive request using the RxJava 2 library. See https://github.com/ReactiveX/RxJava. In addition, the wrapped
+   * service call will contain added HTTP information.
    *
-   * @param callback the callback
+   * @return a Single object containing the service call to be observed/subscribed to
    */
-  void enqueueWithDetails(ServiceCallbackWithDetails<T> callback);
-
-  /**
-   * Reactive requests, in this case, you could take advantage both synchronous and asynchronous.
-   *
-   * @return a CompletableFuture wrapper for your response
-   */
-  CompletableFuture<T> rx();
-
-  /**
-   * Reactive requests with added HTTP information. In this case, you could take advantage both synchronous and
-   * asynchronous.
-   *
-   * @return a CompletableFuture wrapper for your response
-   */
-  CompletableFuture<Response<T>> rxWithDetails();
+  Single<Response<T>> reactiveRequest();
 }

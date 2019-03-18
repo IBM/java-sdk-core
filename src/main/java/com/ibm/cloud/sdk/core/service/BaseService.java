@@ -19,7 +19,6 @@ import com.ibm.cloud.sdk.core.http.HttpStatus;
 import com.ibm.cloud.sdk.core.http.ResponseConverter;
 import com.ibm.cloud.sdk.core.http.ServiceCall;
 import com.ibm.cloud.sdk.core.http.ServiceCallback;
-import com.ibm.cloud.sdk.core.http.ServiceCallbackWithDetails;
 import com.ibm.cloud.sdk.core.service.exception.BadRequestException;
 import com.ibm.cloud.sdk.core.service.exception.ConflictException;
 import com.ibm.cloud.sdk.core.service.exception.ForbiddenException;
@@ -35,7 +34,7 @@ import com.ibm.cloud.sdk.core.service.security.IamOptions;
 import com.ibm.cloud.sdk.core.service.security.IamTokenManager;
 import com.ibm.cloud.sdk.core.util.CredentialUtils;
 import com.ibm.cloud.sdk.core.util.RequestUtils;
-import jersey.repackaged.jsr166e.CompletableFuture;
+import io.reactivex.Single;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Credentials;
@@ -47,6 +46,7 @@ import okhttp3.Response;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
@@ -479,21 +479,11 @@ public abstract class BaseService {
     }
 
     @Override
-    public T execute() {
+    public com.ibm.cloud.sdk.core.http.Response<T> execute() {
       try {
         Response response = call.execute();
-        return processServiceCall(converter, response);
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-    }
-
-    @Override
-    public com.ibm.cloud.sdk.core.http.Response<T> executeWithDetails() throws RuntimeException {
-      try {
-        Response httpResponse = call.execute();
-        T responseModel = processServiceCall(converter, httpResponse);
-        return new com.ibm.cloud.sdk.core.http.Response<>(responseModel, httpResponse);
+        T responseModel = processServiceCall(converter, response);
+        return new com.ibm.cloud.sdk.core.http.Response<>(responseModel, response);
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
@@ -501,25 +491,6 @@ public abstract class BaseService {
 
     @Override
     public void enqueue(final ServiceCallback<? super T> callback) {
-      call.enqueue(new Callback() {
-        @Override
-        public void onFailure(Call call, IOException e) {
-          callback.onFailure(e);
-        }
-
-        @Override
-        public void onResponse(Call call, Response response) {
-          try {
-            callback.onResponse(processServiceCall(converter, response));
-          } catch (Exception e) {
-            callback.onFailure(e);
-          }
-        }
-      });
-    }
-
-    @Override
-    public void enqueueWithDetails(final ServiceCallbackWithDetails<T> callback) {
       call.enqueue(new Callback() {
         @Override
         public void onFailure(Call call, IOException e) {
@@ -539,51 +510,15 @@ public abstract class BaseService {
     }
 
     @Override
-    public CompletableFuture<T> rx() {
-      final CompletableFuture<T> completableFuture = new CompletableFuture<T>();
-
-      call.enqueue(new Callback() {
+    public Single<com.ibm.cloud.sdk.core.http.Response<T>> reactiveRequest() {
+      return Single.fromCallable(new Callable<com.ibm.cloud.sdk.core.http.Response<T>>() {
         @Override
-        public void onFailure(Call call, IOException e) {
-          completableFuture.completeExceptionally(e);
-        }
-
-        @Override
-        public void onResponse(Call call, Response response) {
-          try {
-            completableFuture.complete(processServiceCall(converter, response));
-          } catch (Exception e) {
-            completableFuture.completeExceptionally(e);
-          }
+        public com.ibm.cloud.sdk.core.http.Response<T> call() throws Exception {
+          Response response = call.execute();
+          T responseModel = processServiceCall(converter, response);
+          return new com.ibm.cloud.sdk.core.http.Response<>(responseModel, response);
         }
       });
-
-      return completableFuture;
-    }
-
-    @Override
-    public CompletableFuture<com.ibm.cloud.sdk.core.http.Response<T>> rxWithDetails() {
-      final CompletableFuture<com.ibm.cloud.sdk.core.http.Response<T>> completableFuture
-          = new CompletableFuture<>();
-
-      call.enqueue(new Callback() {
-        @Override
-        public void onFailure(Call call, IOException e) {
-          completableFuture.completeExceptionally(e);
-        }
-
-        @Override
-        public void onResponse(Call call, Response response) {
-          try {
-            T responseModel = processServiceCall(converter, response);
-            completableFuture.complete(new com.ibm.cloud.sdk.core.http.Response<>(responseModel, response));
-          } catch (Exception e) {
-            completableFuture.completeExceptionally(e);
-          }
-        }
-      });
-
-      return completableFuture;
     }
 
     @Override
