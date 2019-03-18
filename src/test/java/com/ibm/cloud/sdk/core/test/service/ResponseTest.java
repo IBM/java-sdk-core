@@ -15,7 +15,7 @@ package com.ibm.cloud.sdk.core.test.service;
 import com.ibm.cloud.sdk.core.http.RequestBuilder;
 import com.ibm.cloud.sdk.core.http.Response;
 import com.ibm.cloud.sdk.core.http.ServiceCall;
-import com.ibm.cloud.sdk.core.http.ServiceCallbackWithDetails;
+import com.ibm.cloud.sdk.core.http.ServiceCallback;
 import com.ibm.cloud.sdk.core.service.BaseService;
 import com.ibm.cloud.sdk.core.service.model.GenericModel;
 import com.ibm.cloud.sdk.core.test.BaseServiceUnitTest;
@@ -84,30 +84,30 @@ public class ResponseTest extends BaseServiceUnitTest {
   }
 
   /**
-   * Test that all fields are populated when calling executeWithDetails().
+   * Test that all fields are populated when calling execute().
    *
    * @throws InterruptedException the interrupted exception
    */
   @Test
-  public void testExecuteWithDetails() throws InterruptedException {
+  public void testExecute() throws InterruptedException {
     server.enqueue(new MockResponse().setBody(testResponseBody));
 
-    Response<TestModel> response = service.testMethod().executeWithDetails();
+    Response<TestModel> response = service.testMethod().execute();
     assertNotNull(response.getResult());
     assertEquals(testResponseValue, response.getResult().getKey());
     assertNotNull(response.getHeaders());
   }
 
   /**
-   * Test that all fields are populated when calling enqueueWithDetails().
+   * Test that all fields are populated when calling enqueue().
    *
    * @throws InterruptedException the interrupted exception
    */
   @Test
-  public void testEnqueueWithDetails() throws InterruptedException {
+  public void testEnqueue() throws InterruptedException {
     server.enqueue(new MockResponse().setBody(testResponseBody));
 
-    service.testMethod().enqueueWithDetails(new ServiceCallbackWithDetails<TestModel>() {
+    service.testMethod().enqueue(new ServiceCallback<TestModel>() {
       @Override
       public void onResponse(Response<TestModel> response) {
         assertNotNull(response.getResult());
@@ -126,37 +126,14 @@ public class ResponseTest extends BaseServiceUnitTest {
   public void testReactiveRequest() throws InterruptedException {
     server.enqueue(new MockResponse().setBody(testResponseBody));
 
-    final TestModel[] responseValue = new TestModel[1];
-    Single<TestModel> observableRequest = service.testMethod().reactiveRequest();
-
-    observableRequest
-        .subscribeOn(Schedulers.single())
-        .subscribe(new Consumer<TestModel>() {
-          @Override
-          public void accept(TestModel testModel) throws Exception {
-            responseValue[0] = testModel;
-          }
-        });
-
-    // asynchronous, so test that we continued without a value yet
-    assertNull(responseValue[0]);
-    Thread.sleep(2000);
-    assertNotNull(responseValue[0]);
-    assertEquals(testResponseValue, responseValue[0].getKey());
-  }
-
-  @Test
-  public void testReactiveRequestWithDetails() throws InterruptedException {
-    server.enqueue(new MockResponse().setBody(testResponseBody));
-
-    Single<Response<TestModel>> observableRequest = service.testMethod().reactiveRequestWithDetails();
+    Single<Response<TestModel>> observableRequest = service.testMethod().reactiveRequest();
 
     observableRequest
         .subscribeOn(Schedulers.single())
         .subscribe(new Consumer<Response<TestModel>>() {
           @Override
-          public void accept(Response<TestModel> testModel) throws Exception {
-            testResponseModel = testModel;
+          public void accept(Response<TestModel> response) throws Exception {
+            testResponseModel = response;
           }
         });
 
@@ -169,19 +146,19 @@ public class ResponseTest extends BaseServiceUnitTest {
   }
 
   /**
-   * Test that headers are accessible from a HEAD method call using executeWithDetails().
+   * Test that headers are accessible from a HEAD method call using execute().
    *
    * @throws InterruptedException the interrupted exception
    */
   @Test
-  public void testExecuteWithDetailsForHead() throws InterruptedException {
+  public void testExecuteForHead() throws InterruptedException {
     Headers rawHeaders = Headers.of("Content-Length", "472", "Content-Type", "application/json"
             , "Server", "Mock");
     com.ibm.cloud.sdk.core.http.Headers expectedHeaders =
             new com.ibm.cloud.sdk.core.http.Headers(rawHeaders);
     server.enqueue(new MockResponse().setHeaders(rawHeaders));
 
-    Response<Void> response = service.testHeadMethod().executeWithDetails();
+    Response<Void> response = service.testHeadMethod().execute();
     com.ibm.cloud.sdk.core.http.Headers actualHeaders = response.getHeaders();
     System.out.print(actualHeaders.equals(expectedHeaders));
     assertNull(response.getResult());
