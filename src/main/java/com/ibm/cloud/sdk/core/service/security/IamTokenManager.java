@@ -182,7 +182,7 @@ public class IamTokenManager {
    * @param request the request for the IAM API
    * @return object containing requested IAM token information
    */
-  private IamToken callIamApi(Request request) {
+  private IamToken callIamApi(final Request request) {
     final IamToken[] returnToken = new IamToken[1];
 
     Thread iamApiCall = new Thread(new Runnable() {

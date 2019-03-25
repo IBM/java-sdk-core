@@ -490,7 +490,7 @@ public abstract class BaseService {
     }
 
     @Override
-    public void enqueue(final ServiceCallback<? super T> callback) {
+    public void enqueue(final ServiceCallback<T> callback) {
       call.enqueue(new Callback() {
         @Override
         public void onFailure(Call call, IOException e) {

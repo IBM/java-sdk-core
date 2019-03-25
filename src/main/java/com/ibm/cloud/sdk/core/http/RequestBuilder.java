@@ -12,6 +12,7 @@
  */
 package com.ibm.cloud.sdk.core.http;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.ibm.cloud.sdk.core.service.BaseService;
 import com.ibm.cloud.sdk.core.util.GsonSingleton;
@@ -333,12 +334,11 @@ public class RequestBuilder {
   public RequestBuilder bodyContent(String contentType, Object jsonContent, Object jsonPatchContent,
     InputStream nonJsonContent) {
     if (contentType != null) {
+      Gson requestGson = GsonSingleton.getGson().newBuilder().serializeNulls().create();
       if (BaseService.isJsonMimeType(contentType)) {
-        this.bodyContent(
-          GsonSingleton.getGson().toJsonTree(jsonContent).getAsJsonObject().toString(), contentType);
+        this.bodyContent(requestGson.toJsonTree(jsonContent).getAsJsonObject().toString(), contentType);
       } else if (BaseService.isJsonPatchMimeType(contentType)) {
-        this.bodyContent(
-          GsonSingleton.getGson().toJsonTree(jsonPatchContent).getAsJsonObject().toString(), contentType);
+        this.bodyContent(requestGson.toJsonTree(jsonPatchContent).getAsJsonObject().toString(), contentType);
       } else {
         this.bodyContent(nonJsonContent, contentType);
       }
