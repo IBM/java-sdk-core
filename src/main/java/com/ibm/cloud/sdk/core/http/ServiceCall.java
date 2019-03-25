@@ -44,7 +44,7 @@ public interface ServiceCall<T> {
    *
    * @param callback the callback
    */
-  void enqueue(ServiceCallback<? super T> callback);
+  void enqueue(ServiceCallback<T> callback);
 
   /**
    * Reactive request using the RxJava 2 library. See https://github.com/ReactiveX/RxJava. In addition, the wrapped
