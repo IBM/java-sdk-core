@@ -31,10 +31,9 @@ public class ServiceResponseException extends RuntimeException {
   private static final long serialVersionUID = 1L;
 
   /** Potential error message keys. */
-  private static final String MESSAGE_ERROR = "error";
-  private static final String MESSAGE_ERROR_2 = "error_message";
-  private static final String MESSAGE_ERROR_3 = "message";
-  private static final String[] ERROR_KEYS = { MESSAGE_ERROR, MESSAGE_ERROR_2, MESSAGE_ERROR_3 };
+  private static final String ERRORS_KEY = "errors";
+  private static final String MESSAGE_STRING = "message";
+  private static final String ERROR_STRING = "error";
 
   private static final Type debuggingInfoType = new TypeToken<Map<String, Object>>() { }.getType();
 
@@ -59,11 +58,13 @@ public class ServiceResponseException extends RuntimeException {
     String responseString = ResponseUtils.getString(response);
     try {
       final JsonObject jsonObject = ResponseUtils.getJsonObject(responseString);
-      for (String errorKey : ERROR_KEYS) {
-        if (jsonObject.has(errorKey)) {
-          this.message = jsonObject.remove(errorKey).getAsString();
-          break;
-        }
+      if (jsonObject.has(ERRORS_KEY)) {
+        this.message = jsonObject.remove(ERRORS_KEY).getAsJsonArray().get(0).getAsJsonObject().remove(MESSAGE_STRING)
+            .getAsString();
+      } else if (jsonObject.has(ERROR_STRING)) {
+        this.message = jsonObject.remove(ERROR_STRING).getAsString();
+      } else if (jsonObject.has(MESSAGE_STRING)) {
+        this.message = jsonObject.remove(MESSAGE_STRING).getAsString();
       }
       this.debuggingInfo = GsonSingleton.getGson().fromJson(jsonObject, debuggingInfoType);
     } catch (final Exception e) {
