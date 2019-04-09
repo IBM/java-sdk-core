@@ -17,6 +17,7 @@ import com.ibm.cloud.sdk.core.http.HttpHeaders;
 import com.ibm.cloud.sdk.core.http.HttpMediaType;
 import com.ibm.cloud.sdk.core.http.RequestBuilder;
 import com.ibm.cloud.sdk.core.http.ResponseConverter;
+import com.ibm.cloud.sdk.core.service.exception.ServiceResponseException;
 import com.ibm.cloud.sdk.core.util.CredentialUtils;
 import com.ibm.cloud.sdk.core.util.ResponseConverterUtils;
 import okhttp3.Call;
@@ -163,7 +164,7 @@ public class IamTokenManager {
    * if it has been at least 7 days and 1 hour since the last token was
    * retrieved.
    *
-   * @returns whether the current managed refresh token is expired or not
+   * @return whether the current managed refresh token is expired or not
    */
   private boolean isRefreshTokenExpired() {
     if (tokenData.getExpiration() == null) {
@@ -193,6 +194,12 @@ public class IamTokenManager {
 
         try {
           okhttp3.Response response = call.execute();
+
+          // handle possible errors
+          if (response.code() >= 400) {
+            throw new ServiceResponseException(response.code(), response);
+          }
+
           returnToken[0] = converter.convert(response);
         } catch (IOException e) {
           LOG.severe(ERROR_MESSAGE);
