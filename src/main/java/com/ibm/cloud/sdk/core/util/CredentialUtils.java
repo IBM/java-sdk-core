@@ -148,7 +148,7 @@ public final class CredentialUtils {
   private static final String PASSWORD = "password";
   private static final String OLD_APIKEY = "api_key";
   private static final String URL = "url";
-  private static final String IAM_APIKEY = "apikey";
+  private static final String IAM_APIKEY = "iam_apikey";
   private static final String IAM_URL = "iam_url";
 
   private CredentialUtils() {
