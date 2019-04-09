@@ -14,14 +14,14 @@ To find the correct version to specify in your dependency definitions, consult t
 <dependency>
 	<groupId>com.ibm.cloud</groupId>
 	<artifactId>sdk-core</artifactId>
-	<version>1.1.0</version>
+	<version>3.0.3</version>
 </dependency>
 ```
 
 ##### Gradle
 
 ```gradle
-'com.ibm.cloud:sdk-core:1.1.0'
+'com.ibm.cloud:sdk-core:3.0.3'
 ```
 # Issues
 
