@@ -149,6 +149,8 @@ public final class CredentialUtils {
   private static final String OLD_APIKEY = "api_key";
   private static final String URL = "url";
   private static final String IAM_APIKEY = "iam_apikey";
+  // this value was used previously for IAM API keys as well
+  private static final String APIKEY = "apikey";
   private static final String IAM_URL = "iam_url";
 
   private CredentialUtils() {
@@ -444,6 +446,7 @@ public final class CredentialUtils {
           case URL:
             serviceCredentials.url = credentialValue;
             break;
+          case APIKEY:
           case IAM_APIKEY:
             serviceCredentials.iamApiKey = credentialValue;
             break;
