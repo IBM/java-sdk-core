@@ -7,7 +7,10 @@ import java.lang.reflect.Type;
  * {@link com.ibm.cloud.sdk.core.service.model.DynamicModel}.
  *
  * @see com.ibm.cloud.sdk.core.service.model.DynamicModel
+ * @deprecated This class should no longer be needed once users upgrade to a recent version of
+ * the package that contains the new DynamicModel pattern.
  */
+@Deprecated
 public class GsonSerializationHelper {
 
   private GsonSerializationHelper() {

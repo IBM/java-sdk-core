@@ -52,6 +52,9 @@ public final class GsonSingleton {
     // Date serializer and deserializer
     builder.registerTypeAdapter(Date.class, new DateDeserializer());
     builder.registerTypeAdapter(Date.class, new DateSerializer());
+
+    // Type adapter factory for DynamicModel subclasses.
+    builder.registerTypeAdapterFactory(new DynamicModelTypeAdapterFactory());
   }
 
   /**
