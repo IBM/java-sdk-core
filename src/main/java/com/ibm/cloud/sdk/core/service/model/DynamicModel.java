@@ -35,7 +35,7 @@ public abstract class DynamicModel<T> implements ObjectModel {
 
   /**
    * Returns the TypeToken which describes the type of additional properties stored in the map.
-   * @return The TypeToken which descriptes the map value type
+   * @return The TypeToken which describes the map value type
    */
   public TypeToken<T> getAdditionalPropertyTypeToken() {
     return this.additionalPropertyTypeToken;

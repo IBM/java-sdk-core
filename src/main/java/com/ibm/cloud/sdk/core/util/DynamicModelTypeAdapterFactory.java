@@ -10,6 +10,23 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
+
+/*
+ * Copyright (C) 2011 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.ibm.cloud.sdk.core.util;
 
 import java.io.IOException;
@@ -22,6 +39,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
@@ -50,11 +68,11 @@ import com.ibm.cloud.sdk.core.service.model.DynamicModel;
  * <li><code>Long</code></li>
  * <li>etc.</li>
  * </ul>
- * OR it could be a user-defined type (i.e. model class).
+ * OR it could be a user-defined type (i.e. MyModel).
  *
- * <p>Each dynamic model will have zero or more explicitly-defined fields which model the schema
- * properties found in the corresponding JSON schema, plus they will inherit a map of additional properties
- * from the <code>DynamicModel</code> super class.
+ * <p>Each generated dynamic model class will have zero or more explicitly-defined fields which model the schema
+ * properties found in the corresponding JSON schema, plus a map (inherited from DynamicModel) containing
+ * additional arbitrary properties.
  *
  * <p>Limitations:
  * <br>Note that this type adapter is not a "full-function" type adapter like the internal Gson-provided ones.
@@ -66,16 +84,15 @@ import com.ibm.cloud.sdk.core.service.model.DynamicModel;
  * <code>MapTypeAdapterFactory</code> classes from Gson.
  */
 public class DynamicModelTypeAdapterFactory implements TypeAdapterFactory {
+  private static final Logger LOGGER = Logger.getLogger(DynamicModelTypeAdapterFactory.class.getName());
   private ReflectionAccessor accessor = ReflectionAccessor.getInstance();
 
   public DynamicModelTypeAdapterFactory() {
   }
 
-  /*
-   * If the specified type represents a class that is recognized as an instance of DynamicModel AND it has a public
-   * default ctor, this method will return a new TypeAdapter to handle the Gson serialization and deserialization of it,
-   * otherwise null is returned.
-   */
+  // If "type" represents a class that is recognized as an instance of DynamicModel AND it has a public
+  // default ctor, this method will return a new TypeAdapter to handle the Gson serialization and deserialization of
+  // it, otherwise null is returned.
   @Override
   public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
 
@@ -88,6 +105,8 @@ public class DynamicModelTypeAdapterFactory implements TypeAdapterFactory {
     // Retrieve the type's default ctor. If one is not present, then bail out now.
     Constructor<?> ctor = getDefaultCtor(rawType);
     if (ctor == null) {
+      LOGGER.warning("Instance of class " + rawType.getName() + " is a subclass of DynamicModel, but it doesn't "
+        + "have a public default constructor.  This instance will be ignored by " + this.getClass().getSimpleName());
       return null;
     }
 
@@ -199,6 +218,9 @@ public class DynamicModelTypeAdapterFactory implements TypeAdapterFactory {
     return fieldNames;
   }
 
+  /**
+   * Abstract base class used to represent bound fields.
+   */
   abstract static class BoundField {
     final String name;
     final boolean serialized;
@@ -235,7 +257,7 @@ public class DynamicModelTypeAdapterFactory implements TypeAdapterFactory {
     return new DynamicModelTypeAdapterFactory.BoundField(name, serialize, deserialize) {
       @SuppressWarnings({
           "unchecked", "rawtypes"
-      }) // the type adapter and field type always agree
+      })
       @Override
       void write(JsonWriter writer, Object value) throws IOException, IllegalAccessException {
         Object fieldValue = field.get(value);
@@ -253,8 +275,9 @@ public class DynamicModelTypeAdapterFactory implements TypeAdapterFactory {
 
       @Override
       public boolean writeField(Object value) throws IOException, IllegalAccessException {
-        if (!serialized)
+        if (!serialized) {
           return false;
+        }
         Object fieldValue = field.get(value);
         return fieldValue != value; // avoid recursion for example for Throwable.cause
       }
@@ -264,7 +287,7 @@ public class DynamicModelTypeAdapterFactory implements TypeAdapterFactory {
   /**
    * An adapter for serializing/deserializing instances of type T, where T represents a generated dynamic model class
    * which is a subclass of DynamicModel. Subclasses of DynamicModel will have zero or more explicitly-defined fields
-   * plus an inherited map to store addtional (arbitrary) properties.
+   * plus a map to store additional (arbitrary) properties.
    */
   public static class Adapter<T> extends TypeAdapter<T> {
     private Constructor<?> ctor;
