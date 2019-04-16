@@ -25,12 +25,16 @@ import okhttp3.FormBody;
 import okhttp3.Request;
 
 import java.io.IOException;
+import java.util.Base64;
 import java.util.logging.Logger;
 
 /**
  * Retrieves, stores, and refreshes IAM tokens.
  */
 public class IamTokenManager {
+  private static String iamClientId = null;
+  private static String iamSecret = null;
+
   private String userManagedAccessToken;
   private String apiKey;
   private String url;
@@ -39,7 +43,7 @@ public class IamTokenManager {
   private static final Logger LOG = Logger.getLogger(IamTokenManager.class.getName());
   private static final String ERROR_MESSAGE = "Error getting IAM token from API";
   private static final String DEFAULT_AUTHORIZATION = "Basic Yng6Yng=";
-  private static final String DEFAULT_IAM_URL = "https://iam.bluemix.net/identity/token";
+  private static final String DEFAULT_IAM_URL = "https://iam.cloud.ibm.com/identity/token";
   private static final String GRANT_TYPE = "grant_type";
   private static final String REQUEST_GRANT_TYPE = "urn:ibm:params:oauth:grant-type:apikey";
   private static final String REFRESH_GRANT_TYPE = "refresh_token";
@@ -100,7 +104,7 @@ public class IamTokenManager {
     RequestBuilder builder = RequestBuilder.post(RequestBuilder.constructHttpUrl(url, new String[0]));
 
     builder.header(HttpHeaders.CONTENT_TYPE, HttpMediaType.APPLICATION_FORM_URLENCODED);
-    builder.header(HttpHeaders.AUTHORIZATION, DEFAULT_AUTHORIZATION);
+    builder.header(HttpHeaders.AUTHORIZATION, getAuthorizationHeaderValue());
 
     FormBody formBody = new FormBody.Builder()
         .add(GRANT_TYPE, REQUEST_GRANT_TYPE)
@@ -122,7 +126,7 @@ public class IamTokenManager {
     RequestBuilder builder = RequestBuilder.post(RequestBuilder.constructHttpUrl(url, new String[0]));
 
     builder.header(HttpHeaders.CONTENT_TYPE, HttpMediaType.APPLICATION_FORM_URLENCODED);
-    builder.header(HttpHeaders.AUTHORIZATION, DEFAULT_AUTHORIZATION);
+    builder.header(HttpHeaders.AUTHORIZATION, getAuthorizationHeaderValue());
 
     FormBody formBody = new FormBody.Builder()
         .add(GRANT_TYPE, REFRESH_GRANT_TYPE)
@@ -217,5 +221,32 @@ public class IamTokenManager {
       e.printStackTrace();
     }
     return returnToken[0];
+  }
+
+  public static String getIamClientId() {
+    return iamClientId;
+  }
+
+  public static void setIamClientId(String iamClientId) {
+    IamTokenManager.iamClientId = iamClientId;
+  }
+
+  public static String getIamSecret() {
+    return iamSecret;
+  }
+
+  public static void setIamSecret(String iamSecret) {
+    IamTokenManager.iamSecret = iamSecret;
+  }
+
+  public static String getAuthorizationHeaderValue() {
+    String result;
+    if (getIamClientId() != null && getIamSecret() != null) {
+      String s = getIamClientId() + ":" + getIamSecret();
+      result = "Basic " + Base64.getEncoder().encodeToString(s.getBytes());
+    } else {
+      result = DEFAULT_AUTHORIZATION;
+    }
+    return result;
   }
 }

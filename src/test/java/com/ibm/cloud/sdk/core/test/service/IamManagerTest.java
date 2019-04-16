@@ -22,6 +22,7 @@ import org.junit.Test;
 
 import static com.ibm.cloud.sdk.core.test.TestUtils.loadFixture;
 import static org.junit.Assert.assertEquals;
+import static org.testng.Assert.assertNotEquals;
 
 public class IamManagerTest extends BaseServiceUnitTest {
 
@@ -39,6 +40,26 @@ public class IamManagerTest extends BaseServiceUnitTest {
     url = getMockWebServerUrl();
     expiredTokenData = loadFixture("src/test/resources/expired_iam_token.json", IamToken.class);
     validTokenData = loadFixture("src/test/resources/valid_iam_token.json", IamToken.class);
+  }
+
+  @Test
+  public void testAuthorizationHeader() {
+    // Make sure the default header value is correct.
+    String header1 = IamTokenManager.getAuthorizationHeaderValue();
+    assertEquals(header1, "Basic Yng6Yng=");
+
+    // Now make sure different clientid/secret combinations yield different header values
+
+    IamTokenManager.setIamClientId("myuser");
+    IamTokenManager.setIamSecret("mysecret");
+    String header2 = IamTokenManager.getAuthorizationHeaderValue();
+    assertNotEquals(header1, header2);
+
+    IamTokenManager.setIamClientId("123j10iii38918-afde3");
+    IamTokenManager.setIamSecret("aU4RyzIZdFgZWxEroo1");
+    String header3 = IamTokenManager.getAuthorizationHeaderValue();
+    assertNotEquals(header1, header3);
+    assertNotEquals(header2, header3);
   }
 
   /**
