@@ -329,7 +329,7 @@ public class DynamicModelTypeAdapterFactory implements TypeAdapterFactory {
         // Next, serialize each of the map entries.
         for (String key : ((DynamicModel<?>) value).getPropertyNames()) {
           out.name(String.valueOf(key));
-          mapValueTypeAdapter.write(out, ((DynamicModel<?>) value).getProperty(key));
+          mapValueTypeAdapter.write(out, ((DynamicModel<?>) value).get(key));
         }
       } catch (IllegalAccessException e) {
         throw new AssertionError(e);
@@ -383,7 +383,7 @@ public class DynamicModelTypeAdapterFactory implements TypeAdapterFactory {
             // Otherwise, it must be an additional property so it belongs in the map.
             String key = name;
             Object value = mapValueTypeAdapter.read(in);
-            Object replaced = ((DynamicModel) instance).setProperty(key, value);
+            Object replaced = ((DynamicModel) instance).put(key, value);
 
             // If this new map entry is replacing an existing entry, then we must have a duplicate.
             if (replaced != null) {

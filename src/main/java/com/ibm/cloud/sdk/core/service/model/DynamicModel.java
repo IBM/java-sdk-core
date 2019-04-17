@@ -50,7 +50,7 @@ public abstract class DynamicModel<T> implements ObjectModel {
    *          the value of the property to be set
    * @return the previous value of the property, or null if the property was not previously set
    */
-  public T setProperty(String key, T value) {
+  public T put(String key, T value) {
     return this.dynamicProperties.put(key, value);
   }
 
@@ -61,7 +61,7 @@ public abstract class DynamicModel<T> implements ObjectModel {
    *          the name of the property to get
    * @return the value of the property, or null if the property is not set
    */
-  public T getProperty(String key) {
+  public T get(String key) {
     return this.dynamicProperties.get(key);
   }
 

@@ -75,8 +75,8 @@ public class DynamicModelSerializationTest {
     ModelAPFoo model = new ModelAPFoo();
     model.setProp1("value1");
     model.setProp2(Long.valueOf(33));
-    model.setProperty("baseball", foo1);
-    model.setProperty("football", foo2);
+    model.put("baseball", foo1);
+    model.put("football", foo2);
     return model;
   }
 
@@ -86,8 +86,8 @@ public class DynamicModelSerializationTest {
     ModelAPFooNullTypeToken model = new ModelAPFooNullTypeToken();
     model.setProp1("value1");
     model.setProp2(Long.valueOf(33));
-    model.setProperty("baseball", foo1);
-    model.setProperty("football", foo2);
+    model.put("baseball", foo1);
+    model.put("football", foo2);
     return model;
   }
 
@@ -97,8 +97,8 @@ public class DynamicModelSerializationTest {
     ModelAPFooNoCtor model = new ModelAPFooNoCtor("x");
     model.setProp1("value1");
     model.setProp2(Long.valueOf(33));
-    model.setProperty("baseball", foo1);
-    model.setProperty("football", foo2);
+    model.put("baseball", foo1);
+    model.put("football", foo2);
     return model;
   }
 
@@ -108,8 +108,8 @@ public class DynamicModelSerializationTest {
     ModelAPFooBad model = new ModelAPFooBad();
     model.setProp1("value1");
     model.setProp2(Long.valueOf(33));
-    model.setProperty("baseball", foo1);
-    model.setProperty("football", foo2);
+    model.put("baseball", foo1);
+    model.put("football", foo2);
     return model;
   }
 
@@ -117,8 +117,8 @@ public class DynamicModelSerializationTest {
     ModelAPInteger model = new ModelAPInteger();
     model.setProp1("value1");
     model.setProp2(Long.valueOf(33));
-    model.setProperty("baseball", Long.valueOf(44));
-    model.setProperty("football", Long.valueOf(74));
+    model.put("baseball", Long.valueOf(44));
+    model.put("football", Long.valueOf(74));
     return model;
   }
 
@@ -126,8 +126,8 @@ public class DynamicModelSerializationTest {
     ModelAPString model = new ModelAPString();
     model.setProp1("value1");
     model.setProp2(Long.valueOf(33));
-    model.setProperty("baseball", "C");
-    model.setProperty("football", "LT");
+    model.put("baseball", "C");
+    model.put("football", "LT");
     return model;
   }
 
@@ -144,17 +144,17 @@ public class DynamicModelSerializationTest {
     ModelAPObject model = new ModelAPObject();
     model.setProp1("value1");
     model.setProp2(Long.valueOf(33));
-    model.setProperty("baseball", foo1);
-    model.setProperty("football", foo2);
-    model.setProperty("basketball", "PF");
-    model.setProperty("age", Integer.valueOf(25));
+    model.put("baseball", foo1);
+    model.put("football", foo2);
+    model.put("basketball", "PF");
+    model.put("age", Integer.valueOf(25));
     return model;
   }
 
   @Test
   public void testModelAPFoo() {
     ModelAPFoo model = createModelAPFoo();
-    // model.setProperty("basketball", "foo");
+    // model.put("basketball", "foo");
     testSerDeser(model, ModelAPFoo.class, false);
   }
 
@@ -197,7 +197,7 @@ public class DynamicModelSerializationTest {
   public void testNullValues() {
     ModelAPFoo model = createModelAPFoo();
     model.setProp1(null);
-    // model.setProperty("basketball", "foo");
+    // model.put("basketball", "foo");
     testSerDeser(model, ModelAPFoo.class, false);
   }
 
@@ -232,7 +232,7 @@ public class DynamicModelSerializationTest {
   @Test
   public void testModelAPInteger() {
     ModelAPInteger model = createModelAPInteger();
-    // model.setProperty("basketball", "foo");
+    // model.put("basketball", "foo");
     testSerDeser(model, ModelAPInteger.class, false);
   }
 
@@ -245,7 +245,7 @@ public class DynamicModelSerializationTest {
   @Test
   public void testModelAPString() {
     ModelAPString model = createModelAPString();
-    // model.setProperty("basketball", Integer.valueOf(33));
+    // model.put("basketball", Integer.valueOf(33));
     testSerDeser(model, ModelAPString.class, false);
   }
 
@@ -282,13 +282,13 @@ public class DynamicModelSerializationTest {
     ModelAPFoo model = createModelAPFoo();
     assertEquals(model.getPropertyNames(), Arrays.asList("baseball", "football"));
 
-    Foo foo = model.getProperty("baseball");
+    Foo foo = model.get("baseball");
     assertNotNull(foo);
-    model.setProperty("baseball2", foo);
+    model.put("baseball2", foo);
     assertEquals(model.getPropertyNames(), Arrays.asList("baseball", "football", "baseball2"));
 
     Foo newFoo = createFoo("1B", 44);
-    Foo previous = model.setProperty("baseball", newFoo);
+    Foo previous = model.put("baseball", newFoo);
     assertNotNull(previous);
 
     Map<String, Foo> props = model.getProperties();
