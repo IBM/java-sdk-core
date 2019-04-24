@@ -2,8 +2,6 @@
 
 if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" ]; then
 
-  git config --global user.email "wps@us.ibm.com"
-  git config --global user.name "Watson Github Bot"
   git clone --quiet --branch=gh-pages https://${GITHUB_OAUTH_TOKEN}@github.com/IBM/java-sdk-core.git gh-pages > /dev/null
 
   pushd gh-pages
