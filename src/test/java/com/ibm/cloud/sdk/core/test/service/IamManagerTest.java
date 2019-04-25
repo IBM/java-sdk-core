@@ -45,19 +45,29 @@ public class IamManagerTest extends BaseServiceUnitTest {
   @Test
   public void testAuthorizationHeader() {
     // Make sure the default header value is correct.
-    String header1 = IamTokenManager.getAuthorizationHeaderValue();
+    IamOptions options = new IamOptions.Builder()
+        .apiKey(API_KEY)
+        .url(url)
+        .build();
+    IamTokenManager manager = new IamTokenManager(options);
+    String header1 = manager.getAuthorizationHeaderValue();
     assertEquals(header1, "Basic Yng6Yng=");
 
     // Now make sure different clientid/secret combinations yield different header values
 
-    IamTokenManager.setIamClientId("myuser");
-    IamTokenManager.setIamSecret("mysecret");
-    String header2 = IamTokenManager.getAuthorizationHeaderValue();
+    manager.setClientId("myuser");
+    manager.setClientSecret("mysecret");
+    String header2 = manager.getAuthorizationHeaderValue();
     assertNotEquals(header1, header2);
 
-    IamTokenManager.setIamClientId("123j10iii38918-afde3");
-    IamTokenManager.setIamSecret("aU4RyzIZdFgZWxEroo1");
-    String header3 = IamTokenManager.getAuthorizationHeaderValue();
+    options = new IamOptions.Builder()
+        .apiKey(API_KEY)
+        .url(url)
+        .clientId("123j10iii38918-afde3")
+        .clientSecret("aU4RyzIZdFgZWxEroo1")
+        .build();
+    manager = new IamTokenManager(options);
+    String header3 = manager.getAuthorizationHeaderValue();
     assertNotEquals(header1, header3);
     assertNotEquals(header2, header3);
   }
