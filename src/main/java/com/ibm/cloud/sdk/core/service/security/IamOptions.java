@@ -19,6 +19,9 @@ public class IamOptions {
   private String apiKey;
   private String accessToken;
   private String url;
+  private String clientId;
+  private String clientSecret;
+
 
   public String getApiKey() {
     return apiKey;
@@ -32,10 +35,20 @@ public class IamOptions {
     return url;
   }
 
+  public String getClientId() {
+    return clientId;
+  }
+
+  public String getClientSecret() {
+    return clientSecret;
+  }
+
   public static class Builder {
     private String apiKey;
     private String accessToken;
     private String url;
+    private String clientId;
+    private String clientSecret;
 
     public IamOptions build() {
       return new IamOptions(this);
@@ -55,11 +68,23 @@ public class IamOptions {
       this.url = url;
       return this;
     }
+
+    public Builder clientId(String clientId) {
+      this.clientId = clientId;
+      return this;
+    }
+
+    public Builder clientSecret(String clientSecret) {
+      this.clientSecret = clientSecret;
+      return this;
+    }
   }
 
   private IamOptions(Builder builder) {
     this.apiKey = builder.apiKey;
     this.accessToken = builder.accessToken;
     this.url = builder.url;
+    this.clientId = builder.clientId;
+    this.clientSecret = builder.clientSecret;
   }
 }

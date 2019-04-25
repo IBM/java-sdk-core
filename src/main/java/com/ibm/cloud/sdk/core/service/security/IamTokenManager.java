@@ -32,12 +32,12 @@ import java.util.logging.Logger;
  * Retrieves, stores, and refreshes IAM tokens.
  */
 public class IamTokenManager {
-  private static String iamClientId = null;
-  private static String iamSecret = null;
-
   private String userManagedAccessToken;
   private String apiKey;
   private String url;
+  private String clientId;
+  private String clientSecret;
+
   private IamToken tokenData;
 
   private static final Logger LOG = Logger.getLogger(IamTokenManager.class.getName());
@@ -62,6 +62,8 @@ public class IamTokenManager {
     }
     this.url = (options.getUrl() != null) ? options.getUrl() : DEFAULT_IAM_URL;
     this.userManagedAccessToken = options.getAccessToken();
+    this.clientId = options.getClientId();
+    this.clientSecret = options.getClientSecret();
     tokenData = new IamToken();
   }
 
@@ -223,26 +225,26 @@ public class IamTokenManager {
     return returnToken[0];
   }
 
-  public static String getIamClientId() {
-    return iamClientId;
+  public String getClientId() {
+    return this.clientId;
   }
 
-  public static void setIamClientId(String iamClientId) {
-    IamTokenManager.iamClientId = iamClientId;
+  public void setClientId(String clientId) {
+    this.clientId = clientId;
   }
 
-  public static String getIamSecret() {
-    return iamSecret;
+  public String getClientSecret() {
+    return this.clientSecret;
   }
 
-  public static void setIamSecret(String iamSecret) {
-    IamTokenManager.iamSecret = iamSecret;
+  public void setClientSecret(String clientSecret) {
+    this.clientSecret = clientSecret;
   }
 
-  public static String getAuthorizationHeaderValue() {
+  public String getAuthorizationHeaderValue() {
     String result;
-    if (getIamClientId() != null && getIamSecret() != null) {
-      String s = getIamClientId() + ":" + getIamSecret();
+    if (getClientId() != null && getClientSecret() != null) {
+      String s = getClientId() + ":" + getClientSecret();
       result = "Basic " + Base64.getEncoder().encodeToString(s.getBytes());
     } else {
       result = DEFAULT_AUTHORIZATION;
