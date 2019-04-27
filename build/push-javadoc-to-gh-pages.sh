@@ -1,10 +1,8 @@
 #!/bin/bash
 
-if [ "$TRAVIS_BRANCH" ]; then
-  echo "this gets called at all!"
+if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" ]; then
 
   git clone --quiet --branch=gh-pages https://${GITHUB_OAUTH_TOKEN}@github.com/IBM/java-sdk-core.git gh-pages > /dev/null
-  echo "Cloned repo"
 
   pushd gh-pages
     # on tagged builds, $TRAVIS_BRANCH is the tag (e.g. v1.2.3), otherwise it's the branch name (e.g. master)
@@ -12,7 +10,10 @@ if [ "$TRAVIS_BRANCH" ]; then
     mkdir -p docs/$TRAVIS_BRANCH
     cp -rf ../target/apidocs/* docs/$TRAVIS_BRANCH
     ../.build/generate-index-html.sh > index.html
-    echo "did the other stuff"
+
+    git add -f .
+    git commit -m "Latest javadoc for $TRAVIS_BRANCH ($TRAVIS_COMMIT)"
+    git push -fq origin gh-pages > /dev/null
 
   popd
 
