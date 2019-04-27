@@ -1,6 +1,7 @@
 #!/bin/bash
 
 if [ "$TRAVIS_BRANCH" ]; then
+  echo "this gets called at all!"
 
   git config --global user.email "loganpatino10@gmail.com"
   git config --global user.name "lpatino10"
