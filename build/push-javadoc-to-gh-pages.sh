@@ -2,6 +2,8 @@
 
 if [ "$TRAVIS_BRANCH" ]; then
 
+  git config --global user.email "loganpatino10@gmail.com"
+  git config --global user.name "lpatino10"
   git clone --quiet --branch=gh-pages https://${GITHUB_OAUTH_TOKEN}@github.com/IBM/java-sdk-core.git gh-pages > /dev/null
   echo "Cloned repo"
 
