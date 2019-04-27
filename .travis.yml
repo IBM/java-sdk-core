@@ -58,6 +58,8 @@ deploy:
   - provider: script
     script: "./build/push-javadoc-to-gh-pages.sh"
     skip_cleanup: true
+    on:
+      branch: javadoc-fix
 
 # Ask bintray to sync the just-deployed artifact to maven central
 after_script:
