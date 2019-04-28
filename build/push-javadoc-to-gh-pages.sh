@@ -8,8 +8,8 @@ if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" ]; then
     # on tagged builds, $TRAVIS_BRANCH is the tag (e.g. v1.2.3), otherwise it's the branch name (e.g. master)
     rm -rf docs/$TRAVIS_BRANCH
     mkdir -p docs/$TRAVIS_BRANCH
-    cp -rf ../target/apidocs/* docs/$TRAVIS_BRANCH
-    ../.utility/generate_index_html.sh > index.html
+    cp -rf ../target/site/apidocs/* docs/$TRAVIS_BRANCH
+    ../.build/generate-index-html.sh > index.html
 
     git add -f .
     git commit -m "Latest javadoc for $TRAVIS_BRANCH ($TRAVIS_COMMIT)"
