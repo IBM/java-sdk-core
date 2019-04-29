@@ -14,6 +14,7 @@ package com.ibm.cloud.sdk.core.util;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Type;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -96,6 +97,24 @@ public final class ResponseUtils {
     }
   }
 
+
+  /**
+   * Parses the {@link Response} into the POJO representation.
+   *
+   * @param <T> the generic type to use when parsing the response
+   * @param response the HTTP response
+   * @param type a Type instance which describes the type of the response
+   * @return the POJO
+   */
+  public static <T> T getObject(Response response, Type type) {
+    JsonReader reader;
+    try {
+      reader = new JsonReader(response.body().charStream());
+      return GsonSingleton.getGsonWithoutPrettyPrinting().fromJson(reader, type);
+    } finally {
+      response.body().close();
+    }
+  }
   /**
    * Parses the {@link Response} into a value of the specified type.
    *
@@ -105,6 +124,24 @@ public final class ResponseUtils {
    * @return the value
    */
   public static <T> T getValue(Response response, Class<? extends T> valueType) {
+    JsonReader reader;
+    try {
+      reader = new JsonReader(response.body().charStream());
+      return GsonSingleton.getGsonWithoutPrettyPrinting().fromJson(reader, valueType);
+    } finally {
+      response.body().close();
+    }
+  }
+
+  /**
+   * Parses the {@link Response} into a value of the specified type.
+   *
+   * @param <T> the generic type to use when parsing the response
+   * @param response the HTTP response
+   * @param valueType a Type instance which describes the type associated with the response
+   * @return the value
+   */
+  public static <T> T getValue(Response response, Type valueType) {
     JsonReader reader;
     try {
       reader = new JsonReader(response.body().charStream());

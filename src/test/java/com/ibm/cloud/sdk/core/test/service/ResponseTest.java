@@ -12,32 +12,40 @@
  */
 package com.ibm.cloud.sdk.core.test.service;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import com.google.gson.reflect.TypeToken;
 import com.ibm.cloud.sdk.core.http.RequestBuilder;
 import com.ibm.cloud.sdk.core.http.Response;
+import com.ibm.cloud.sdk.core.http.ResponseConverter;
 import com.ibm.cloud.sdk.core.http.ServiceCall;
 import com.ibm.cloud.sdk.core.http.ServiceCallback;
 import com.ibm.cloud.sdk.core.service.BaseService;
 import com.ibm.cloud.sdk.core.service.model.GenericModel;
 import com.ibm.cloud.sdk.core.test.BaseServiceUnitTest;
 import com.ibm.cloud.sdk.core.util.ResponseConverterUtils;
+
 import io.reactivex.Single;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.Headers;
 import okhttp3.HttpUrl;
 import okhttp3.mockwebserver.MockResponse;
-import org.junit.Before;
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 
 public class ResponseTest extends BaseServiceUnitTest {
   private class TestModel extends GenericModel {
     String city;
 
-    String getKey() {
+    String getCity() {
       return city;
     }
   }
@@ -50,21 +58,67 @@ public class ResponseTest extends BaseServiceUnitTest {
       super(SERVICE_NAME);
     }
 
-    ServiceCall<TestModel> testMethod() {
+    ServiceCall<TestModel> getTestModel() {
       RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getEndPoint() + "/v1/test"));
       return createServiceCall(builder.build(), ResponseConverterUtils.getObject(TestModel.class));
     }
 
-    ServiceCall<Void> testHeadMethod() {
+    ServiceCall<TestModel> getTestModel2() {
+      RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getEndPoint() + "/v1/test"));
+      ResponseConverter<TestModel> responseConverter =
+          ResponseConverterUtils.getValue(new TypeToken<TestModel>(){}.getType());
+      return createServiceCall(builder.build(), responseConverter);
+    }
+
+    ServiceCall<Void> headMethod() {
       RequestBuilder builder = RequestBuilder.head(HttpUrl.parse(getEndPoint() + "/v1/test"));
       return createServiceCall(builder.build(), ResponseConverterUtils.getVoid());
+    }
+
+    ServiceCall<String> getString() {
+      RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getEndPoint() + "/v1/test"));
+      ResponseConverter<String> responseConverter =
+          ResponseConverterUtils.getValue(new TypeToken<String>(){}.getType());
+      return createServiceCall(builder.build(), responseConverter);
+    }
+
+    ServiceCall<List<String>> getListString() {
+      RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getEndPoint() + "/v1/test"));
+      ResponseConverter<List<String>> responseConverter =
+          ResponseConverterUtils.getValue(new TypeToken<List<String>>(){}.getType());
+      return createServiceCall(builder.build(), responseConverter);
+    }
+
+    ServiceCall<Long> getLong() {
+      RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getEndPoint() + "/v1/test"));
+      ResponseConverter<Long> responseConverter =
+          ResponseConverterUtils.getValue(new TypeToken<Long>(){}.getType());
+      return createServiceCall(builder.build(), responseConverter);
+    }
+
+    ServiceCall<List<Long>> getListLong() {
+      RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getEndPoint() + "/v1/test"));
+      ResponseConverter<List<Long>> responseConverter =
+          ResponseConverterUtils.getValue(new TypeToken<List<Long>>(){}.getType());
+      return createServiceCall(builder.build(), responseConverter);
+    }
+
+    ServiceCall<List<TestModel>> getListTestModel() {
+      RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getEndPoint() + "/v1/test"));
+      ResponseConverter<List<TestModel>> responseConverter =
+          ResponseConverterUtils.getValue(new TypeToken<List<TestModel>>(){}.getType());
+      return createServiceCall(builder.build(), responseConverter);
     }
   }
 
   private TestService service;
-  private String testResponseKey = "city";
   private String testResponseValue = "Columbus";
-  private String testResponseBody = "{\"" + testResponseKey + "\": \"" + testResponseValue + "\"}";
+  private String testResponseBody1 = "{\"city\": \"Columbus\"}";
+  private String testResponseBody2 = "[\"string1\",\"string2\",\"string3\"]";
+  private String testResponseBody3 = "[44,33,74]";
+  private String testResponseBody4 = "[{\"city\":\"Austin\"},{\"city\":\"Georgetown\"},{\"city\":\"Cedar Park\"}]";
+  private String testResponseBody5 = "\"string response\"";
+  private String testResponseBody6 = "443374";
 
   // used for a specific test so we don't run into any weirdness with final, one-element, generic arrays
   private Response<TestModel> testResponseModel = null;
@@ -89,12 +143,12 @@ public class ResponseTest extends BaseServiceUnitTest {
    * @throws InterruptedException the interrupted exception
    */
   @Test
-  public void testExecute() throws InterruptedException {
-    server.enqueue(new MockResponse().setBody(testResponseBody));
+  public void testExecuteTestModel() throws InterruptedException {
+    server.enqueue(new MockResponse().setBody(testResponseBody1));
 
-    Response<TestModel> response = service.testMethod().execute();
+    Response<TestModel> response = service.getTestModel().execute();
     assertNotNull(response.getResult());
-    assertEquals(testResponseValue, response.getResult().getKey());
+    assertEquals(testResponseValue, response.getResult().getCity());
     assertNotNull(response.getHeaders());
   }
 
@@ -105,13 +159,13 @@ public class ResponseTest extends BaseServiceUnitTest {
    */
   @Test
   public void testEnqueue() throws InterruptedException {
-    server.enqueue(new MockResponse().setBody(testResponseBody));
+    server.enqueue(new MockResponse().setBody(testResponseBody1));
 
-    service.testMethod().enqueue(new ServiceCallback<TestModel>() {
+    service.getTestModel().enqueue(new ServiceCallback<TestModel>() {
       @Override
       public void onResponse(Response<TestModel> response) {
         assertNotNull(response.getResult());
-        assertEquals(testResponseValue, response.getResult().getKey());
+        assertEquals(testResponseValue, response.getResult().getCity());
         assertNotNull(response.getHeaders());
       }
 
@@ -124,9 +178,9 @@ public class ResponseTest extends BaseServiceUnitTest {
 
   @Test
   public void testReactiveRequest() throws InterruptedException {
-    server.enqueue(new MockResponse().setBody(testResponseBody));
+    server.enqueue(new MockResponse().setBody(testResponseBody1));
 
-    Single<Response<TestModel>> observableRequest = service.testMethod().reactiveRequest();
+    Single<Response<TestModel>> observableRequest = service.getTestModel().reactiveRequest();
 
     observableRequest
         .subscribeOn(Schedulers.single())
@@ -141,7 +195,7 @@ public class ResponseTest extends BaseServiceUnitTest {
     assertNull(testResponseModel);
     Thread.sleep(2000);
     assertNotNull(testResponseModel);
-    assertEquals(testResponseValue, testResponseModel.getResult().getKey());
+    assertEquals(testResponseValue, testResponseModel.getResult().getCity());
     assertNotNull(testResponseModel.getHeaders());
   }
 
@@ -158,7 +212,7 @@ public class ResponseTest extends BaseServiceUnitTest {
             new com.ibm.cloud.sdk.core.http.Headers(rawHeaders);
     server.enqueue(new MockResponse().setHeaders(rawHeaders));
 
-    Response<Void> response = service.testHeadMethod().execute();
+    Response<Void> response = service.headMethod().execute();
     com.ibm.cloud.sdk.core.http.Headers actualHeaders = response.getHeaders();
     System.out.print(actualHeaders.equals(expectedHeaders));
     assertNull(response.getResult());
@@ -166,5 +220,113 @@ public class ResponseTest extends BaseServiceUnitTest {
     // We can't just compare expectedHeaders.equals(actualHeaders) because of some underlying
     // whitespace weirdness in okhttp's Headers class.
     assertEquals(expectedHeaders.toString(), actualHeaders.toString());
+  }
+
+  /**
+   * Test that all fields are populated when calling execute().
+   *
+   * @throws InterruptedException the interrupted exception
+   */
+  @Test
+  public void testExecuteTestModel2() throws InterruptedException {
+    server.enqueue(new MockResponse().setBody(testResponseBody1));
+
+    Response<TestModel> response = service.getTestModel2().execute();
+    assertNotNull(response.getResult());
+    assertEquals(testResponseValue, response.getResult().getCity());
+    assertNotNull(response.getHeaders());
+  }
+
+  /**
+   * Test that a list of strings response can be deserialized correctly.
+   *
+   * @throws InterruptedException the interrupted exception
+   */
+  @Test
+  public void testExecuteString() {
+    server.enqueue(new MockResponse().setBody(testResponseBody5));
+
+    Response<String> response = service.getString().execute();
+    String result = response.getResult();
+    assertNotNull(result);
+    assertEquals("string response", result);
+    assertNotNull(response.getHeaders());
+  }
+
+  /**
+   * Test that a list of strings response can be deserialized correctly.
+   *
+   * @throws InterruptedException the interrupted exception
+   */
+  @Test
+  public void testExecuteListString() {
+    server.enqueue(new MockResponse().setBody(testResponseBody2));
+
+    Response<List<String>> response = service.getListString().execute();
+    List<String> result = response.getResult();
+    assertNotNull(result);
+    assertEquals(result.size(), 3);
+    assertEquals(Arrays.asList("string1", "string2", "string3"), result);
+    assertNotNull(response.getHeaders());
+  }
+
+  /**
+   * Test that a list of strings response can be deserialized correctly.
+   *
+   * @throws InterruptedException the interrupted exception
+   */
+  @Test
+  public void testExecuteLong() {
+    server.enqueue(new MockResponse().setBody(testResponseBody6));
+
+    Response<Long> response = service.getLong().execute();
+    Long result = response.getResult();
+    assertNotNull(result);
+    assertEquals(Long.valueOf(443374), result);
+    assertNotNull(response.getHeaders());
+  }
+
+  /**
+   * Test that a list of longs response can be deserialized correctly.
+   *
+   * @throws InterruptedException the interrupted exception
+   */
+  @Test
+  public void testExecuteListLong() {
+    server.enqueue(new MockResponse().setBody(testResponseBody3));
+
+    Response<List<Long>> response = service.getListLong().execute();
+    List<Long> result = response.getResult();
+    assertNotNull(result);
+    assertEquals(result.size(), 3);
+
+    List<Long> expectedResult = new ArrayList<>();
+    expectedResult.add(Long.valueOf(44));
+    expectedResult.add(Long.valueOf(33));
+    expectedResult.add(Long.valueOf(74));
+
+    assertEquals(expectedResult, result);
+    assertNotNull(response.getHeaders());
+  }
+
+  /**
+   * Test that list of TestModels response can be deserialized correctly.
+   *
+   * @throws InterruptedException the interrupted exception
+   */
+  @Test
+  public void testExecuteListTestModel() {
+    server.enqueue(new MockResponse().setBody(testResponseBody4));
+
+    Response<List<TestModel>> response = service.getListTestModel().execute();
+    List<TestModel> result = response.getResult();
+    assertNotNull(result);
+    assertEquals(result.size(), 3);
+    List<String> actualCities = new ArrayList<>();
+    for (TestModel obj : result) {
+      actualCities.add(obj.getCity());
+    }
+    assertEquals(Arrays.asList("Austin", "Georgetown", "Cedar Park"), actualCities);
+    assertNotNull(response.getHeaders());
   }
 }
