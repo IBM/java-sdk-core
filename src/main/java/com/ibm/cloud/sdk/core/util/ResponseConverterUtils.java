@@ -65,8 +65,7 @@ public final class ResponseConverterUtils {
   }
 
   /**
-   * Creates a generic {@link ResponseConverter} for a POJO class. <br>
-   * It should extend {@link ObjectModel}
+   * Creates a generic {@link ResponseConverter} for a POJO class that extends ObjectModel.
    *
    * @param <T> the generic type
    * @param type the type
@@ -79,6 +78,17 @@ public final class ResponseConverterUtils {
         return ResponseUtils.getObject(response, type);
       }
     };
+  }
+
+  /**
+   * Creates a generic {@link ResponseConverter} for a POJO class.
+   *
+   * @param <T> the generic type
+   * @param type a Type instance that describes the type
+   * @return the response converter
+   */
+  public static <T> ResponseConverter<T> getObject(final Type type) {
+    return getValue(type);
   }
 
   /**
@@ -103,6 +113,23 @@ public final class ResponseConverterUtils {
    * @return the response converter
    */
   public static <T> ResponseConverter<T> getValue(final Class<? extends T> type) {
+    return new ResponseConverter<T>() {
+      @Override
+      public T convert(Response response) {
+        return ResponseUtils.getValue(response, type);
+      }
+    };
+  }
+
+  /**
+   * Creates a generic {@link ResponseConverter} for a response with a Type
+   * instance that describes the type.
+   * @param <T> the generic type
+   * @param type the type
+   *
+   * @return the response converter
+   */
+  public static <T> ResponseConverter<T> getValue(final Type type) {
     return new ResponseConverter<T>() {
       @Override
       public T convert(Response response) {
