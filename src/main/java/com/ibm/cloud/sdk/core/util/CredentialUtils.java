@@ -204,7 +204,7 @@ public final class CredentialUtils {
    * Builds the lookup name to be searched for in JNDI
    * and uses it to call the overloaded JNDI method.
    *
-   * @param serviceName Name of the bluemix service
+   * @param serviceName Name of the IBM Cloud service
    * @param lookupNameExtension Extension to determine which value should be retrieved through JNDI
    * @return The encoded desired value
    */

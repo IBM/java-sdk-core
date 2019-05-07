@@ -71,7 +71,7 @@
             "iam_role_crn": "crn:v1:bluemix:public:iam::::serviceRole:Manager",
             "iam_serviceid_crn": "crn:v1:staging:public:iam-identity::a/::serviceid:ServiceID-1234",
             "url": "https://gateway.watsonplatform.net/language-translator/api",
-            "iam_url": "https://iam.ng.bluemix.net/identity/token"
+            "iam_url": "https://iam.cloud.ibm.com/identity/token"
          }
       }
    ],
