@@ -9,7 +9,7 @@ if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" ]; then
     rm -rf docs/$TRAVIS_BRANCH
     mkdir -p docs/$TRAVIS_BRANCH
     cp -rf ../target/site/apidocs/* docs/$TRAVIS_BRANCH
-    ../.build/generate-index-html.sh > index.html
+    ./../build/generate-index-html.sh > index.html
 
     git add -f .
     git commit -m "Latest javadoc for $TRAVIS_BRANCH ($TRAVIS_COMMIT)"
