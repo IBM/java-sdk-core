@@ -12,18 +12,55 @@
  */
 package com.ibm.cloud.sdk.core.test.service;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.testng.Assert.assertNotEquals;
+
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 
+import com.ibm.cloud.sdk.core.http.HttpClientSingleton;
+import com.ibm.cloud.sdk.core.http.HttpConfigOptions;
 import com.ibm.cloud.sdk.core.service.BaseService;
+
+import okhttp3.OkHttpClient;
+import okhttp3.internal.tls.OkHostnameVerifier;
 
 /**
  * Unit tests associated with the BaseService core class.
  *
  */
 public class BaseServiceTest {
+
+  // Simulated generated service class.
+  public static class TestService extends BaseService {
+    public TestService(String name) {
+      super(name);
+    }
+  }
+
+  // A second simulated generated service class.
+  public static class AnotherTestService extends BaseService {
+    public AnotherTestService(String name) {
+      super(name);
+    }
+
+    @Override
+    protected OkHttpClient configureHttpClient() {
+      // Get a client with a default configuration.
+      OkHttpClient client = HttpClientSingleton.getInstance().createHttpClient();
+
+      // Create a variation of the default client with the read timeout set to 5 minutes.
+      OkHttpClient newClient = client.newBuilder()
+          .readTimeout(5, TimeUnit.MINUTES)
+          .build();
+
+      return newClient;
+    }
+  }
 
   @Test
   public void testMimeTypes() {
@@ -47,5 +84,49 @@ public class BaseServiceTest {
     assertFalse(BaseService.isJsonPatchMimeType("APPLICATION/JsOn; charset=utf-8"));
     assertFalse(BaseService.isJsonPatchMimeType("application/merge-patch+json"));
     assertFalse(BaseService.isJsonPatchMimeType("application/merge-patch+json;charset=utf-8"));
+  }
+
+  @Test
+  public void testDefaultHttpClient() {
+    TestService svc = new TestService("MyService");
+    assertEquals("MyService", svc.getName());
+    OkHttpClient client = svc.getClient();
+    assertNotNull(client);
+    assertEquals(60 * 1000, client.connectTimeoutMillis());
+    assertEquals(60 * 1000, client.writeTimeoutMillis());
+    assertEquals(90 * 1000, client.readTimeoutMillis());
+    assertNotNull(client.hostnameVerifier());
+    assertTrue(client.hostnameVerifier() instanceof OkHostnameVerifier);
+  }
+
+  @Test
+  public void testConfigureClient() {
+    TestService svc = new TestService("MyService");
+    assertEquals("MyService", svc.getName());
+    OkHttpClient origClient = svc.getClient();
+    assertTrue(origClient.hostnameVerifier() instanceof OkHostnameVerifier);
+
+    // Disable ssl verification, which should result in a NEW client instance.
+    HttpConfigOptions options = new HttpConfigOptions.Builder()
+        .disableSslVerification(true)
+        .build();
+    svc.configureClient(options);
+
+    // Verify the new client instance.
+    OkHttpClient client = svc.getClient();
+    assertNotEquals(origClient, client);
+    assertFalse(client.hostnameVerifier() instanceof OkHostnameVerifier);
+    assertEquals(origClient.connectionPool(), client.connectionPool());
+  }
+
+  @Test
+  public void testOverriddenConfigureHttpClient() {
+    AnotherTestService svc = new AnotherTestService("AnotherService");
+    assertEquals("AnotherService", svc.getName());
+    OkHttpClient client = svc.getClient();
+    assertNotNull(client);
+    assertEquals(60 * 1000, client.connectTimeoutMillis());
+    assertEquals(60 * 1000, client.writeTimeoutMillis());
+    assertEquals(5 * 60 * 1000, client.readTimeoutMillis());
   }
 }
