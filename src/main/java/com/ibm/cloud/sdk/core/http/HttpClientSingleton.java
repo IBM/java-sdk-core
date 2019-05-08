@@ -87,10 +87,14 @@ public class HttpClientSingleton {
     return instance;
   }
 
+  /**
+   * All new OkHttpClient instances are created from this instance, which contains
+   * a default configuration.
+   */
   private OkHttpClient okHttpClient;
 
   /**
-   * Instantiates a new HTTP client singleton.
+   * Instantiates a new HTTP client singleton with a default configuration.
    */
   protected HttpClientSingleton() {
     this.okHttpClient = configureHttpClient();
@@ -133,9 +137,10 @@ public class HttpClientSingleton {
   }
 
   /**
-   * Modifies the current {@link OkHttpClient} instance to not verify SSL certificates.
+   * Modifies the specified {@link OkHttpClient} instance to not verify SSL certificates.
+   * @param client the {@link OkHttpClient} instance to disable SSL on
    */
-  private void disableSslVerification() {
+  private OkHttpClient disableSslVerification(OkHttpClient client) {
     SSLContext trustAllSslContext;
     try {
       trustAllSslContext = SSLContext.getInstance("SSL");
@@ -146,7 +151,7 @@ public class HttpClientSingleton {
 
     SSLSocketFactory trustAllSslSocketFactory = trustAllSslContext.getSocketFactory();
 
-    OkHttpClient.Builder builder = okHttpClient.newBuilder();
+    OkHttpClient.Builder builder = client.newBuilder();
     builder.sslSocketFactory(trustAllSslSocketFactory, (X509TrustManager) trustAllCerts[0]);
     builder.hostnameVerifier(new HostnameVerifier() {
       @Override
@@ -155,17 +160,20 @@ public class HttpClientSingleton {
       }
     });
 
-    okHttpClient = builder.build();
+    return builder.build();
   }
 
   /**
-   * Sets a proxy for the current {@link OkHttpClient} instance.
+   * Sets a proxy for the specified {@link OkHttpClient} instance and returns
+   * a new instance with the proxy configured as requested.
    *
+   * @param client the {@link OkHttpClient} instance to set the proxy on
    * @param proxy the {@link Proxy}
+   * @return the new {@link OkHttpClient} instance with the proxy configured
    */
-  private void setProxy(Proxy proxy) {
-    OkHttpClient.Builder builder = okHttpClient.newBuilder().proxy(proxy);
-    okHttpClient = builder.build();
+  private OkHttpClient setProxy(OkHttpClient client, Proxy proxy) {
+    OkHttpClient.Builder builder = client.newBuilder().proxy(proxy);
+    return builder.build();
   }
 
   /**
@@ -212,9 +220,10 @@ public class HttpClientSingleton {
   }
 
   /**
-   * Creates an {@link OkHttpClient} instance with a new {@link ServiceCookieJar}.
+   * Creates a new {@link OkHttpClient} instance with a new {@link ServiceCookieJar}
+   * and a default configuration.
    *
-   * @return the client
+   * @return the new {@link OkHttpClient} instance
    */
   public OkHttpClient createHttpClient() {
     Builder builder = okHttpClient.newBuilder();
@@ -223,21 +232,34 @@ public class HttpClientSingleton {
   }
 
   /**
-   * Configures the current {@link OkHttpClient} instance based on the passed-in options.
+   * Configures the current {@link OkHttpClient} instance based on the passed-in options, replaces
+   * the current instance with the newly-configured instance and returns the new instance.
    *
-   * @param options the {@link HttpConfigOptions} object for modifying the client
-   * @return the client
+   * @param options the {@link HttpConfigOptions} object for modifying the client instance
+   * @return the new client instance
    */
   public OkHttpClient configureClient(HttpConfigOptions options) {
+    this.okHttpClient = configureClient(this.okHttpClient, options);
+    return this.okHttpClient;
+  }
+
+  /**
+   * Configures the specified {@link OkHttpClient} instance based on the passed-in options,
+   * and returns a new instance with the requested options applied.
+   *
+   * @param client the {@link OkHttpClient} instance to configure
+   * @param options the {@link HttpConfigOptions} instance for modifying the client
+   * @return a new {@link OkHttpClient} instance with the specified options applied
+   */
+  public OkHttpClient configureClient(OkHttpClient client, HttpConfigOptions options) {
     if (options != null) {
       if (options.shouldDisableSslVerification()) {
-        disableSslVerification();
+        client = disableSslVerification(client);
       }
       if (options.getProxy() != null) {
-        setProxy(options.getProxy());
+        client = setProxy(client, options.getProxy());
       }
     }
-
-    return okHttpClient;
+    return client;
   }
 }

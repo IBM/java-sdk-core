@@ -103,6 +103,22 @@ public abstract class BaseService {
   }
 
   /**
+   * Returns the currently-configured {@link OkHttpClient} instance.
+   * @return the {@link OkHttpClient} instance
+   */
+  public OkHttpClient getClient() {
+    return client;
+  }
+
+  /**
+   * Sets a new {@link OkHttpClient} instance to be used for API invocations by this BaseService instance.
+   * @param client the new {@link OkHttpClient} instance
+   */
+  public void setClient(OkHttpClient client) {
+    this.client = client;
+  }
+
+  /**
    * Calls appropriate methods to set credential values based on parsed ServiceCredentials object.
    *
    * @param serviceCredentials object containing parsed credential values
@@ -156,12 +172,12 @@ public abstract class BaseService {
   }
 
   /**
-   * Configures the {@link OkHttpClient} based on the passed-in options.
+   * Configures the currently-configured {@link OkHttpClient} instance based on the passed-in options.
    *
    * @param options the {@link HttpConfigOptions} object for modifying the client
    */
   public void configureClient(HttpConfigOptions options) {
-    client = HttpClientSingleton.getInstance().configureClient(options);
+    this.client = HttpClientSingleton.getInstance().configureClient(this.client, options);
   }
 
   /**
