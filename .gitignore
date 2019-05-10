@@ -9,3 +9,5 @@ venv
 /test-output/
 config
 .iml
+.pre-commit-config.yaml
+.secrets.baseline
