@@ -12,6 +12,12 @@
  */
 package com.ibm.cloud.sdk.core.service;
 
+import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.logging.Logger;
+import java.util.regex.Pattern;
+
 import com.ibm.cloud.sdk.core.http.HttpClientSingleton;
 import com.ibm.cloud.sdk.core.http.HttpConfigOptions;
 import com.ibm.cloud.sdk.core.http.HttpHeaders;
@@ -31,32 +37,27 @@ import com.ibm.cloud.sdk.core.service.exception.TooManyRequestsException;
 import com.ibm.cloud.sdk.core.service.exception.UnauthorizedException;
 import com.ibm.cloud.sdk.core.service.exception.UnsupportedException;
 import com.ibm.cloud.sdk.core.service.security.IamOptions;
-import com.ibm.cloud.sdk.core.service.security.IamTokenManager;
 import com.ibm.cloud.sdk.core.util.CredentialUtils;
 import com.ibm.cloud.sdk.core.util.RequestUtils;
+import com.ibm.cloud.sdk.security.Authenticator;
+import com.ibm.cloud.sdk.security.AuthenticatorConfig;
+import com.ibm.cloud.sdk.security.AuthenticatorFactory;
+import com.ibm.cloud.sdk.security.basicauth.BasicAuthConfig;
+
 import io.reactivex.Single;
 import okhttp3.Call;
 import okhttp3.Callback;
-import okhttp3.Credentials;
 import okhttp3.Headers;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Request.Builder;
 import okhttp3.Response;
 
-import java.io.IOException;
-import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.logging.Logger;
-import java.util.regex.Pattern;
-
 /**
  * Abstracts common functionality of various IBM Cloud services.
  */
 public abstract class BaseService {
 
-  private static final String BASIC = "Basic ";
-  private static final String BEARER = "Bearer ";
   private static final String APIKEY_AS_USERNAME = "apikey";
   private static final String ICP_PREFIX = "icp-";
   private static final Logger LOG = Logger.getLogger(BaseService.class.getName());
@@ -66,7 +67,7 @@ public abstract class BaseService {
   private String endPoint;
   private String defaultEndPoint;
   private final String name;
-  private IamTokenManager tokenManager;
+  private Authenticator authenticator;
 
   private OkHttpClient client;
 
@@ -137,7 +138,8 @@ public abstract class BaseService {
           .apiKey(serviceCredentials.getIamApiKey())
           .url(serviceCredentials.getIamUrl())
           .build();
-      this.tokenManager = new IamTokenManager(iamOptions);
+
+      setAuthenticator(iamOptions);
     }
   }
 
@@ -241,7 +243,9 @@ public abstract class BaseService {
    *
    *
    * @return the API key
+   * @deprecated
    */
+  @Deprecated
   protected String getApiKey() {
     return apiKey;
   }
@@ -251,7 +255,9 @@ public abstract class BaseService {
    *
    *
    * @return the username
+   * @deprecated
    */
+  @Deprecated
   protected String getUsername() {
     return username;
   }
@@ -280,9 +286,11 @@ public abstract class BaseService {
    * Checks the status of the tokenManager.
    *
    * @return true if the tokenManager has been set
+   * @deprecated
    */
+  @Deprecated
   public boolean isTokenManagerSet() {
-    return tokenManager != null;
+    return this.authenticator != null && "iam".equals(this.authenticator.authenticationType());
   }
 
   /**
@@ -298,7 +306,9 @@ public abstract class BaseService {
    * Sets the API key.
    *
    * @param apiKey the new API key
+   * @deprecated Use setAuthenticator(AuthenticatorConfig) instead
    */
+  @Deprecated
   public void setApiKey(String apiKey) {
     if (CredentialUtils.hasBadStartOrEndChar(apiKey)) {
       throw new IllegalArgumentException("The API key shouldn't start or end with curly brackets or quotes. Please "
@@ -317,17 +327,28 @@ public abstract class BaseService {
    * @param builder the new authentication
    */
   protected void setAuthentication(final Builder builder) {
-    if (tokenManager != null) {
-      String accessToken = tokenManager.getToken();
-      builder.addHeader(HttpHeaders.AUTHORIZATION, BEARER + accessToken);
-    } else if (getApiKey() == null) {
-      if (skipAuthentication) {
-        return;
-      }
-      throw new IllegalArgumentException("apiKey or username and password were not specified");
-    } else {
-      builder.addHeader(HttpHeaders.AUTHORIZATION, apiKey.startsWith(BASIC) ? apiKey : BASIC + apiKey);
+    if (skipAuthentication) {
+      return;
     }
+
+
+    if (this.authenticator != null) {
+      this.authenticator.authenticate(builder);
+    } else {
+      throw new IllegalArgumentException("Authentication information was not properly configured.");
+    }
+
+//    if (tokenManager != null) {
+//      String accessToken = tokenManager.getToken();
+//      builder.addHeader(HttpHeaders.AUTHORIZATION, BEARER + accessToken);
+//    } else if (getApiKey() == null) {
+//      if (skipAuthentication) {
+//        return;
+//      }
+//
+//    } else {
+//      builder.addHeader(HttpHeaders.AUTHORIZATION, apiKey.startsWith(BASIC) ? apiKey : BASIC + apiKey);
+//    }
   }
 
   /**
@@ -355,7 +376,9 @@ public abstract class BaseService {
    *
    * @param username the username
    * @param password the password
+   * @deprecated Use setAuthenticator(AuthenticatorConfig) instead
    */
+  @Deprecated
   public void setUsernameAndPassword(final String username, final String password) {
     if (CredentialUtils.hasBadStartOrEndChar(username) || CredentialUtils.hasBadStartOrEndChar(password)) {
       throw new IllegalArgumentException("The username and password shouldn't start or end with curly brackets or "
@@ -367,12 +390,13 @@ public abstract class BaseService {
       IamOptions iamOptions = new IamOptions.Builder()
           .apiKey(password)
           .build();
-      setIamCredentials(iamOptions);
+      setAuthenticator(iamOptions);
     } else {
-      this.username = username;
-      this.password = password;
-      apiKey = Credentials.basic(username, password);
-      clearIamCredentials();
+      BasicAuthConfig basicAuthConfig = new BasicAuthConfig.Builder()
+          .username(username)
+          .password(password)
+          .build();
+      setAuthenticator(basicAuthConfig);
     }
   }
 
@@ -397,14 +421,27 @@ public abstract class BaseService {
    * authentication errors after this token expires.
    *
    * @param iamOptions object containing values to be used for authenticating with IAM
+   * @deprecated Use setAuthenticator(AuthenticatorConfig) instead
    */
+  @Deprecated
   public void setIamCredentials(IamOptions iamOptions) {
-    this.tokenManager = new IamTokenManager(iamOptions);
+    setAuthenticator(iamOptions);
   }
 
-  private void clearIamCredentials() {
-    this.tokenManager = null;
+  /**
+   * Initializes a new Authenticator instance based on the input AuthenticatorConfig instance and sets it as
+   * the current authenticator on the BaseService instance.
+   * @param authConfig the AuthenticatorConfig instance containing the authentication configuration
+   */
+  protected void setAuthenticator(AuthenticatorConfig authConfig) {
+    try {
+      this.authenticator = AuthenticatorFactory.getAuthenticator(authConfig);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
+
+
   /*
    * (non-Javadoc)
    *

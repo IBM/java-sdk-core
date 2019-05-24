@@ -10,7 +10,7 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package com.ibm.cloud.sdk.core.service.security;
+package com.ibm.cloud.sdk.security.iam;
 
 import com.ibm.cloud.sdk.core.http.HttpClientSingleton;
 import com.ibm.cloud.sdk.core.http.HttpHeaders;
@@ -18,11 +18,15 @@ import com.ibm.cloud.sdk.core.http.HttpMediaType;
 import com.ibm.cloud.sdk.core.http.RequestBuilder;
 import com.ibm.cloud.sdk.core.http.ResponseConverter;
 import com.ibm.cloud.sdk.core.service.exception.ServiceResponseException;
+import com.ibm.cloud.sdk.core.service.security.IamOptions;
 import com.ibm.cloud.sdk.core.util.CredentialUtils;
 import com.ibm.cloud.sdk.core.util.ResponseConverterUtils;
+import com.ibm.cloud.sdk.security.Authenticator;
+
 import okhttp3.Call;
 import okhttp3.FormBody;
 import okhttp3.Request;
+import okhttp3.Request.Builder;
 
 import java.io.IOException;
 import java.util.Base64;
@@ -31,12 +35,13 @@ import java.util.logging.Logger;
 /**
  * Retrieves, stores, and refreshes IAM tokens.
  */
-public class IamTokenManager {
+public class IamTokenManager implements Authenticator {
   private String userManagedAccessToken;
   private String apiKey;
   private String url;
   private String clientId;
   private String clientSecret;
+  private boolean disableSSLVerification;
 
   private IamToken tokenData;
 
@@ -65,6 +70,17 @@ public class IamTokenManager {
     this.clientId = options.getClientId();
     this.clientSecret = options.getClientSecret();
     tokenData = new IamToken();
+  }
+
+  @Override
+  public String authenticationType() {
+    return Authenticator.AUTHTYPE_IAM;
+  }
+
+  @Override
+  public void authenticate(Builder builder) {
+    // Set the IAM access token as a Bearer Token in the Authorization header.
+    builder.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + getToken());
   }
 
   /**
@@ -239,6 +255,10 @@ public class IamTokenManager {
 
   public void setClientSecret(String clientSecret) {
     this.clientSecret = clientSecret;
+  }
+
+  public void setDisableSSLVerification(boolean disableSSLVerification) {
+    this.disableSSLVerification = disableSSLVerification;
   }
 
   public String getAuthorizationHeaderValue() {

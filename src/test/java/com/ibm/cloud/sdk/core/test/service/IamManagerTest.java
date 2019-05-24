@@ -12,17 +12,17 @@
  */
 package com.ibm.cloud.sdk.core.test.service;
 
-import com.ibm.cloud.sdk.core.service.security.IamOptions;
-import com.ibm.cloud.sdk.core.service.security.IamToken;
-import com.ibm.cloud.sdk.core.service.security.IamTokenManager;
-
-import com.ibm.cloud.sdk.core.test.BaseServiceUnitTest;
-import org.junit.Before;
-import org.junit.Test;
-
 import static com.ibm.cloud.sdk.core.test.TestUtils.loadFixture;
 import static org.junit.Assert.assertEquals;
 import static org.testng.Assert.assertNotEquals;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import com.ibm.cloud.sdk.core.service.security.IamOptions;
+import com.ibm.cloud.sdk.core.test.BaseServiceUnitTest;
+import com.ibm.cloud.sdk.security.iam.IamToken;
+import com.ibm.cloud.sdk.security.iam.IamTokenManager;
 
 public class IamManagerTest extends BaseServiceUnitTest {
 
