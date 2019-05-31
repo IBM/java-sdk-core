@@ -74,10 +74,9 @@ public class ICP4DAuthenticator implements Authenticator {
   /**
    * This function returns an access token. The source of the token is determined by the following logic:
    * 1. If user provides their own managed access token, assume it is valid and send it
-   * 2. If this class is managing tokens and does not yet have one, or the refresh token is expired, make a request
+   * 2. If this class is managing tokens and does not yet have one, or the token is expired, make a request
    * for one
-   * 3. If this class is managing tokens and the token has expired, refresh it
-   * 4. If this class is managing tokens and has a valid token stored, send it
+   * 3. If this class is managing tokens and has a valid token stored, send it
    *
    * @return the valid access token
    */

@@ -106,7 +106,7 @@ public class IamManagerTest extends BaseServiceUnitTest {
   }
 
   /**
-   * Tests that if the stored access token is expired, it can be refreshed properly.
+   * Tests that if the stored access token is expired, we can get a new one successfully.
    */
   @Test
   public void getTokenAfterRefresh() {

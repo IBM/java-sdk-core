@@ -50,11 +50,9 @@ public class IamTokenManager implements Authenticator {
   private static final String DEFAULT_IAM_URL = "https://iam.cloud.ibm.com/identity/token";
   private static final String GRANT_TYPE = "grant_type";
   private static final String REQUEST_GRANT_TYPE = "urn:ibm:params:oauth:grant-type:apikey";
-  private static final String REFRESH_GRANT_TYPE = "refresh_token";
   private static final String API_KEY = "apikey";
   private static final String RESPONSE_TYPE = "response_type";
   private static final String CLOUD_IAM = "cloud_iam";
-  private static final String REFRESH_TOKEN = "refresh_token";
 
   public IamTokenManager(IamOptions options) {
     if (options.getApiKey() != null) {
@@ -85,10 +83,9 @@ public class IamTokenManager implements Authenticator {
   /**
    * This function returns an access token. The source of the token is determined by the following logic:
    * 1. If user provides their own managed access token, assume it is valid and send it
-   * 2. If this class is managing tokens and does not yet have one, or the refresh token is expired, make a request
+   * 2. If this class is managing tokens and does not yet have one, or the token is expired, make a request
    * for one
-   * 3. If this class is managing tokens and the token has expired, refresh it
-   * 4. If this class is managing tokens and has a valid token stored, send it
+   * 3. If this class is managing tokens and has a valid token stored, send it
    *
    * @return the valid access token
    */
@@ -98,12 +95,9 @@ public class IamTokenManager implements Authenticator {
     if (userManagedAccessToken != null) {
       // use user-managed access token
       token = userManagedAccessToken;
-    } else if (tokenData.getAccessToken() == null || isRefreshTokenExpired()) {
+    } else if (tokenData.getAccessToken() == null || isAccessTokenExpired()) {
       // request new token
       token = requestToken();
-    } else if (isAccessTokenExpired()) {
-      // refresh current token
-      token = refreshToken();
     } else {
       // use valid managed token
       token = tokenData.getAccessToken();
@@ -135,27 +129,6 @@ public class IamTokenManager implements Authenticator {
   }
 
   /**
-   * Refresh an IAM token using a refresh token. Also updates internal managed IAM token information.
-   *
-   * @return the new access token
-   */
-  private String refreshToken() {
-    RequestBuilder builder = RequestBuilder.post(RequestBuilder.constructHttpUrl(url, new String[0]));
-
-    builder.header(HttpHeaders.CONTENT_TYPE, HttpMediaType.APPLICATION_FORM_URLENCODED);
-    builder.header(HttpHeaders.AUTHORIZATION, getAuthorizationHeaderValue());
-
-    FormBody formBody = new FormBody.Builder()
-        .add(GRANT_TYPE, REFRESH_GRANT_TYPE)
-        .add(REFRESH_TOKEN, tokenData.getRefreshToken())
-        .build();
-    builder.body(formBody);
-
-    tokenData = callIamApi(builder.build());
-    return tokenData.getAccessToken();
-  }
-
-  /**
    * Check if currently stored access token is expired.
    *
    * Using a buffer to prevent the edge case of the
@@ -177,25 +150,6 @@ public class IamTokenManager implements Authenticator {
     Double currentTime = Math.floor(System.currentTimeMillis() / 1000);
 
     return refreshTime < currentTime;
-  }
-
-  /**
-   * Used as a fail-safe to prevent the condition of a refresh token expiring,
-   * which could happen after around 30 days. This function will return true
-   * if it has been at least 7 days and 1 hour since the last token was
-   * retrieved.
-   *
-   * @return whether the current managed refresh token is expired or not
-   */
-  private boolean isRefreshTokenExpired() {
-    if (tokenData.getExpiration() == null) {
-      return true;
-    }
-
-    int sevenDays = 7 * 24 * 3600;
-    Double currentTime = Math.floor(System.currentTimeMillis() / 1000);
-    Long newTokenTime = tokenData.getExpiration() + sevenDays;
-    return newTokenTime < currentTime;
   }
 
   /**
