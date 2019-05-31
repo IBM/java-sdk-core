@@ -40,6 +40,9 @@ public class ICP4DConfig implements AuthenticatorConfig {
 
   @Override
   public void validate() {
+    if (StringUtils.isEmpty(url)) {
+      throw new IllegalArgumentException("You must provide a URL.");
+    }
 
     // If the user specifies their own access token, then username/password are not required.
     if (StringUtils.isNotEmpty(userManagedAccessToken)) {
@@ -80,7 +83,9 @@ public class ICP4DConfig implements AuthenticatorConfig {
     private boolean disableSSLVerification;
 
     public ICP4DConfig build() {
-      return new ICP4DConfig(this);
+      ICP4DConfig config = new ICP4DConfig(this);
+      config.validate();
+      return config;
     }
 
     public Builder url(String url) {
