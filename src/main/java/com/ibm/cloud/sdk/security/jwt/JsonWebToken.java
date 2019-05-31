@@ -12,17 +12,14 @@
  */
 package com.ibm.cloud.sdk.security.jwt;
 
-import java.lang.reflect.Type;
-import java.util.Base64;
-import java.util.Map;
-
-import com.google.gson.Gson;
-import com.google.gson.LongSerializationPolicy;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
 import com.ibm.cloud.sdk.core.util.GsonSingleton;
 
+import java.lang.reflect.Type;
+import java.util.Base64;
 import java.util.Base64.Decoder;
+import java.util.Map;
 
 /**
  * This class is used to decode and parse a JWT (Json Web Token).
@@ -72,6 +69,8 @@ public class JsonWebToken {
     private String userId;
     private String username;
     private String role;
+
+    public Payload() {}
 
     /**
      * Returns the "Issued At" ("iat") value within this JsonWebToken.
