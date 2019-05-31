@@ -13,6 +13,7 @@
 package com.ibm.cloud.sdk.security.icp4d;
 
 import java.io.IOException;
+import java.util.Base64;
 import java.util.logging.Logger;
 
 import org.apache.commons.lang3.StringUtils;
@@ -118,8 +119,8 @@ public class ICP4DAuthenticator implements Authenticator {
   }
 
   private String buildBasicAuthHeader() {
-    // TODO
-    return null;
+    return "Basic "
+        + Base64.getEncoder().encodeToString((this.config.getUsername() + ":" + this.config.getPassword()).getBytes());
   }
 
   /**
