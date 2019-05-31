@@ -48,16 +48,17 @@ public class AuthenticatorFactory {
     // TODO in the future, we could improve this factory so that it "discovers" Authenticator
     // implementations (perhaps via the ServiceLoader mechanism), rather than explicitly checking
     // for specific ones here.
-    if (config instanceof IamOptions) {
-      return new IamTokenManager((IamOptions) config);
-    } else if (config instanceof ICP4DConfig) {
-      return new ICP4DAuthenticator((ICP4DConfig) config);
-    } else if (config instanceof BasicAuthConfig) {
-      return new BasicAuthenticator((BasicAuthConfig) config);
-    } else if (config instanceof NoauthConfig) {
-      return new NoauthAuthenticator(((NoauthConfig) config));
-    } else {
-      throw new IllegalArgumentException("Unrecognized AuthenticatorConfig type: " + config.getClass().getName());
+    switch (config.authenticationType()) {
+      case Authenticator.AUTHTYPE_IAM:
+        return new IamTokenManager((IamOptions) config);
+      case Authenticator.AUTHTYPE_ICP4D:
+        return new ICP4DAuthenticator((ICP4DConfig) config);
+      case Authenticator.AUTHTYPE_BASIC:
+        return new BasicAuthenticator((BasicAuthConfig) config);
+      case Authenticator.AUTHTYPE_NOAUTH:
+        return new NoauthAuthenticator(((NoauthConfig) config));
+      default:
+        throw new IllegalArgumentException("Unrecognized AuthenticatorConfig type: " + config.getClass().getName());
     }
   }
 }
