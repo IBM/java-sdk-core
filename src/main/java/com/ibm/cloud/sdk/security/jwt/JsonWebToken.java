@@ -16,6 +16,9 @@ import java.lang.reflect.Type;
 import java.util.Base64;
 import java.util.Map;
 
+import com.google.gson.Gson;
+import com.google.gson.LongSerializationPolicy;
+import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
 import com.ibm.cloud.sdk.core.util.GsonSingleton;
 
@@ -28,7 +31,7 @@ public class JsonWebToken {
   private static Decoder decoder = Base64.getUrlDecoder();
 
   private Map<String, String> header;
-  private Map<String, Object> payload;
+  private Payload payload;
 
   public JsonWebToken(String encodedToken) {
     // Split the encoded jwt string into the header, payload, and signature
@@ -36,7 +39,6 @@ public class JsonWebToken {
 
     String json;
     Type headerType = new TypeToken<Map<String, String>>(){}.getType();
-    Type payloadType = new TypeToken<Map<String, Object>>(){}.getType();
 
     // Decode and parse the header.
     json = new String(decoder.decode(decodedParts[0]));
@@ -44,110 +46,88 @@ public class JsonWebToken {
 
     // Decode and parse the body.
     json = new String(decoder.decode(decodedParts[1]));
-    payload = GsonSingleton.getGson().fromJson(json, payloadType);
+    payload = GsonSingleton.getGson().fromJson(json, Payload.class);
   }
 
   public Map<String, String> getHeader() {
     return header;
   }
 
-  public Map<String, Object> getPayload() {
+  public Payload getPayload() {
     return payload;
   }
 
-  /**
-   * Returns the "Issued At" ("iat") value within this JsonWebToken.
-   */
-  public Long getIssuedAt() {
-    return getPayloadValueAsLong("iat");
-  }
+  public class Payload {
+    @SerializedName("iat")
+    private Long issuedAt;
+    @SerializedName("exp")
+    private Long expiresAt;
+    @SerializedName("sub")
+    private String subject;
+    @SerializedName("iss")
+    private String issuer;
+    @SerializedName("aud")
+    private String audience;
+    @SerializedName("uid")
+    private String userId;
+    private String username;
+    private String role;
 
-  /**
-   * Returns the "Expires AT" ("exp") value within this JsonWebToken.
-   */
-  public Long getExpiresAt() {
-    return getPayloadValueAsLong("exp");
-  }
-
-  /**
-   * Returns the "Subject" ("sub") value with this JsonWebToken.
-   */
-  public String getSubject() {
-    return getPayloadValueAsString("sub");
-  }
-
-  /**
-   * Returns the "Issuer" ("iss") value with this JsonWebToken.
-   */
-  public String getIssuer() {
-    return getPayloadValueAsString("iss");
-  }
-
-  /**
-   * Returns the "Audience" ("aud") value with this JsonWebToken.
-   */
-  public String getAudience() {
-    return getPayloadValueAsString("aud");
-  }
-
-  /**
-   * Returns the "Userid" ("uid") value with this JsonWebToken.
-   */
-  public String getUserid() {
-    return getPayloadValueAsString("uid");
-  }
-
-  /**
-   * Returns the "Username" ("username") value with this JsonWebToken.
-   */
-  public String getUsername() {
-    return getPayloadValueAsString("username");
-  }
-
-  /**
-   * Returns the "Role" ("role") value with this JsonWebToken.
-   */
-  public String getRole() {
-    return getPayloadValueAsString("role");
-  }
-
-  /**
-   * Retrieves the specified property from this JsonWebToken's payload and returns it as a {@link Long} value.
-   * @param propertyName the name of the property to retrieve
-   * @return the value of the specified property as a {@link Long} value
-   */
-  protected Long getPayloadValueAsLong(String propertyName) {
-    Long result = null;
-    Object o = payload.get(propertyName);
-    if (o != null) {
-      if (o instanceof String) {
-        result = Long.valueOf((String) o);
-      } else if (o instanceof Integer) {
-        result = Long.valueOf(((Integer) o).intValue());
-      } else if (o instanceof Long) {
-        result = (Long) o;
-      } else {
-        throw new RuntimeException("Unexpected value for JWT payload property `"
-            + propertyName + "': " + o.toString());
-      }
+    /**
+     * Returns the "Issued At" ("iat") value within this JsonWebToken.
+     */
+    public Long getIssuedAt() {
+      return issuedAt;
     }
 
-    return result;
-  }
-
-  /**
-   * Retrieves the specified property from this JsonWebToken's payload and returns it as a {@link String} value.
-   * @param propertyName the name of the property to retrieve
-   * @return the value of the specified property as a {@link String} value
-   */
-  protected String getPayloadValueAsString(String propertyName) {
-    String result = null;
-    Object o = payload.get(propertyName);
-    if (o != null) {
-      result = o.toString();
+    /**
+     * Returns the "Expires At" ("exp") value within this JsonWebToken.
+     */
+    public Long getExpiresAt() {
+      return expiresAt;
     }
 
-    return result;
+    /**
+     * Returns the "Subject" ("sub") value with this JsonWebToken.
+     */
+    public String getSubject() {
+      return subject;
+    }
+
+    /**
+     * Returns the "Issuer" ("iss") value with this JsonWebToken.
+     */
+    public String getIssuer() {
+      return issuer;
+    }
+
+    /**
+     * Returns the "Audience" ("aud") value with this JsonWebToken.
+     */
+    public String getAudience() {
+      return audience;
+    }
+
+    /**
+     * Returns the "Userid" ("uid") value with this JsonWebToken.
+     */
+    public String getUserId() {
+      return userId;
+    }
+
+    /**
+     * Returns the "Username" ("username") value with this JsonWebToken.
+     */
+    public String getUsername() {
+      return username;
+    }
+
+    /**
+     * Returns the "Role" ("role") value with this JsonWebToken.
+     */
+    public String getRole() {
+      return role;
+    }
   }
 }
 

@@ -35,7 +35,6 @@ import okhttp3.Request.Builder;
 /**
  * This class implements support for the ICP4D authentication mechanism.
  */
-@SuppressWarnings("unused")
 public class ICP4DAuthenticator implements Authenticator {
   private static final Logger LOG = Logger.getLogger(ICP4DAuthenticator.class.getName());
 

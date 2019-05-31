@@ -45,8 +45,8 @@ public class ICP4DToken {
     // which is a JWToken (Json Web Token) instance.
     JsonWebToken jwt = new JsonWebToken(this.accessToken);
 
-    Long iat = jwt.getIssuedAt();
-    Long exp = jwt.getExpiresAt();
+    Long iat = jwt.getPayload().getIssuedAt();
+    Long exp = jwt.getPayload().getExpiresAt();
     if (iat != null && exp != null) {
       long ttl = exp.longValue() - iat.longValue();
       this.expirationTimeInMillis = (iat.longValue() + (long) (0.8 * ttl)) * 1000;
