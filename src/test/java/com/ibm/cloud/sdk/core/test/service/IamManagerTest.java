@@ -21,8 +21,8 @@ import org.junit.Test;
 
 import com.ibm.cloud.sdk.core.service.security.IamOptions;
 import com.ibm.cloud.sdk.core.test.BaseServiceUnitTest;
-import com.ibm.cloud.sdk.security.iam.IamToken;
-import com.ibm.cloud.sdk.security.iam.IamTokenManager;
+import com.ibm.cloud.sdk.core.service.security.IamToken;
+import com.ibm.cloud.sdk.core.service.security.IamTokenManager;
 
 public class IamManagerTest extends BaseServiceUnitTest {
 

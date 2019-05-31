@@ -15,7 +15,7 @@ package com.ibm.cloud.sdk.security;
 import com.ibm.cloud.sdk.security.basicauth.BasicAuthenticator;
 import com.ibm.cloud.sdk.core.service.security.IamOptions;
 import com.ibm.cloud.sdk.security.basicauth.BasicAuthConfig;
-import com.ibm.cloud.sdk.security.iam.IamTokenManager;
+import com.ibm.cloud.sdk.core.service.security.IamTokenManager;
 import com.ibm.cloud.sdk.security.icp4d.ICP4DConfig;
 import com.ibm.cloud.sdk.security.icp4d.ICP4DAuthenticator;
 import com.ibm.cloud.sdk.security.noauth.NoauthAuthenticator;
