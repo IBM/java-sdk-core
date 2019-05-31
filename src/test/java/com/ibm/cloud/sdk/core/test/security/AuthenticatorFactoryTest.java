@@ -40,6 +40,7 @@ public class AuthenticatorFactoryTest {
   @Test
   public void testGetAuthenticatorIcp4d() {
     ICP4DConfig config = new ICP4DConfig.Builder()
+        .url("https://test.com")
         .userManagedAccessToken("test-token")
         .build();
     Authenticator authenticator = AuthenticatorFactory.getAuthenticator(config);

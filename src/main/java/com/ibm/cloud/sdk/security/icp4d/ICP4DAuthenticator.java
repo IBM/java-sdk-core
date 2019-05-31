@@ -138,7 +138,7 @@ public class ICP4DAuthenticator implements Authenticator {
         OkHttpClient client = HttpClientSingleton.getInstance().createHttpClient();
         if (disableSSL) {
           HttpConfigOptions httpOptions = new HttpConfigOptions.Builder().disableSslVerification(true).build();
-          client = HttpClientSingleton.getInstance().configureClient(httpOptions);
+          client = HttpClientSingleton.getInstance().configureClient(client, httpOptions);
         }
         Call call = client.newCall(request);
         ResponseConverter<ICP4DTokenResponse> converter = ResponseConverterUtils.getObject(ICP4DTokenResponse.class);

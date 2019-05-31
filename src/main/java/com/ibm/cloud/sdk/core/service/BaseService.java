@@ -331,24 +331,11 @@ public abstract class BaseService {
       return;
     }
 
-
     if (this.authenticator != null) {
       this.authenticator.authenticate(builder);
     } else {
       throw new IllegalArgumentException("Authentication information was not properly configured.");
     }
-
-//    if (tokenManager != null) {
-//      String accessToken = tokenManager.getToken();
-//      builder.addHeader(HttpHeaders.AUTHORIZATION, BEARER + accessToken);
-//    } else if (getApiKey() == null) {
-//      if (skipAuthentication) {
-//        return;
-//      }
-//
-//    } else {
-//      builder.addHeader(HttpHeaders.AUTHORIZATION, apiKey.startsWith(BASIC) ? apiKey : BASIC + apiKey);
-//    }
   }
 
   /**
