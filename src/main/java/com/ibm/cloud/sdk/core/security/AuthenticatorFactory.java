@@ -10,16 +10,16 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package com.ibm.cloud.sdk.security;
+package com.ibm.cloud.sdk.core.security;
 
-import com.ibm.cloud.sdk.security.basicauth.BasicAuthenticator;
+import com.ibm.cloud.sdk.core.security.basicauth.BasicAuthConfig;
+import com.ibm.cloud.sdk.core.security.basicauth.BasicAuthenticator;
+import com.ibm.cloud.sdk.core.security.icp4d.ICP4DAuthenticator;
+import com.ibm.cloud.sdk.core.security.icp4d.ICP4DConfig;
+import com.ibm.cloud.sdk.core.security.noauth.NoauthAuthenticator;
+import com.ibm.cloud.sdk.core.security.noauth.NoauthConfig;
 import com.ibm.cloud.sdk.core.service.security.IamOptions;
-import com.ibm.cloud.sdk.security.basicauth.BasicAuthConfig;
 import com.ibm.cloud.sdk.core.service.security.IamTokenManager;
-import com.ibm.cloud.sdk.security.icp4d.ICP4DConfig;
-import com.ibm.cloud.sdk.security.icp4d.ICP4DAuthenticator;
-import com.ibm.cloud.sdk.security.noauth.NoauthAuthenticator;
-import com.ibm.cloud.sdk.security.noauth.NoauthConfig;
 
 /**
  * This class serves as a factory for creating an Authenticator instance from an AuthenticatorConfig.

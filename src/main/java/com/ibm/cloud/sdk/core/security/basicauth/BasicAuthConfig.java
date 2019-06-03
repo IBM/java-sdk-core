@@ -10,11 +10,11 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package com.ibm.cloud.sdk.security.basicauth;
+package com.ibm.cloud.sdk.core.security.basicauth;
 
+import com.ibm.cloud.sdk.core.security.Authenticator;
+import com.ibm.cloud.sdk.core.security.AuthenticatorConfig;
 import com.ibm.cloud.sdk.core.util.CredentialUtils;
-import com.ibm.cloud.sdk.security.Authenticator;
-import com.ibm.cloud.sdk.security.AuthenticatorConfig;
 
 /**
  * Options for authenticating via Basic Authentication.

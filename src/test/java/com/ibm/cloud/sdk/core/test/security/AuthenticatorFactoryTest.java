@@ -1,16 +1,17 @@
 package com.ibm.cloud.sdk.core.test.security;
 
+import com.ibm.cloud.sdk.core.security.Authenticator;
+import com.ibm.cloud.sdk.core.security.AuthenticatorConfig;
+import com.ibm.cloud.sdk.core.security.AuthenticatorFactory;
+import com.ibm.cloud.sdk.core.security.basicauth.BasicAuthConfig;
+import com.ibm.cloud.sdk.core.security.basicauth.BasicAuthenticator;
+import com.ibm.cloud.sdk.core.security.icp4d.ICP4DAuthenticator;
+import com.ibm.cloud.sdk.core.security.icp4d.ICP4DConfig;
+import com.ibm.cloud.sdk.core.security.noauth.NoauthAuthenticator;
+import com.ibm.cloud.sdk.core.security.noauth.NoauthConfig;
 import com.ibm.cloud.sdk.core.service.security.IamOptions;
 import com.ibm.cloud.sdk.core.service.security.IamTokenManager;
-import com.ibm.cloud.sdk.security.Authenticator;
-import com.ibm.cloud.sdk.security.AuthenticatorConfig;
-import com.ibm.cloud.sdk.security.AuthenticatorFactory;
-import com.ibm.cloud.sdk.security.basicauth.BasicAuthConfig;
-import com.ibm.cloud.sdk.security.basicauth.BasicAuthenticator;
-import com.ibm.cloud.sdk.security.icp4d.ICP4DAuthenticator;
-import com.ibm.cloud.sdk.security.icp4d.ICP4DConfig;
-import com.ibm.cloud.sdk.security.noauth.NoauthAuthenticator;
-import com.ibm.cloud.sdk.security.noauth.NoauthConfig;
+
 import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;

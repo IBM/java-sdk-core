@@ -25,6 +25,12 @@ import com.ibm.cloud.sdk.core.http.HttpStatus;
 import com.ibm.cloud.sdk.core.http.ResponseConverter;
 import com.ibm.cloud.sdk.core.http.ServiceCall;
 import com.ibm.cloud.sdk.core.http.ServiceCallback;
+import com.ibm.cloud.sdk.core.security.Authenticator;
+import com.ibm.cloud.sdk.core.security.AuthenticatorConfig;
+import com.ibm.cloud.sdk.core.security.AuthenticatorFactory;
+import com.ibm.cloud.sdk.core.security.basicauth.BasicAuthConfig;
+import com.ibm.cloud.sdk.core.security.noauth.NoauthAuthenticator;
+import com.ibm.cloud.sdk.core.security.noauth.NoauthConfig;
 import com.ibm.cloud.sdk.core.service.exception.BadRequestException;
 import com.ibm.cloud.sdk.core.service.exception.ConflictException;
 import com.ibm.cloud.sdk.core.service.exception.ForbiddenException;
@@ -39,10 +45,6 @@ import com.ibm.cloud.sdk.core.service.exception.UnsupportedException;
 import com.ibm.cloud.sdk.core.service.security.IamOptions;
 import com.ibm.cloud.sdk.core.util.CredentialUtils;
 import com.ibm.cloud.sdk.core.util.RequestUtils;
-import com.ibm.cloud.sdk.security.Authenticator;
-import com.ibm.cloud.sdk.security.AuthenticatorConfig;
-import com.ibm.cloud.sdk.security.AuthenticatorFactory;
-import com.ibm.cloud.sdk.security.basicauth.BasicAuthConfig;
 
 import io.reactivex.Single;
 import okhttp3.Call;
@@ -327,7 +329,7 @@ public abstract class BaseService {
    * @param builder the new authentication
    */
   protected void setAuthentication(final Builder builder) {
-    if (skipAuthentication) {
+    if (this.skipAuthentication) {
       return;
     }
 
@@ -423,11 +425,21 @@ public abstract class BaseService {
   protected void setAuthenticator(AuthenticatorConfig authConfig) {
     try {
       this.authenticator = AuthenticatorFactory.getAuthenticator(authConfig);
+      if (authenticator instanceof NoauthAuthenticator) {
+        setSkipAuthentication(true);
+      }
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
   }
 
+  /**
+   * Returns the Authenticator instance currently set on this BaseService instance.
+   * @return the Authenticator set on this BaseService
+   */
+  protected Authenticator getAuthenticator() {
+    return this.authenticator;
+  }
 
   /*
    * (non-Javadoc)
@@ -494,6 +506,13 @@ public abstract class BaseService {
    */
   public void setSkipAuthentication(final boolean skipAuthentication) {
     this.skipAuthentication = skipAuthentication;
+    if (this.skipAuthentication) {
+      this.authenticator = new NoauthAuthenticator((NoauthConfig) null);
+    }
+  }
+
+  public boolean isSkipAuthentication() {
+    return this.skipAuthentication;
   }
 
   /**

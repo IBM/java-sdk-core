@@ -1,10 +1,11 @@
 package com.ibm.cloud.sdk.core.test.security;
 
 import com.ibm.cloud.sdk.core.http.HttpHeaders;
+import com.ibm.cloud.sdk.core.security.icp4d.ICP4DAuthenticator;
+import com.ibm.cloud.sdk.core.security.icp4d.ICP4DConfig;
+import com.ibm.cloud.sdk.core.security.icp4d.ICP4DTokenResponse;
 import com.ibm.cloud.sdk.core.test.BaseServiceUnitTest;
-import com.ibm.cloud.sdk.security.icp4d.ICP4DAuthenticator;
-import com.ibm.cloud.sdk.security.icp4d.ICP4DConfig;
-import com.ibm.cloud.sdk.security.icp4d.ICP4DTokenResponse;
+
 import okhttp3.Request;
 import org.junit.Before;
 import org.junit.Test;

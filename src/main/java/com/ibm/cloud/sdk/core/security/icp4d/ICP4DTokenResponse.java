@@ -10,7 +10,7 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package com.ibm.cloud.sdk.security.icp4d;
+package com.ibm.cloud.sdk.core.security.icp4d;
 
 /**
  * This class models a response received from the ICP4D "get token" API.

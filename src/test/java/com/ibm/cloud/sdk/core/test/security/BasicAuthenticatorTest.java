@@ -1,8 +1,9 @@
 package com.ibm.cloud.sdk.core.test.security;
 
 import com.ibm.cloud.sdk.core.http.HttpHeaders;
-import com.ibm.cloud.sdk.security.basicauth.BasicAuthConfig;
-import com.ibm.cloud.sdk.security.basicauth.BasicAuthenticator;
+import com.ibm.cloud.sdk.core.security.basicauth.BasicAuthConfig;
+import com.ibm.cloud.sdk.core.security.basicauth.BasicAuthenticator;
+
 import okhttp3.Request;
 import org.junit.Test;
 

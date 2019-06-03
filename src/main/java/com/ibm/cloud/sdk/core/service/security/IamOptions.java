@@ -14,8 +14,8 @@ package com.ibm.cloud.sdk.core.service.security;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.ibm.cloud.sdk.security.Authenticator;
-import com.ibm.cloud.sdk.security.AuthenticatorConfig;
+import com.ibm.cloud.sdk.core.security.Authenticator;
+import com.ibm.cloud.sdk.core.security.AuthenticatorConfig;
 
 /**
  * Options for authenticating via IAM (Identity and Access Management).

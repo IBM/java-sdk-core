@@ -1,8 +1,9 @@
 package com.ibm.cloud.sdk.core.test.security;
 
-import com.ibm.cloud.sdk.security.Authenticator;
-import com.ibm.cloud.sdk.security.basicauth.BasicAuthConfig;
 import org.junit.Test;
+
+import com.ibm.cloud.sdk.core.security.Authenticator;
+import com.ibm.cloud.sdk.core.security.basicauth.BasicAuthConfig;
 
 import static org.junit.Assert.assertEquals;
 

@@ -1,12 +1,14 @@
 package com.ibm.cloud.sdk.core.test.security;
 
-import com.ibm.cloud.sdk.security.Authenticator;
-import com.ibm.cloud.sdk.security.icp4d.ICP4DConfig;
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import org.junit.Test;
+
+import com.ibm.cloud.sdk.core.security.Authenticator;
+import com.ibm.cloud.sdk.core.security.icp4d.ICP4DConfig;
+
+@SuppressWarnings("unused")
 public class ICP4DConfigTest {
 
   @Test

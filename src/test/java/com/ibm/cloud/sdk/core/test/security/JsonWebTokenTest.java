@@ -1,7 +1,8 @@
 package com.ibm.cloud.sdk.core.test.security;
 
-import com.ibm.cloud.sdk.security.jwt.JsonWebToken;
 import org.junit.Test;
+
+import com.ibm.cloud.sdk.core.security.jwt.JsonWebToken;
 
 import static org.junit.Assert.assertNotNull;
 
