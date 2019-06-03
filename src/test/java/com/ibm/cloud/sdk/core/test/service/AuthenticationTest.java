@@ -1,12 +1,24 @@
 package com.ibm.cloud.sdk.core.test.service;
 
+import com.ibm.cloud.sdk.core.security.Authenticator;
+import com.ibm.cloud.sdk.core.security.AuthenticatorConfig;
+import com.ibm.cloud.sdk.core.security.basicauth.BasicAuthConfig;
+import com.ibm.cloud.sdk.core.security.basicauth.BasicAuthenticator;
+import com.ibm.cloud.sdk.core.security.icp4d.ICP4DAuthenticator;
+import com.ibm.cloud.sdk.core.security.icp4d.ICP4DConfig;
+import com.ibm.cloud.sdk.core.security.noauth.NoauthAuthenticator;
+import com.ibm.cloud.sdk.core.security.noauth.NoauthConfig;
 import com.ibm.cloud.sdk.core.service.BaseService;
+import com.ibm.cloud.sdk.core.service.security.IamOptions;
+import com.ibm.cloud.sdk.core.service.security.IamTokenManager;
 import com.ibm.cloud.sdk.core.util.CredentialUtils;
+
 import org.junit.Test;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+@SuppressWarnings("deprecation")
 public class AuthenticationTest {
   private static final String APIKEY_USERNAME = "apikey";
   private static final String APIKEY = "12345";
@@ -19,20 +31,80 @@ public class AuthenticationTest {
     public TestService() {
       super(SERVICE_NAME);
     }
+
+    public TestService(AuthenticatorConfig config) {
+      super(SERVICE_NAME);
+      setAuthenticator(config);
+    }
+
+    public Authenticator authenticator() {
+      return this.getAuthenticator();
+    }
   }
 
   @Test
-  public void authenticateWithApiKeyAsUsername() {
+  public void authenticateIam() {
+    IamOptions options = new IamOptions.Builder()
+        .apiKey(APIKEY)
+        .build();
+    TestService service = new TestService(options);
+    assertTrue(service.isTokenManagerSet());
+    assertTrue(service.authenticator() instanceof IamTokenManager);
+  }
+
+  @Test
+  public void authenticateIamWithApiKeyAsUsername() {
     TestService service = new TestService();
     service.setUsernameAndPassword(APIKEY_USERNAME, APIKEY);
     assertTrue(service.isTokenManagerSet());
+    assertTrue(service.authenticator() instanceof IamTokenManager);
   }
 
   @Test
-  public void authenticateWithIcp() {
+  public void authenticateIcpBasicAuth() {
     TestService service = new TestService();
     service.setUsernameAndPassword(APIKEY_USERNAME, ICP_APIKEY);
     assertFalse(service.isTokenManagerSet());
+    assertTrue(service.authenticator() instanceof BasicAuthenticator);
+  }
+
+  @Test
+  public void authenticateBasicAuth() {
+    BasicAuthConfig config = new BasicAuthConfig.Builder()
+        .username(BASIC_USERNAME)
+        .password("password1")
+        .build();
+    TestService service = new TestService(config);
+    assertTrue(service.authenticator() instanceof BasicAuthenticator);
+    service.setSkipAuthentication(false);
+    assertTrue(service.authenticator() instanceof BasicAuthenticator);
+  }
+
+  @Test
+  public void authenticateNone() {
+    NoauthConfig config = new NoauthConfig();
+    TestService service = new TestService(config);
+    assertTrue(service.authenticator() instanceof NoauthAuthenticator);
+    assertTrue(service.isSkipAuthentication());
+  }
+
+  @Test
+  public void authenticateICP4D() {
+    ICP4DConfig config = new ICP4DConfig.Builder()
+        .username("icp4d_user")
+        .password("password1")
+        .url("/my/icp4d/url")
+        .build();
+    TestService service = new TestService(config);
+    assertTrue(service.authenticator() instanceof ICP4DAuthenticator);
+  }
+
+  @Test
+  public void testSkipAuthentication() {
+    TestService service = new TestService();
+    service.setSkipAuthentication(true);
+    assertTrue(service.authenticator() instanceof NoauthAuthenticator);
+    assertTrue(service.isSkipAuthentication());
   }
 
   @Test

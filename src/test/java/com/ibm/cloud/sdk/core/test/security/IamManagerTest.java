@@ -10,19 +10,19 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package com.ibm.cloud.sdk.core.test.service;
-
-import com.ibm.cloud.sdk.core.service.security.IamOptions;
-import com.ibm.cloud.sdk.core.service.security.IamToken;
-import com.ibm.cloud.sdk.core.service.security.IamTokenManager;
-
-import com.ibm.cloud.sdk.core.test.BaseServiceUnitTest;
-import org.junit.Before;
-import org.junit.Test;
+package com.ibm.cloud.sdk.core.test.security;
 
 import static com.ibm.cloud.sdk.core.test.TestUtils.loadFixture;
 import static org.junit.Assert.assertEquals;
 import static org.testng.Assert.assertNotEquals;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import com.ibm.cloud.sdk.core.service.security.IamOptions;
+import com.ibm.cloud.sdk.core.test.BaseServiceUnitTest;
+import com.ibm.cloud.sdk.core.service.security.IamToken;
+import com.ibm.cloud.sdk.core.service.security.IamTokenManager;
 
 public class IamManagerTest extends BaseServiceUnitTest {
 
@@ -106,7 +106,7 @@ public class IamManagerTest extends BaseServiceUnitTest {
   }
 
   /**
-   * Tests that if the stored access token is expired, it can be refreshed properly.
+   * Tests that if the stored access token is expired, we can get a new one successfully.
    */
   @Test
   public void getTokenAfterRefresh() {
