@@ -30,6 +30,11 @@ public class JsonWebToken {
   private Map<String, String> header;
   private Payload payload;
 
+  /**
+   * Ctor which accepts the encoded JWT as a string.  This ctor will parse
+   * the JWT into its header and payload parts
+   * @param encodedToken a string representing the encoded JWT.
+   */
   public JsonWebToken(String encodedToken) {
     // Split the encoded jwt string into the header, payload, and signature
     String[] decodedParts = encodedToken.split("\\.");
@@ -74,6 +79,7 @@ public class JsonWebToken {
 
     /**
      * Returns the "Issued At" ("iat") value within this JsonWebToken.
+     * @return the iat value
      */
     public Long getIssuedAt() {
       return issuedAt;
@@ -81,6 +87,7 @@ public class JsonWebToken {
 
     /**
      * Returns the "Expires At" ("exp") value within this JsonWebToken.
+     * @return the exp value
      */
     public Long getExpiresAt() {
       return expiresAt;
@@ -88,6 +95,7 @@ public class JsonWebToken {
 
     /**
      * Returns the "Subject" ("sub") value with this JsonWebToken.
+     * @return the sub value
      */
     public String getSubject() {
       return subject;
@@ -95,6 +103,7 @@ public class JsonWebToken {
 
     /**
      * Returns the "Issuer" ("iss") value with this JsonWebToken.
+     * @return the iss value
      */
     public String getIssuer() {
       return issuer;
@@ -102,6 +111,7 @@ public class JsonWebToken {
 
     /**
      * Returns the "Audience" ("aud") value with this JsonWebToken.
+     * @return the aud value
      */
     public String getAudience() {
       return audience;
@@ -109,6 +119,7 @@ public class JsonWebToken {
 
     /**
      * Returns the "Userid" ("uid") value with this JsonWebToken.
+     * @return the uid value
      */
     public String getUserId() {
       return userId;
@@ -116,6 +127,7 @@ public class JsonWebToken {
 
     /**
      * Returns the "Username" ("username") value with this JsonWebToken.
+     * @return the username value
      */
     public String getUsername() {
       return username;
@@ -123,6 +135,7 @@ public class JsonWebToken {
 
     /**
      * Returns the "Role" ("role") value with this JsonWebToken.
+     * @return the role value
      */
     public String getRole() {
       return role;
