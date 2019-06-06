@@ -12,21 +12,18 @@
  */
 package com.ibm.cloud.sdk.core.security.jwt;
 
+import com.google.common.io.BaseEncoding;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
 import com.ibm.cloud.sdk.core.util.GsonSingleton;
 
 import java.lang.reflect.Type;
-import java.util.Base64;
-import java.util.Base64.Decoder;
 import java.util.Map;
 
 /**
  * This class is used to decode and parse a JWT (Json Web Token).
  */
 public class JsonWebToken {
-  private static Decoder decoder = Base64.getUrlDecoder();
-
   private Map<String, String> header;
   private Payload payload;
 
@@ -43,11 +40,11 @@ public class JsonWebToken {
     Type headerType = new TypeToken<Map<String, String>>(){}.getType();
 
     // Decode and parse the header.
-    json = new String(decoder.decode(decodedParts[0]));
+    json = new String(BaseEncoding.base64Url().decode(decodedParts[0]));
     header = GsonSingleton.getGson().fromJson(json, headerType);
 
     // Decode and parse the body.
-    json = new String(decoder.decode(decodedParts[1]));
+    json = new String(BaseEncoding.base64Url().decode(decodedParts[1]));
     payload = GsonSingleton.getGson().fromJson(json, Payload.class);
   }
 

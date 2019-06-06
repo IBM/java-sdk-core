@@ -12,6 +12,7 @@
  */
 package com.ibm.cloud.sdk.core.service.security;
 
+import com.google.common.io.BaseEncoding;
 import com.ibm.cloud.sdk.core.http.HttpClientSingleton;
 import com.ibm.cloud.sdk.core.http.HttpHeaders;
 import com.ibm.cloud.sdk.core.http.HttpMediaType;
@@ -21,14 +22,12 @@ import com.ibm.cloud.sdk.core.security.Authenticator;
 import com.ibm.cloud.sdk.core.service.exception.ServiceResponseException;
 import com.ibm.cloud.sdk.core.util.CredentialUtils;
 import com.ibm.cloud.sdk.core.util.ResponseConverterUtils;
-
 import okhttp3.Call;
 import okhttp3.FormBody;
 import okhttp3.Request;
 import okhttp3.Request.Builder;
 
 import java.io.IOException;
-import java.util.Base64;
 import java.util.logging.Logger;
 
 /**
@@ -218,7 +217,7 @@ public class IamTokenManager implements Authenticator {
     String result;
     if (getClientId() != null && getClientSecret() != null) {
       String s = getClientId() + ":" + getClientSecret();
-      result = "Basic " + Base64.getEncoder().encodeToString(s.getBytes());
+      result = "Basic " + BaseEncoding.base64().encode(s.getBytes());
     } else {
       result = DEFAULT_AUTHORIZATION;
     }
