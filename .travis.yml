@@ -1,6 +1,7 @@
 language: java
 dist: trusty
 jdk:
+- openjdk7
 - oraclejdk8
 
 notifications:
@@ -47,6 +48,7 @@ deploy:
     skip_cleanup: true
     on:
       tags: true
+      jdk: openjdk7
   - provider: releases
     api_key: $GITHUB_OAUTH_TOKEN
     file_glob: true
@@ -55,11 +57,13 @@ deploy:
     skip_cleanup: true
     on:
       tags: true
+      jdk: openjdk7
   - provider: script
     script: "./build/push-javadoc-to-gh-pages.sh"
     skip_cleanup: true
     on:
       tags: true
+      jdk: openjdk7
 
 # Ask bintray to sync the just-deployed artifact to maven central
 after_script:

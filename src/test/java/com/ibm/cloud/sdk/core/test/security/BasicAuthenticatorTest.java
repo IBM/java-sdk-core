@@ -1,13 +1,12 @@
 package com.ibm.cloud.sdk.core.test.security;
 
+import com.google.common.io.BaseEncoding;
 import com.ibm.cloud.sdk.core.http.HttpHeaders;
 import com.ibm.cloud.sdk.core.security.basicauth.BasicAuthConfig;
 import com.ibm.cloud.sdk.core.security.basicauth.BasicAuthenticator;
 
 import okhttp3.Request;
 import org.junit.Test;
-
-import java.util.Base64;
 
 import static junit.framework.TestCase.assertNotNull;
 import static org.junit.Assert.assertEquals;
@@ -30,7 +29,8 @@ public class BasicAuthenticatorTest {
     Request request = requestBuilder.build();
 
     String authHeader = request.header(HttpHeaders.AUTHORIZATION);
+    System.out.println(authHeader);
     assertNotNull(authHeader);
-    assertEquals("Basic " + Base64.getEncoder().encodeToString((username + ":" + password).getBytes()), authHeader);
+    assertEquals("Basic " + BaseEncoding.base64().encode((username + ":" + password).getBytes()), authHeader);
   }
 }
