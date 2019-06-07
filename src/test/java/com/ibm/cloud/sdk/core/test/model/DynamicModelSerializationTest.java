@@ -12,17 +12,7 @@
  */
 package com.ibm.cloud.sdk.core.test.model;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertNull;
-import static org.testng.Assert.assertTrue;
-
-import java.util.Arrays;
-import java.util.Map;
-
-import org.testng.annotations.Test;
-
+import com.google.common.collect.Sets;
 import com.google.gson.JsonSyntaxException;
 import com.ibm.cloud.sdk.core.service.model.DynamicModel;
 import com.ibm.cloud.sdk.core.test.model.generated.Foo;
@@ -35,6 +25,15 @@ import com.ibm.cloud.sdk.core.test.model.generated.ModelAPInteger;
 import com.ibm.cloud.sdk.core.test.model.generated.ModelAPObject;
 import com.ibm.cloud.sdk.core.test.model.generated.ModelAPString;
 import com.ibm.cloud.sdk.core.util.GsonSingleton;
+import org.testng.annotations.Test;
+
+import java.util.Map;
+
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertTrue;
 
 /**
  * This class contains tests of our DynamicModelTypeAdapterFactory.
@@ -280,12 +279,12 @@ public class DynamicModelSerializationTest {
     // This test will exercise some of the DynamicModel methods
     // dealing with additional properties.
     ModelAPFoo model = createModelAPFoo();
-    assertEquals(model.getPropertyNames(), Arrays.asList("baseball", "football"));
+    assertEquals(model.getPropertyNames(), Sets.newHashSet("baseball", "football"));
 
     Foo foo = model.get("baseball");
     assertNotNull(foo);
     model.put("baseball2", foo);
-    assertEquals(model.getPropertyNames(), Arrays.asList("baseball", "football", "baseball2"));
+    assertEquals(model.getPropertyNames(), Sets.newHashSet("baseball", "football", "baseball2"));
 
     Foo newFoo = createFoo("1B", 44);
     Foo previous = model.put("baseball", newFoo);
@@ -297,7 +296,7 @@ public class DynamicModelSerializationTest {
     assertEquals(props.size(), 3);
 
     model.removeProperty("baseball2");
-    assertEquals(model.getPropertyNames(), Arrays.asList("baseball", "football"));
+    assertEquals(model.getPropertyNames(), Sets.newHashSet("baseball", "football"));
 
     ModelAPFoo newModel = deserialize(serialize(model), ModelAPFoo.class);
     assertEquals(newModel, model);

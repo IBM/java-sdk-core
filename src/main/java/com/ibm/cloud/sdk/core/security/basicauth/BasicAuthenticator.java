@@ -12,11 +12,9 @@
  */
 package com.ibm.cloud.sdk.core.security.basicauth;
 
-import java.util.Base64;
-
+import com.google.common.io.BaseEncoding;
 import com.ibm.cloud.sdk.core.http.HttpHeaders;
 import com.ibm.cloud.sdk.core.security.Authenticator;
-
 import okhttp3.Request.Builder;
 
 /**
@@ -43,7 +41,7 @@ public class BasicAuthenticator implements Authenticator {
    */
   public BasicAuthenticator(BasicAuthConfig config) {
     this.authHeader =
-        "Basic " + Base64.getEncoder().encodeToString((config.getUsername() + ":" + config.getPassword()).getBytes());
+        "Basic " + BaseEncoding.base64().encode(((config.getUsername() + ":" + config.getPassword()).getBytes()));
   }
 
   @Override

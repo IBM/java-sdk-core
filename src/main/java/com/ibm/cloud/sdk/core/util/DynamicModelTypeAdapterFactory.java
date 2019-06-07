@@ -124,7 +124,7 @@ public class DynamicModelTypeAdapterFactory implements TypeAdapterFactory {
     Constructor<?>[] allCtors = clazz.getConstructors();
     for (int i = 0; i < allCtors.length; i++) {
       Constructor<?> ctor = allCtors[i];
-      if (ctor.getParameterCount() == 0) {
+      if (ctor.getParameterTypes().length == 0) {
         return ctor;
       }
     }

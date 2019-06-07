@@ -12,12 +12,7 @@
  */
 package com.ibm.cloud.sdk.core.security.icp4d;
 
-import java.io.IOException;
-import java.util.Base64;
-import java.util.logging.Logger;
-
-import org.apache.commons.lang3.StringUtils;
-
+import com.google.common.io.BaseEncoding;
 import com.ibm.cloud.sdk.core.http.HttpClientSingleton;
 import com.ibm.cloud.sdk.core.http.HttpConfigOptions;
 import com.ibm.cloud.sdk.core.http.HttpHeaders;
@@ -26,11 +21,14 @@ import com.ibm.cloud.sdk.core.http.ResponseConverter;
 import com.ibm.cloud.sdk.core.security.Authenticator;
 import com.ibm.cloud.sdk.core.service.exception.ServiceResponseException;
 import com.ibm.cloud.sdk.core.util.ResponseConverterUtils;
-
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Request.Builder;
+import org.apache.commons.lang3.StringUtils;
+
+import java.io.IOException;
+import java.util.logging.Logger;
 
 /**
  * This class implements support for the ICP4D authentication mechanism.
@@ -118,7 +116,7 @@ public class ICP4DAuthenticator implements Authenticator {
 
   private String buildBasicAuthHeader() {
     return "Basic "
-        + Base64.getEncoder().encodeToString((this.config.getUsername() + ":" + this.config.getPassword()).getBytes());
+        + BaseEncoding.base64().encode((this.config.getUsername() + ":" + this.config.getPassword()).getBytes());
   }
 
   /**
