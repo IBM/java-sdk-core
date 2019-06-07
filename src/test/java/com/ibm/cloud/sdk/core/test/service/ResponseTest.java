@@ -329,4 +329,25 @@ public class ResponseTest extends BaseServiceUnitTest {
     assertEquals(Arrays.asList("Austin", "Georgetown", "Cedar Park"), actualCities);
     assertNotNull(response.getHeaders());
   }
+
+  /**
+   * Test getting the status code from a response.
+   */
+  @Test
+  public void testResponseCode() {
+    server.enqueue(new MockResponse().setResponseCode(204));
+    Response<Void> response = service.headMethod().execute();
+    assertEquals("The response status code should be 204.", 204, response.getStatusCode());
+  }
+
+  /**
+   * Test getting the status line message from a response.
+   */
+  @Test
+  public void testResponseMessage() {
+    server.enqueue(new MockResponse().setStatus("HTTP/1.1 204 No Content"));
+    Response<Void> response = service.headMethod().execute();
+    assertEquals("The response status message should be 'No Content'.", "No Content", response.getStatusMessage());
+  }
+
 }

@@ -21,10 +21,14 @@ public class Response<T> {
 
   private T result;
   private Headers headers;
+  private int statusCode;
+  private String statusMessage;
 
   public Response(T result, okhttp3.Response httpResponse) {
     this.result = result;
     this.headers = new Headers(httpResponse.headers());
+    this.statusCode = httpResponse.code();
+    this.statusMessage = httpResponse.message();
   }
 
   public T getResult() {
@@ -33,5 +37,13 @@ public class Response<T> {
 
   public Headers getHeaders() {
     return this.headers;
+  }
+
+  public int getStatusCode() {
+    return this.statusCode;
+  }
+
+  public String getStatusMessage() {
+    return this.statusMessage;
   }
 }
