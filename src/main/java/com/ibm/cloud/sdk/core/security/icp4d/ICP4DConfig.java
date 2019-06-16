@@ -40,13 +40,13 @@ public class ICP4DConfig implements AuthenticatorConfig {
 
   @Override
   public void validate() {
-    if (StringUtils.isEmpty(url)) {
-      throw new IllegalArgumentException("You must provide a URL.");
-    }
-
-    // If the user specifies their own access token, then username/password are not required.
+    // If the user specifies their own access token, then no other properties are required.
     if (StringUtils.isNotEmpty(userManagedAccessToken)) {
       return;
+    }
+
+    if (StringUtils.isEmpty(url)) {
+      throw new IllegalArgumentException("You must provide a URL.");
     }
 
     if (StringUtils.isEmpty(username) || StringUtils.isEmpty(password)) {

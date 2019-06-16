@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 IBM Corp. All Rights Reserved.
+ * Copyright 2017, 2019 IBM Corp. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -63,11 +63,9 @@ public abstract class BaseService {
   private static final String APIKEY_AS_USERNAME = "apikey";
   private static final String ICP_PREFIX = "icp-";
   private static final Logger LOG = Logger.getLogger(BaseService.class.getName());
-  private String apiKey;
   private String username;
   private String password;
   private String endPoint;
-  private String defaultEndPoint;
   private final String name;
   private Authenticator authenticator;
 
@@ -131,8 +129,6 @@ public abstract class BaseService {
 
     if ((serviceCredentials.getUsername() != null) && (serviceCredentials.getPassword() != null)) {
       setUsernameAndPassword(serviceCredentials.getUsername(), serviceCredentials.getPassword());
-    } else if (serviceCredentials.getOldApiKey() != null) {
-      setApiKey(serviceCredentials.getOldApiKey());
     }
 
     if (serviceCredentials.getIamApiKey() != null) {
@@ -241,18 +237,6 @@ public abstract class BaseService {
   }
 
   /**
-   * Gets the API key.
-   *
-   *
-   * @return the API key
-   * @deprecated
-   */
-  @Deprecated
-  protected String getApiKey() {
-    return apiKey;
-  }
-
-  /**
    * Gets the username.
    *
    *
@@ -270,6 +254,7 @@ public abstract class BaseService {
    *
    * @return the password
    */
+  @Deprecated
   protected String getPassword() {
     return password;
   }
@@ -305,28 +290,13 @@ public abstract class BaseService {
   }
 
   /**
-   * Sets the API key.
+   * Sets the authentication information on the specified request builder.
+   * This method will invoke the configured Authenticator instance to perform the
+   * authentication needed for that authentication type.   This could involve adding an
+   * Authorization header, or perhaps adding a specific query param to the request URL.
    *
-   * @param apiKey the new API key
-   * @deprecated Use setAuthenticator(AuthenticatorConfig) instead
-   */
-  @Deprecated
-  public void setApiKey(String apiKey) {
-    if (CredentialUtils.hasBadStartOrEndChar(apiKey)) {
-      throw new IllegalArgumentException("The API key shouldn't start or end with curly brackets or quotes. Please "
-          + "remove any surrounding {, }, or \" characters.");
-    }
-
-    if (this.endPoint.equals(this.defaultEndPoint)) {
-      this.endPoint = "https://gateway-a.watsonplatform.net/visual-recognition/api";
-    }
-    this.apiKey = apiKey;
-  }
-
-  /**
-   * Sets the authentication. Okhttp3 compliant.
-   *
-   * @param builder the new authentication
+   * @param builder the request builder that represents the outgoing requst on which
+   * the authentication information should be set.
    */
   protected void setAuthentication(final Builder builder) {
     if (this.skipAuthentication) {
@@ -353,15 +323,12 @@ public abstract class BaseService {
 
     if ((endPoint != null) && !endPoint.isEmpty()) {
       String newEndPoint = endPoint.endsWith("/") ? endPoint.substring(0, endPoint.length() - 1) : endPoint;
-      if (this.endPoint == null) {
-        this.defaultEndPoint = newEndPoint;
-      }
       this.endPoint = newEndPoint;
     }
   }
 
   /**
-   * Sets the username and password.
+   * Sets the username and password on this instance.
    *
    * @param username the username
    * @param password the password
@@ -374,13 +341,19 @@ public abstract class BaseService {
           + "quotes. Please remove any surrounding {, }, or \" characters.");
     }
 
-    // we'll perform the token exchange for users UNLESS they're on ICP
+    // These fields are set to provide compatibility with the getUsername() and getPassword() methods.
+    this.username = username;
+    this.password = password;
+
+    // If this method is being called to set the IAM api key, we'll configure the IAM authenticator.
+    // Note that we only do this if the password does NOT indicate ICP.
     if (username.equals(APIKEY_AS_USERNAME) && !password.startsWith(ICP_PREFIX)) {
       IamOptions iamOptions = new IamOptions.Builder()
           .apiKey(password)
           .build();
       setAuthenticator(iamOptions);
     } else {
+      // Otherwise, we'll just use the username and password to configure basic auth.
       BasicAuthConfig basicAuthConfig = new BasicAuthConfig.Builder()
           .username(username)
           .password(password)
@@ -418,15 +391,19 @@ public abstract class BaseService {
   }
 
   /**
-   * Initializes a new Authenticator instance based on the input AuthenticatorConfig instance and sets it as
-   * the current authenticator on the BaseService instance.
+   * Initializes a new Authenticator instance based on the input AuthenticatorConfig instance,
+   * and sets it as the current authenticator on this BaseService instance.
+   * The "skipAuthentication" flag is updated appropriately by this method.
    * @param authConfig the AuthenticatorConfig instance containing the authentication configuration
    */
-  protected void setAuthenticator(AuthenticatorConfig authConfig) {
+  public void setAuthenticator(AuthenticatorConfig authConfig) {
     try {
-      this.authenticator = AuthenticatorFactory.getAuthenticator(authConfig);
-      if (authenticator instanceof NoauthAuthenticator) {
-        setSkipAuthentication(true);
+      if (authConfig == null) {
+        this.authenticator = null;
+        this.skipAuthentication = false;
+      } else {
+        this.authenticator = AuthenticatorFactory.getAuthenticator(authConfig);
+        this.skipAuthentication = (Authenticator.AUTHTYPE_NOAUTH.equals(authConfig.authenticationType()));
       }
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -503,14 +480,30 @@ public abstract class BaseService {
    * Sets the skip authentication.
    *
    * @param skipAuthentication the new skip authentication
+   *
+   * @deprecated  Use setAuthenticator(new NoauthConfig()) instead
    */
+  @Deprecated
   public void setSkipAuthentication(final boolean skipAuthentication) {
     this.skipAuthentication = skipAuthentication;
     if (this.skipAuthentication) {
       this.authenticator = new NoauthAuthenticator((NoauthConfig) null);
+    } else {
+      // If we're setting skipAuthentication to false, make sure we
+      // clear out the authenticator if it's currently set to "noauth".
+      if (Authenticator.AUTHTYPE_NOAUTH.equals(this.authenticator.authenticationType())) {
+        this.authenticator = null;
+      }
     }
   }
 
+  /**
+   * Returns true iff this instance has been configured to bypass authentication for outgoing requests.
+   * @return true to indicate authentication is being bypassed, false otherwise.
+   *
+   * @deprecated
+   */
+  @Deprecated
   public boolean isSkipAuthentication() {
     return this.skipAuthentication;
   }
