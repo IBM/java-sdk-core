@@ -16,6 +16,7 @@ import com.ibm.cloud.sdk.core.util.CredentialUtils;
 import org.junit.Test;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 @SuppressWarnings("deprecation")
@@ -105,6 +106,51 @@ public class AuthenticationTest {
     service.setSkipAuthentication(true);
     assertTrue(service.authenticator() instanceof NoauthAuthenticator);
     assertTrue(service.isSkipAuthentication());
+  }
+
+  @Test
+  public void testDefaultServiceCtor() {
+    TestService service = new TestService();
+    assertFalse(service.isSkipAuthentication());
+    assertNull(service.authenticator());
+  }
+
+  @Test
+  public void testSetAuthenticator() {
+    // Test use of setAuthenticator() on existing service instance.
+    TestService service = new TestService();
+    assertFalse(service.isSkipAuthentication());
+    assertNull(service.authenticator());
+
+    service.setAuthenticator(new NoauthConfig());
+    assertTrue(service.authenticator() instanceof NoauthAuthenticator);
+    assertTrue(service.isSkipAuthentication());
+
+    service.setAuthenticator(null);
+    assertNull(service.authenticator());
+    assertFalse(service.isSkipAuthentication());
+
+    BasicAuthConfig baConfig = new BasicAuthConfig.Builder()
+        .username("user")
+        .password("pw")
+        .build();
+    service.setAuthenticator(baConfig);
+    assertTrue(service.authenticator() instanceof BasicAuthenticator);
+    assertFalse(service.isSkipAuthentication());
+
+    IamOptions iamConfig = new IamOptions.Builder()
+        .apiKey("myapikey")
+        .build();
+    service.setAuthenticator(iamConfig);
+    assertTrue(service.authenticator() instanceof IamTokenManager);
+    assertFalse(service.isSkipAuthentication());
+
+    ICP4DConfig icp4dConfig = new ICP4DConfig.Builder()
+        .userManagedAccessToken("myuseraccesstoken")
+        .build();
+    service.setAuthenticator(icp4dConfig);
+    assertTrue(service.authenticator() instanceof ICP4DAuthenticator);
+    assertFalse(service.isSkipAuthentication());
   }
 
   @Test
