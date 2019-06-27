@@ -106,7 +106,7 @@ public class DynamicModelTypeAdapterFactory implements TypeAdapterFactory {
     Constructor<?> ctor = getDefaultCtor(rawType);
     if (ctor == null) {
       LOGGER.warning("Instance of class " + rawType.getName() + " is a subclass of DynamicModel, but it doesn't "
-        + "have a public default constructor.  This instance will be ignored by " + this.getClass().getSimpleName());
+        + "define a default constructor.  This instance will be ignored by " + this.getClass().getSimpleName());
       return null;
     }
 
@@ -121,10 +121,13 @@ public class DynamicModelTypeAdapterFactory implements TypeAdapterFactory {
    * @return clazz's default ctor
    */
   protected Constructor<?> getDefaultCtor(Class<?> clazz) {
-    Constructor<?>[] allCtors = clazz.getConstructors();
+    Constructor<?>[] allCtors = clazz.getDeclaredConstructors();
     for (int i = 0; i < allCtors.length; i++) {
       Constructor<?> ctor = allCtors[i];
       if (ctor.getParameterTypes().length == 0) {
+        if (!ctor.isAccessible()) {
+          accessor.makeAccessible(ctor);
+        }
         return ctor;
       }
     }
