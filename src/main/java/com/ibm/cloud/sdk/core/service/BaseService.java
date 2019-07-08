@@ -29,6 +29,7 @@ import com.ibm.cloud.sdk.core.security.Authenticator;
 import com.ibm.cloud.sdk.core.security.AuthenticatorConfig;
 import com.ibm.cloud.sdk.core.security.AuthenticatorFactory;
 import com.ibm.cloud.sdk.core.security.basicauth.BasicAuthConfig;
+import com.ibm.cloud.sdk.core.security.icp4d.ICP4DConfig;
 import com.ibm.cloud.sdk.core.security.noauth.NoauthAuthenticator;
 import com.ibm.cloud.sdk.core.security.noauth.NoauthConfig;
 import com.ibm.cloud.sdk.core.service.exception.BadRequestException;
@@ -140,8 +141,14 @@ public abstract class BaseService {
           .apiKey(serviceCredentials.getIamApiKey())
           .url(serviceCredentials.getIamUrl())
           .build();
-
       setAuthenticator(iamOptions);
+    }
+
+    if (serviceCredentials.getAccessToken() != null) {
+      ICP4DConfig config = new ICP4DConfig.Builder()
+          .userManagedAccessToken(serviceCredentials.getAccessToken())
+          .build();
+      setAuthenticator(config);
     }
   }
 

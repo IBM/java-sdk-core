@@ -48,6 +48,7 @@ public final class CredentialUtils {
     private String url;
     private String iamApiKey;
     private String iamUrl;
+    private String accessToken;
 
     private ServiceCredentials() { }
 
@@ -116,6 +117,15 @@ public final class CredentialUtils {
     }
 
     /**
+     * Gets the access token.
+     *
+     * @return the accessToken
+     */
+    public String getAccessToken() {
+      return accessToken;
+    }
+
+    /**
      * Returns true if no fields are set on the object.
      *
      * @return whether the object has any set fields
@@ -152,6 +162,7 @@ public final class CredentialUtils {
   // this value was used previously for IAM API keys as well
   private static final String APIKEY = "apikey";
   private static final String IAM_URL = "iam_url";
+  private static final String ACCESS_TOKEN = "access_token";
 
   private CredentialUtils() {
     // This is a utility class - no instantiation allowed.
@@ -452,6 +463,9 @@ public final class CredentialUtils {
             break;
           case IAM_URL:
             serviceCredentials.iamUrl = credentialValue;
+            break;
+          case ACCESS_TOKEN:
+            serviceCredentials.accessToken = credentialValue;
             break;
           default:
             log.warning("Unknown credential key found in credential file: " + credentialType);
