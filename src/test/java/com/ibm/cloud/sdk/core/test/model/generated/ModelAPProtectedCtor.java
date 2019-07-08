@@ -17,16 +17,20 @@ import com.google.gson.reflect.TypeToken;
 import com.ibm.cloud.sdk.core.service.model.DynamicModel;
 
 /**
- * Model with additionalProperties set to ref to named schema.
+ * Model with additionalProperties set to a string schema.
  */
-public class ModelAPFooNoCtor extends DynamicModel<Foo> {
-  @SerializedName(value="prop1", alternate={"property1", "p1"})
+public class ModelAPProtectedCtor extends DynamicModel<String> {
+  @SerializedName("prop1")
   private String prop1;
-  @SerializedName(value="prop2", alternate={"property2", "p2"})
+  @SerializedName("prop2")
   private Long prop2;
 
-  public ModelAPFooNoCtor(String x) {
-    super(new TypeToken<Foo>(){});
+  protected ModelAPProtectedCtor() {
+    super(new TypeToken<String>(){});
+  }
+
+  public ModelAPProtectedCtor(String x) {
+    this();
   }
 
   /**

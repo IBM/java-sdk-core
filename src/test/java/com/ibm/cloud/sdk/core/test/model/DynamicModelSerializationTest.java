@@ -23,6 +23,7 @@ import com.ibm.cloud.sdk.core.test.model.generated.ModelAPFooNoCtor;
 import com.ibm.cloud.sdk.core.test.model.generated.ModelAPFooNullTypeToken;
 import com.ibm.cloud.sdk.core.test.model.generated.ModelAPInteger;
 import com.ibm.cloud.sdk.core.test.model.generated.ModelAPObject;
+import com.ibm.cloud.sdk.core.test.model.generated.ModelAPProtectedCtor;
 import com.ibm.cloud.sdk.core.test.model.generated.ModelAPString;
 import com.ibm.cloud.sdk.core.util.GsonSingleton;
 import org.testng.annotations.Test;
@@ -123,6 +124,15 @@ public class DynamicModelSerializationTest {
 
   private ModelAPString createModelAPString() {
     ModelAPString model = new ModelAPString();
+    model.setProp1("value1");
+    model.setProp2(Long.valueOf(33));
+    model.put("baseball", "C");
+    model.put("football", "LT");
+    return model;
+  }
+
+  private ModelAPProtectedCtor createModelAPProtectedCtor() {
+    ModelAPProtectedCtor model = new ModelAPProtectedCtor("x");
     model.setProp1("value1");
     model.setProp2(Long.valueOf(33));
     model.put("baseball", "C");
@@ -259,6 +269,13 @@ public class DynamicModelSerializationTest {
     String jsonString = "null";
     ModelAPFoo model = deserialize(jsonString, ModelAPFoo.class);
     assertNull(model);
+  }
+
+  @Test
+  public void testModelAPProtectedCtor() {
+    ModelAPProtectedCtor model = createModelAPProtectedCtor();
+    // model.put("basketball", Integer.valueOf(33));
+    testSerDeser(model, ModelAPProtectedCtor.class, false);
   }
 
   @Test(expectedExceptions = {JsonSyntaxException.class}, expectedExceptionsMessageRegExp="Duplicate key: baseball")
