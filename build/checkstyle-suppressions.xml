@@ -9,4 +9,5 @@
     <suppress checks="MethodName" files="ICP4DTokenResponse.java"/>
     <suppress checks="WhitespaceAround" files="JsonWebToken.java"/>
     <suppress checks="LineLength" files="JsonWebTokenTest.java"/>
+    <suppress checks="LineLength" files="CredentialUtilsTest.java"/>
 </suppressions>
