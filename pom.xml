@@ -46,6 +46,7 @@
         <logback-version>1.2.3</logback-version>
         <guava-version>27.1-android</guava-version>
         <gson-version>2.8.5</gson-version>
+        <commons-codec-version>1.12</commons-codec-version>
         <commons-io-version>2.6</commons-io-version>
         <commons-lang3-version>3.8.1</commons-lang3-version>
         <rx-version>2.2.7</rx-version>
@@ -80,6 +81,11 @@
             <artifactId>mockwebserver</artifactId>
             <version>${okhttp3-version}</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>${commons-codec-version}</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
