@@ -34,7 +34,7 @@ public class HttpConfigTest {
     HttpConfigOptions configOptions = new HttpConfigOptions.Builder()
         .disableSslVerification(true)
         .proxy(proxy)
-            .proxyAuthenticator(authenticator)
+        .proxyAuthenticator(authenticator)
         .build();
 
     assertEquals(true, configOptions.shouldDisableSslVerification());
