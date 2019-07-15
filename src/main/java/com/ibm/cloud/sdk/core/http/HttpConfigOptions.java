@@ -1,5 +1,7 @@
 package com.ibm.cloud.sdk.core.http;
 
+import okhttp3.Authenticator;
+
 import java.net.Proxy;
 
 /**
@@ -8,6 +10,7 @@ import java.net.Proxy;
 public class HttpConfigOptions {
   private boolean disableSslVerification;
   private Proxy proxy;
+  private Authenticator proxyAuthenticator;
 
   public boolean shouldDisableSslVerification() {
     return this.disableSslVerification;
@@ -17,9 +20,14 @@ public class HttpConfigOptions {
     return this.proxy;
   }
 
+  public Authenticator getProxyAuthenticator() {
+    return this.proxyAuthenticator;
+  }
+
   public static class Builder {
     private boolean disableSslVerification;
     private Proxy proxy;
+    private Authenticator proxyAuthenticator;
 
     public HttpConfigOptions build() {
       return new HttpConfigOptions(this);
@@ -47,10 +55,23 @@ public class HttpConfigOptions {
       this.proxy = proxy;
       return this;
     }
+
+    /**
+     * Sets HTTP proxy authentication to be used by connections with the current client.
+     *
+     * @param proxyAuthenticator the desired {@link Authenticator}
+     * @return the builder
+     */
+    public Builder proxyAuthenticator(Authenticator proxyAuthenticator) {
+      this.proxyAuthenticator = proxyAuthenticator;
+      return this;
+    }
+
   }
 
   private HttpConfigOptions(Builder builder) {
     this.disableSslVerification = builder.disableSslVerification;
     this.proxy = builder.proxy;
+    this.proxyAuthenticator = builder.proxyAuthenticator;
   }
 }

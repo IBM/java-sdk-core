@@ -15,6 +15,7 @@ package com.ibm.cloud.sdk.core.http;
 import com.ibm.cloud.sdk.core.service.BaseService;
 import com.ibm.cloud.sdk.core.service.security.DelegatingSSLSocketFactory;
 import com.ibm.cloud.sdk.core.util.HttpLogging;
+import okhttp3.Authenticator;
 import okhttp3.ConnectionSpec;
 import okhttp3.OkHttpClient;
 import okhttp3.OkHttpClient.Builder;
@@ -177,6 +178,19 @@ public class HttpClientSingleton {
   }
 
   /**
+   * Sets a proxy authenticator for the specified {@link OkHttpClient} instance and returns
+   * a new instance with the authentication configured as requested.
+   *
+   * @param client the {@link OkHttpClient} instance to set the proxy authenticator on
+   * @param proxyAuthenticator the {@link Authenticator}
+   * @return the new {@link OkHttpClient} instance with the authenticator configured
+   */
+  private OkHttpClient setProxyAuthenticator(OkHttpClient client, Authenticator proxyAuthenticator) {
+    OkHttpClient.Builder builder = client.newBuilder().proxyAuthenticator(proxyAuthenticator);
+    return builder.build();
+  }
+
+  /**
    * Specifically enable all TLS protocols. See: https://github.com/watson-developer-cloud/java-sdk/issues/610
    *
    * @param builder the {@link OkHttpClient} builder.
@@ -259,7 +273,11 @@ public class HttpClientSingleton {
       if (options.getProxy() != null) {
         client = setProxy(client, options.getProxy());
       }
+      if (options.getProxyAuthenticator() != null) {
+        client = setProxyAuthenticator(client, options.getProxyAuthenticator());
+      }
     }
     return client;
   }
+
 }
