@@ -296,11 +296,13 @@ public class DynamicModelTypeAdapterFactory implements TypeAdapterFactory {
     private Constructor<?> ctor;
     private Map<String, BoundField> boundFields;
     private Gson gson;
+    private TypeAdapter<?> mapValueObjectTypeAdapter;
 
     Adapter(Gson gson, Constructor<?> ctor, Map<String, BoundField> boundFields) {
       this.gson = gson;
       this.ctor = ctor;
       this.boundFields = boundFields;
+      this.mapValueObjectTypeAdapter = new MapValueObjectTypeAdapter(gson);
     }
 
     /*
@@ -326,8 +328,17 @@ public class DynamicModelTypeAdapterFactory implements TypeAdapterFactory {
           }
         }
 
+        // Next, we need to dynamically retrieve the additionalPropertyTypeToken field
+        // from the DynamicModel instance and retrieve its TypeAdapter for deserializing arbitrary properties.
         TypeToken<?> mapValueType = getMapValueType(value);
         TypeAdapter mapValueTypeAdapter = gson.getAdapter(mapValueType);
+
+        // If the map value type is Object, then we need to use our own flavor of the Gson ObjectTypeAdapter.
+        if (mapValueType.getRawType().equals(Object.class)) {
+          mapValueTypeAdapter = this.mapValueObjectTypeAdapter;
+        } else {
+          mapValueTypeAdapter = gson.getAdapter(mapValueType);
+        }
 
         // Next, serialize each of the map entries.
         for (String key : ((DynamicModel<?>) value).getPropertyNames()) {
@@ -364,9 +375,16 @@ public class DynamicModelTypeAdapterFactory implements TypeAdapterFactory {
       }
 
       // Next, we need to dynamically retrieve the additionalPropertyTypeToken field
-      // from the DynamicModel instance and retrieve its TypeAdapter.
+      // from the DynamicModel instance and retrieve its TypeAdapter for deserializing arbitrary properties.
       TypeToken<?> mapValueType = getMapValueType(instance);
-      TypeAdapter<?> mapValueTypeAdapter = gson.getAdapter(mapValueType);
+      TypeAdapter<?> mapValueTypeAdapter;
+
+      // If the map value type is Object, then we need to use our own flavor of the Gson ObjectTypeAdapter.
+      if (mapValueType.getRawType().equals(Object.class)) {
+        mapValueTypeAdapter = this.mapValueObjectTypeAdapter;
+      } else {
+        mapValueTypeAdapter = gson.getAdapter(mapValueType);
+      }
 
       try {
         in.beginObject();
@@ -386,6 +404,8 @@ public class DynamicModelTypeAdapterFactory implements TypeAdapterFactory {
             // Otherwise, it must be an additional property so it belongs in the map.
             String key = name;
             Object value = mapValueTypeAdapter.read(in);
+
+            // Now add the arbitrary property/value to the map.
             Object replaced = ((DynamicModel) instance).put(key, value);
 
             // If this new map entry is replacing an existing entry, then we must have a duplicate.
