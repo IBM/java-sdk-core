@@ -52,7 +52,7 @@ public class DynamicModelSerializationTest {
     return GsonSingleton.getGson().fromJson(json, clazz);
   }
 
-  private <T> void testSerDeser(DynamicModel<?> model, Class<T> clazz, boolean trimDecimals) {
+  private <T> void testSerDeser(DynamicModel<?> model, Class<T> clazz) {
     String jsonString = serialize(model);
     if (displayOutput) {
       System.out.println("serialized " + model.getClass().getSimpleName() + ": " + jsonString);
@@ -61,12 +61,7 @@ public class DynamicModelSerializationTest {
     if (displayOutput) {
       System.out.println("de-serialized " + model.getClass().getSimpleName() + ": " + newModel.toString());
     }
-    if (trimDecimals) {
-      String deserString = newModel.toString().replaceAll(".0", "");
-      assertEquals(deserString, jsonString);
-    } else {
-      assertEquals(newModel, model);
-    }
+    assertEquals(newModel, model);
   }
 
   private ModelAPFoo createModelAPFoo() {
@@ -164,7 +159,7 @@ public class DynamicModelSerializationTest {
   public void testModelAPFoo() {
     ModelAPFoo model = createModelAPFoo();
     // model.put("basketball", "foo");
-    testSerDeser(model, ModelAPFoo.class, false);
+    testSerDeser(model, ModelAPFoo.class);
   }
 
   @Test
@@ -207,7 +202,7 @@ public class DynamicModelSerializationTest {
     ModelAPFoo model = createModelAPFoo();
     model.setProp1(null);
     // model.put("basketball", "foo");
-    testSerDeser(model, ModelAPFoo.class, false);
+    testSerDeser(model, ModelAPFoo.class);
   }
 
   @Test(expectedExceptions = {JsonSyntaxException.class})
@@ -242,26 +237,26 @@ public class DynamicModelSerializationTest {
   public void testModelAPInteger() {
     ModelAPInteger model = createModelAPInteger();
     // model.put("basketball", "foo");
-    testSerDeser(model, ModelAPInteger.class, false);
+    testSerDeser(model, ModelAPInteger.class);
   }
 
   @Test
   public void testModelAPObject() {
     ModelAPObject model = createModelAPObject();
-    testSerDeser(model, ModelAPObject.class, true);
+    testSerDeser(model, ModelAPObject.class);
   }
 
   @Test
   public void testModelAPString() {
     ModelAPString model = createModelAPString();
     // model.put("basketball", Integer.valueOf(33));
-    testSerDeser(model, ModelAPString.class, false);
+    testSerDeser(model, ModelAPString.class);
   }
 
   @Test
   public void testModelAPFooNullTypeToken() {
     ModelAPFooNullTypeToken model = createModelAPFooNullTypeToken();
-    testSerDeser(model, ModelAPFooNullTypeToken.class, true);
+    testSerDeser(model, ModelAPFooNullTypeToken.class);
   }
 
   @Test
@@ -275,7 +270,7 @@ public class DynamicModelSerializationTest {
   public void testModelAPProtectedCtor() {
     ModelAPProtectedCtor model = createModelAPProtectedCtor();
     // model.put("basketball", Integer.valueOf(33));
-    testSerDeser(model, ModelAPProtectedCtor.class, false);
+    testSerDeser(model, ModelAPProtectedCtor.class);
   }
 
   @Test(expectedExceptions = {JsonSyntaxException.class}, expectedExceptionsMessageRegExp="Duplicate key: baseball")

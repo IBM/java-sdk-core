@@ -16,6 +16,8 @@ import java.util.Date;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.internal.LazilyParsedNumber;
+import com.google.gson.internal.bind.TypeAdapters;
 
 /**
  * Gson singleton to be use when transforming from JSON to Java Objects and vise versa. It handles date formatting and
@@ -52,7 +54,12 @@ public final class GsonSingleton {
     // Date serializer and deserializer
     builder.registerTypeAdapter(Date.class, new DateDeserializer());
     builder.registerTypeAdapter(Date.class, new DateSerializer());
+
+    // Make sure that byte[] ser/deser includes base64 encoding/decoding.
     builder.registerTypeAdapter(byte[].class, new ByteArrayTypeAdapter());
+
+    // Make sure we serialize LazilyParsedNumber properly to avoid unnecessary decimal places in serialized integers.
+    builder.registerTypeAdapter(LazilyParsedNumber.class, TypeAdapters.NUMBER);
 
     // Type adapter factory for DynamicModel subclasses.
     builder.registerTypeAdapterFactory(new DynamicModelTypeAdapterFactory());
