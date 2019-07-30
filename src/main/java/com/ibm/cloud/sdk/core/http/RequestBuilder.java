@@ -334,7 +334,7 @@ public class RequestBuilder {
   public RequestBuilder bodyContent(String contentType, Object jsonContent, Object jsonPatchContent,
     InputStream nonJsonContent) {
     if (contentType != null) {
-      Gson requestGson = GsonSingleton.getGson().newBuilder().serializeNulls().create();
+      Gson requestGson = GsonSingleton.getGson().newBuilder().create();
       if (BaseService.isJsonMimeType(contentType)) {
         this.bodyContent(requestGson.toJsonTree(jsonContent).getAsJsonObject().toString(), contentType);
       } else if (BaseService.isJsonPatchMimeType(contentType)) {
