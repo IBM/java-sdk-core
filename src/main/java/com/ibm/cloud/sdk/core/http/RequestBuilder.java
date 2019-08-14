@@ -205,7 +205,7 @@ public class RequestBuilder {
   }
 
   /**
-   * Builds the.
+   * Builds the request.
    *
    * @return the request
    */

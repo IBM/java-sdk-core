@@ -2,7 +2,7 @@ package com.ibm.cloud.sdk.core.test.security;
 
 import org.junit.Test;
 
-import com.ibm.cloud.sdk.core.security.jwt.JsonWebToken;
+import com.ibm.cloud.sdk.core.security.JsonWebToken;
 
 import static org.junit.Assert.assertNotNull;
 

@@ -10,16 +10,14 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package com.ibm.cloud.sdk.core.security.icp4d;
+package com.ibm.cloud.sdk.core.security;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.ibm.cloud.sdk.core.security.jwt.JsonWebToken;
-
 /**
- * This class holds relevant info re: an ICP4D access token for use by the ICP4DAuthenticator class.
+ * This class holds relevant info re: a CP4D access token for use by the CloudPakForDataAuthenticator class.
  */
-public class ICP4DToken {
+public class Cp4dToken extends AbstractToken {
   public String accessToken;
   public long expirationTimeInMillis;
 
@@ -27,18 +25,18 @@ public class ICP4DToken {
    * This ctor is used to store a user-managed access token which will never expire.
    * @param accessToken the user-managed access token
    */
-  public ICP4DToken(String accessToken) {
+  public Cp4dToken(String accessToken) {
     this.accessToken = accessToken;
     this.expirationTimeInMillis = -1;
   }
 
   /**
-   * This ctor will extract the ICP4D access token from the specified ICP4DTokenResponse instance,
+   * This ctor will extract the ICP4D access token from the specified Cp4dTokenResponse instance,
    * and compute the expiration time as "80% of the timeToLive added to the issued-at time".
    * This means that we'll trigger the acquisition of a new token shortly before it is set to expire.
-   * @param response the ICP4DTokenResponse instance
+   * @param response the Cp4dTokenResponse instance
    */
-  public ICP4DToken(ICP4DTokenResponse response) {
+  public Cp4dToken(Cp4dTokenResponse response) {
     this.accessToken = response.getAccessToken();
 
     // To compute the expiration time, we'll need to crack open the accessToken value
@@ -59,8 +57,17 @@ public class ICP4DToken {
    * Returns true iff this object holds a valid non-expired access token.
    * @return true if token is valid and not expired, false otherwise
    */
+  @Override
   public boolean isTokenValid() {
     return StringUtils.isNotEmpty(this.accessToken)
         && (this.expirationTimeInMillis < 0 || System.currentTimeMillis() <= this.expirationTimeInMillis);
+  }
+
+  /**
+   * @return the access token value from this
+   */
+  @Override
+  public String getAccessToken() {
+    return this.accessToken;
   }
 }

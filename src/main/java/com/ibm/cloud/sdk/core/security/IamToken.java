@@ -10,7 +10,7 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package com.ibm.cloud.sdk.core.service.security;
+package com.ibm.cloud.sdk.core.security;
 
 import com.google.gson.annotations.SerializedName;
 import com.ibm.cloud.sdk.core.service.model.ObjectModel;
@@ -18,7 +18,7 @@ import com.ibm.cloud.sdk.core.service.model.ObjectModel;
 /**
  * Represents response from IAM API.
  */
-public class IamToken implements ObjectModel {
+public class IamToken extends AbstractToken implements ObjectModel, TokenServerResponse {
   @SerializedName("access_token")
   private String accessToken;
   @SerializedName("refresh_token")
@@ -29,6 +29,7 @@ public class IamToken implements ObjectModel {
   private Long expiresIn;
   private Long expiration;
 
+  @Override
   public String getAccessToken() {
     return accessToken;
   }
@@ -47,5 +48,30 @@ public class IamToken implements ObjectModel {
 
   public Long getExpiration() {
     return expiration;
+  }
+
+  /**
+   * Check if currently stored access token is valid.
+   *
+   * Using a buffer to prevent the edge case of the
+   * token expiring before the request could be made.
+   *
+   * The buffer will be a fraction of the total TTL. Using 80%.
+   *
+   * @return true iff the current access token is valid and not expired
+   */
+  @Override
+  public boolean isTokenValid() {
+    if (getAccessToken() == null || getExpiresIn() == null || getExpiration() == null) {
+      return false;
+    }
+
+    Double fractionOfTimeToLive = 0.8;
+    Long timeToLive = getExpiresIn();
+    Long expirationTime = getExpiration();
+    Double refreshTime = expirationTime - (timeToLive * (1.0 - fractionOfTimeToLive));
+    Double currentTime = Math.floor(System.currentTimeMillis() / 1000);
+
+    return currentTime < refreshTime;
   }
 }

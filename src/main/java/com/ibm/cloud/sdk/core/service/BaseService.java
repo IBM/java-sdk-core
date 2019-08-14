@@ -18,6 +18,8 @@ import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.ibm.cloud.sdk.core.http.HttpClientSingleton;
 import com.ibm.cloud.sdk.core.http.HttpConfigOptions;
 import com.ibm.cloud.sdk.core.http.HttpHeaders;
@@ -26,11 +28,6 @@ import com.ibm.cloud.sdk.core.http.ResponseConverter;
 import com.ibm.cloud.sdk.core.http.ServiceCall;
 import com.ibm.cloud.sdk.core.http.ServiceCallback;
 import com.ibm.cloud.sdk.core.security.Authenticator;
-import com.ibm.cloud.sdk.core.security.AuthenticatorConfig;
-import com.ibm.cloud.sdk.core.security.AuthenticatorFactory;
-import com.ibm.cloud.sdk.core.security.basicauth.BasicAuthConfig;
-import com.ibm.cloud.sdk.core.security.noauth.NoauthAuthenticator;
-import com.ibm.cloud.sdk.core.security.noauth.NoauthConfig;
 import com.ibm.cloud.sdk.core.service.exception.BadRequestException;
 import com.ibm.cloud.sdk.core.service.exception.ConflictException;
 import com.ibm.cloud.sdk.core.service.exception.ForbiddenException;
@@ -42,7 +39,6 @@ import com.ibm.cloud.sdk.core.service.exception.ServiceUnavailableException;
 import com.ibm.cloud.sdk.core.service.exception.TooManyRequestsException;
 import com.ibm.cloud.sdk.core.service.exception.UnauthorizedException;
 import com.ibm.cloud.sdk.core.service.exception.UnsupportedException;
-import com.ibm.cloud.sdk.core.service.security.IamOptions;
 import com.ibm.cloud.sdk.core.util.CredentialUtils;
 import com.ibm.cloud.sdk.core.util.RequestUtils;
 
@@ -59,12 +55,13 @@ import okhttp3.Response;
  * Abstracts common functionality of various IBM Cloud services.
  */
 public abstract class BaseService {
+  public static final String PROPNAME_URL = "URL";
+  public static final String PROPNAME_DISABLE_SSL = "DISABLE_SSL";
 
-  private static final String APIKEY_AS_USERNAME = "apikey";
-  private static final String ICP_PREFIX = "icp-";
   private static final Logger LOG = Logger.getLogger(BaseService.class.getName());
-  private String username;
-  private String password;
+
+  private static final String ERRORMSG_NO_AUTHENTICATOR = "Authentication information was not properly configured.";
+
   private String endPoint;
   private final String name;
   private Authenticator authenticator;
@@ -74,33 +71,49 @@ public abstract class BaseService {
   /** The default headers. */
   private Headers defaultHeaders = null;
 
-  /** The skip authentication. */
-  private boolean skipAuthentication = false;
-
-
   // Regular expression for JSON-related mimetypes.
   protected static final Pattern JSON_MIME_PATTERN =
     Pattern.compile("(?i)application\\/((json)|(merge\\-patch\\+json))(;.*)?");
   protected static final Pattern JSON_PATCH_MIME_PATTERN =
     Pattern.compile("(?i)application\\/json\\-patch\\+json(;.*)?");
 
+  // Hide the default ctor to prevent clients from calling it directly.
+  protected BaseService() {
+    name = null;
+  }
+
   /**
    * Instantiates a new IBM Cloud service.
    *
    * @param name the service name
+   * @param authenticator an Authenticator instance that will perform authentication on outgoing requests
    */
-  public BaseService(final String name) {
+  public BaseService(final String name, Authenticator authenticator) {
     this.name = name;
 
-    // file credentials take precedence
-    CredentialUtils.ServiceCredentials fileCredentials = CredentialUtils.getFileCredentials(name);
-    if (!fileCredentials.isEmpty()) {
-      setCredentialFields(fileCredentials);
-    } else {
-      setCredentialFields(CredentialUtils.getCredentialsFromVcap(name));
+    if (authenticator == null) {
+      throw new IllegalArgumentException(ERRORMSG_NO_AUTHENTICATOR);
+    }
+    this.authenticator = authenticator;
+
+    // Try to retrieve the service URL from either a credential file, environment, or VCAP_SERVICES.
+    Map<String, String> props = CredentialUtils.getServiceProperties(name);
+    String url = props.get(PROPNAME_URL);
+    if (StringUtils.isNotEmpty(url)) {
+      setEndPoint(url);
     }
 
-    client = configureHttpClient();
+    // Configure a default client instance.
+    this.client = configureHttpClient();
+
+    // Check to see if "disable ssl" was set in the service properties.
+    Boolean disableSSL = Boolean.valueOf(props.get(PROPNAME_DISABLE_SSL));
+    if (disableSSL) {
+      HttpConfigOptions options = new HttpConfigOptions.Builder()
+          .disableSslVerification(true)
+          .build();
+      this.configureClient(options);
+    }
   }
 
   /**
@@ -117,28 +130,6 @@ public abstract class BaseService {
    */
   public void setClient(OkHttpClient client) {
     this.client = client;
-  }
-
-  /**
-   * Calls appropriate methods to set credential values based on parsed ServiceCredentials object.
-   *
-   * @param serviceCredentials object containing parsed credential values
-   */
-  private void setCredentialFields(CredentialUtils.ServiceCredentials serviceCredentials) {
-    setEndPoint(serviceCredentials.getUrl());
-
-    if ((serviceCredentials.getUsername() != null) && (serviceCredentials.getPassword() != null)) {
-      setUsernameAndPassword(serviceCredentials.getUsername(), serviceCredentials.getPassword());
-    }
-
-    if (serviceCredentials.getIamApiKey() != null) {
-      IamOptions iamOptions = new IamOptions.Builder()
-          .apiKey(serviceCredentials.getIamApiKey())
-          .url(serviceCredentials.getIamUrl())
-          .build();
-
-      setAuthenticator(iamOptions);
-    }
   }
 
   /**
@@ -237,29 +228,6 @@ public abstract class BaseService {
   }
 
   /**
-   * Gets the username.
-   *
-   *
-   * @return the username
-   * @deprecated
-   */
-  @Deprecated
-  protected String getUsername() {
-    return username;
-  }
-
-  /**
-   * Gets the password.
-   *
-   *
-   * @return the password
-   */
-  @Deprecated
-  protected String getPassword() {
-    return password;
-  }
-
-  /**
    * Gets the API end point.
    *
    *
@@ -267,17 +235,6 @@ public abstract class BaseService {
    */
   public String getEndPoint() {
     return endPoint;
-  }
-
-  /**
-   * Checks the status of the tokenManager.
-   *
-   * @return true if the tokenManager has been set
-   * @deprecated
-   */
-  @Deprecated
-  public boolean isTokenManagerSet() {
-    return this.authenticator != null && "iam".equals(this.authenticator.authenticationType());
   }
 
   /**
@@ -299,14 +256,10 @@ public abstract class BaseService {
    * the authentication information should be set.
    */
   protected void setAuthentication(final Builder builder) {
-    if (this.skipAuthentication) {
-      return;
-    }
-
     if (this.authenticator != null) {
       this.authenticator.authenticate(builder);
     } else {
-      throw new IllegalArgumentException("Authentication information was not properly configured.");
+      throw new IllegalArgumentException(ERRORMSG_NO_AUTHENTICATOR);
     }
   }
 
@@ -328,41 +281,6 @@ public abstract class BaseService {
   }
 
   /**
-   * Sets the username and password on this instance.
-   *
-   * @param username the username
-   * @param password the password
-   * @deprecated Use setAuthenticator(AuthenticatorConfig) instead
-   */
-  @Deprecated
-  public void setUsernameAndPassword(final String username, final String password) {
-    if (CredentialUtils.hasBadStartOrEndChar(username) || CredentialUtils.hasBadStartOrEndChar(password)) {
-      throw new IllegalArgumentException("The username and password shouldn't start or end with curly brackets or "
-          + "quotes. Please remove any surrounding {, }, or \" characters.");
-    }
-
-    // These fields are set to provide compatibility with the getUsername() and getPassword() methods.
-    this.username = username;
-    this.password = password;
-
-    // If this method is being called to set the IAM api key, we'll configure the IAM authenticator.
-    // Note that we only do this if the password does NOT indicate ICP.
-    if (username.equals(APIKEY_AS_USERNAME) && !password.startsWith(ICP_PREFIX)) {
-      IamOptions iamOptions = new IamOptions.Builder()
-          .apiKey(password)
-          .build();
-      setAuthenticator(iamOptions);
-    } else {
-      // Otherwise, we'll just use the username and password to configure basic auth.
-      BasicAuthConfig basicAuthConfig = new BasicAuthConfig.Builder()
-          .username(username)
-          .password(password)
-          .build();
-      setAuthenticator(basicAuthConfig);
-    }
-  }
-
-  /**
    * Set the default headers to be used on every HTTP request.
    *
    * @param headers name value pairs of headers
@@ -376,45 +294,10 @@ public abstract class BaseService {
   }
 
   /**
-   * Sets IAM information.
-   *
-   * Be aware that if you pass in an access token using this method, you accept responsibility for managing the access
-   * token yourself. You must set a new access token before this one expires. Failing to do so will result in
-   * authentication errors after this token expires.
-   *
-   * @param iamOptions object containing values to be used for authenticating with IAM
-   * @deprecated Use setAuthenticator(AuthenticatorConfig) instead
-   */
-  @Deprecated
-  public void setIamCredentials(IamOptions iamOptions) {
-    setAuthenticator(iamOptions);
-  }
-
-  /**
-   * Initializes a new Authenticator instance based on the input AuthenticatorConfig instance,
-   * and sets it as the current authenticator on this BaseService instance.
-   * The "skipAuthentication" flag is updated appropriately by this method.
-   * @param authConfig the AuthenticatorConfig instance containing the authentication configuration
-   */
-  public void setAuthenticator(AuthenticatorConfig authConfig) {
-    try {
-      if (authConfig == null) {
-        this.authenticator = null;
-        this.skipAuthentication = false;
-      } else {
-        this.authenticator = AuthenticatorFactory.getAuthenticator(authConfig);
-        this.skipAuthentication = (Authenticator.AUTHTYPE_NOAUTH.equals(authConfig.authenticationType()));
-      }
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  /**
    * Returns the Authenticator instance currently set on this BaseService instance.
    * @return the Authenticator set on this BaseService
    */
-  protected Authenticator getAuthenticator() {
+  public Authenticator getAuthenticator() {
     return this.authenticator;
   }
 
@@ -474,38 +357,6 @@ public abstract class BaseService {
       default: // other errors
         throw new ServiceResponseException(response.code(), response);
     }
-  }
-
-  /**
-   * Sets the skip authentication.
-   *
-   * @param skipAuthentication the new skip authentication
-   *
-   * @deprecated  Use setAuthenticator(new NoauthConfig()) instead
-   */
-  @Deprecated
-  public void setSkipAuthentication(final boolean skipAuthentication) {
-    this.skipAuthentication = skipAuthentication;
-    if (this.skipAuthentication) {
-      this.authenticator = new NoauthAuthenticator((NoauthConfig) null);
-    } else {
-      // If we're setting skipAuthentication to false, make sure we
-      // clear out the authenticator if it's currently set to "noauth".
-      if (Authenticator.AUTHTYPE_NOAUTH.equals(this.authenticator.authenticationType())) {
-        this.authenticator = null;
-      }
-    }
-  }
-
-  /**
-   * Returns true iff this instance has been configured to bypass authentication for outgoing requests.
-   * @return true to indicate authentication is being bypassed, false otherwise.
-   *
-   * @deprecated
-   */
-  @Deprecated
-  public boolean isSkipAuthentication() {
-    return this.skipAuthentication;
   }
 
   /**
