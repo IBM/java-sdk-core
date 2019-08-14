@@ -24,6 +24,7 @@ import org.junit.Test;
 
 import com.ibm.cloud.sdk.core.http.HttpClientSingleton;
 import com.ibm.cloud.sdk.core.http.HttpConfigOptions;
+import com.ibm.cloud.sdk.core.security.NoauthAuthenticator;
 import com.ibm.cloud.sdk.core.service.BaseService;
 
 import okhttp3.OkHttpClient;
@@ -38,14 +39,14 @@ public class BaseServiceTest {
   // Simulated generated service class.
   public static class TestService extends BaseService {
     public TestService(String name) {
-      super(name);
+      super(name, new NoauthAuthenticator());
     }
   }
 
   // A second simulated generated service class.
   public static class AnotherTestService extends BaseService {
     public AnotherTestService(String name) {
-      super(name);
+      super(name, new NoauthAuthenticator());
     }
 
     @Override

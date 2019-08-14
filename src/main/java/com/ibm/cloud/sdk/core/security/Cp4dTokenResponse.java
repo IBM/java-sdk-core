@@ -10,12 +10,12 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package com.ibm.cloud.sdk.core.security.icp4d;
+package com.ibm.cloud.sdk.core.security;
 
 /**
- * This class models a response received from the ICP4D "get token" API.
+ * This class models a response received from the CP4D "get token" API.
  */
-public class ICP4DTokenResponse {
+public class Cp4dTokenResponse implements TokenServerResponse {
 
   private String username;
   private String role;

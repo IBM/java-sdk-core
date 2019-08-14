@@ -10,18 +10,24 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package com.ibm.cloud.sdk.core.security.noauth;
+package com.ibm.cloud.sdk.core.security;
 
-import com.ibm.cloud.sdk.core.security.Authenticator;
-import com.ibm.cloud.sdk.core.security.AuthenticatorConfig;
+import java.util.Map;
+
+import okhttp3.Request.Builder;
 
 /**
- * This AuthenticatorConfig subclass is used in situations where we want to bypass authentication.
+ * This class is a placeholder implementation of the Authenticator interface
+ * which performs no authentication of outgoing REST API requests.
  */
-public class NoauthConfig implements AuthenticatorConfig {
+public class NoauthAuthenticator implements Authenticator {
 
-  public NoauthConfig() {
+  public NoauthAuthenticator() {
   }
+
+  public NoauthAuthenticator(Map<String, String> config) {
+  }
+
 
   @Override
   public String authenticationType() {
@@ -29,7 +35,11 @@ public class NoauthConfig implements AuthenticatorConfig {
   }
 
   @Override
-  public void validate() {
+  public void authenticate(Builder builder) {
+    // do nothing
   }
 
+  @Override
+  public void validate() {
+  }
 }

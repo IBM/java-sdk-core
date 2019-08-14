@@ -50,6 +50,8 @@
         <commons-io-version>2.6</commons-io-version>
         <commons-lang3-version>3.8.1</commons-lang3-version>
         <rx-version>2.2.7</rx-version>
+        <mockito-version>2.0.5-beta</mockito-version>
+        <powermock-version>1.6.2</powermock-version>
     </properties>
 
     <!-- we use the travis providers for deployment so don't need to specify repositories here -->
@@ -139,6 +141,23 @@
             <groupId>io.reactivex.rxjava2</groupId>
             <artifactId>rxjava</artifactId>
             <version>${rx-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${mockito-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-api-mockito</artifactId>
+            <version>${powermock-version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-module-junit4</artifactId>
+            <version>${powermock-version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

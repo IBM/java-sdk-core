@@ -5,8 +5,9 @@
         "http://checkstyle.sourceforge.net/dtds/suppressions_1_1.dtd">
 
 <suppressions>
-    <suppress checks="MemberName" files="ICP4DTokenResponse.java"/>
-    <suppress checks="MethodName" files="ICP4DTokenResponse.java"/>
+    <suppress checks="MemberName" files="Cp4dTokenResponse.java"/>
+    <suppress checks="MethodName" files="Cp4dTokenResponse.java"/>
     <suppress checks="WhitespaceAround" files="JsonWebToken.java"/>
     <suppress checks="LineLength" files="JsonWebTokenTest.java"/>
+    <suppress checks="HideUtilityClassConstructor" files="AuthenticatorBase.java"/>
 </suppressions>

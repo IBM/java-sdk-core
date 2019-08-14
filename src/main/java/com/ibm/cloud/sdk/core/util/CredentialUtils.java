@@ -12,141 +12,46 @@
  */
 package com.ibm.cloud.sdk.core.util;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonSyntaxException;
-import org.apache.commons.io.IOUtils;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Hashtable;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
+import com.ibm.cloud.sdk.core.security.Authenticator;
+import com.ibm.cloud.sdk.core.service.BaseService;
 
 /**
  * CredentialUtils retrieves service credentials from the environment.
  */
 public final class CredentialUtils {
-
-  /**
-   * A util class to easily store service credentials.
-   *
-   */
-  public static class ServiceCredentials {
-    private String username;
-    private String password;
-    private String oldApiKey;
-    private String url;
-    private String iamApiKey;
-    private String iamUrl;
-
-    private ServiceCredentials() { }
-
-    private ServiceCredentials(String username, String password, String oldApiKey, String url, String iamApiKey,
-                               String iamUrl) {
-      this.username = username;
-      this.password = password;
-      this.oldApiKey = oldApiKey;
-      this.url = url;
-      this.iamApiKey = iamApiKey;
-      this.iamUrl = iamUrl;
-    }
-
-    /**
-     * Gets the username.
-     *
-     * @return the username
-     */
-    public String getUsername() {
-      return username;
-    }
-
-    /**
-     * Gets the password.
-     *
-     * @return the password
-     */
-    public String getPassword() {
-      return password;
-    }
-
-    /**
-     * Gets the API used for older service instances.
-     *
-     * @return the oldApiKey
-     */
-    public String getOldApiKey() {
-      return oldApiKey;
-    }
-
-    /**
-     * Gets the API URL.
-     *
-     * @return the url
-     */
-    public String getUrl() {
-      return url;
-    }
-
-    /**
-     * Gets the IAM API key.
-     *
-     * @return the iamApiKey
-     */
-    public String getIamApiKey() {
-      return iamApiKey;
-    }
-
-    /**
-     * Gets the IAM URL.
-     *
-     * @return the iamUrl
-     */
-    public String getIamUrl() {
-      return iamUrl;
-    }
-
-    /**
-     * Returns true if no fields are set on the object.
-     *
-     * @return whether the object has any set fields
-     */
-    public boolean isEmpty() {
-      return (username == null
-          && password == null
-          && oldApiKey == null
-          && url == null
-          && iamApiKey == null
-          && iamUrl == null);
-    }
-  }
+  private static final Logger log = Logger.getLogger(CredentialUtils.class.getName());
 
   public static final String PLAN_STANDARD = "standard";
-
-  private static String services;
-  private static Context context;
-  private static final Logger log = Logger.getLogger(CredentialUtils.class.getName());
 
   private static final String DEFAULT_CREDENTIAL_FILE_NAME = "ibm-credentials.env";
 
   private static final String VCAP_SERVICES = "VCAP_SERVICES";
-  private static final String LOOKUP_NAME_EXTENSION_API_KEY = "/credentials";
-  private static final String LOOKUP_NAME_EXTENSION_URL = "/url";
 
   private static final String CREDENTIALS = "credentials";
   private static final String PLAN = "plan";
   private static final String USERNAME = "username";
   private static final String PASSWORD = "password";
-  private static final String OLD_APIKEY = "api_key";
   private static final String URL = "url";
   private static final String IAM_APIKEY = "iam_apikey";
   // this value was used previously for IAM API keys as well
@@ -175,84 +80,12 @@ public final class CredentialUtils {
   // VCAP-related methods
 
   /**
-   * Calls methods to parse VCAP_SERVICES and retrieve credential values. For some values, if VCAP_SERVICES aren't
-   * present, it'll fall back to checking JNDI.
-   *
-   * @param serviceName the service name
-   * @return ServiceCredentials object containing parsed values
-   */
-  public static ServiceCredentials getCredentialsFromVcap(String serviceName) {
-    String username = getVcapValue(serviceName, USERNAME);
-    String password = getVcapValue(serviceName, PASSWORD);
-    String oldApiKey = getVcapValue(serviceName, OLD_APIKEY);
-    if (username == null && password == null && oldApiKey == null) {
-      oldApiKey = getJndiValue(serviceName, LOOKUP_NAME_EXTENSION_API_KEY);
-    }
-
-    String url = getVcapValue(serviceName, URL);
-    if (url == null) {
-      url = getJndiValue(serviceName, LOOKUP_NAME_EXTENSION_URL);
-    }
-
-    String iamApiKey = getVcapValue(serviceName, IAM_APIKEY);
-    String iamUrl = getVcapValue(serviceName, IAM_URL);
-
-    return new ServiceCredentials(username, password, oldApiKey, url, iamApiKey, iamUrl);
-  }
-
-  /**
-   * Builds the lookup name to be searched for in JNDI
-   * and uses it to call the overloaded JNDI method.
-   *
-   * @param serviceName Name of the IBM Cloud service
-   * @param lookupNameExtension Extension to determine which value should be retrieved through JNDI
-   * @return The encoded desired value
-   */
-  private static String getJndiValue(String serviceName, String lookupNameExtension) {
-    return getJndiValue("watson-developer-cloud/" + serviceName + lookupNameExtension);
-  }
-
-  /**
-   * Attempt to get the Base64-encoded value through JNDI.
-   *
-   * This method should always return null on Android due to the javax functions being unsupported
-   *
-   * @param lookupName Key to lookup in JNDI
-   * @return The encoded desired value
-   */
-  private static String getJndiValue(String lookupName) {
-    if (!isClassAvailable("javax.naming.Context") || !isClassAvailable("javax.naming.InitialContext")) {
-      log.info("JNDI string lookups is not available.");
-      return null;
-    }
-
-    try {
-      if (context == null) {
-        context = new InitialContext();
-      }
-      return (String) context.lookup(lookupName);
-    } catch (Exception e) {
-      log.fine("JNDI " + lookupName + " not found.");
-      return null;
-    }
-  }
-
-  private static boolean isClassAvailable(String className) {
-    try {
-      Class.forName(className);
-      return true;
-    } catch (Throwable e) {
-      return false;
-    }
-  }
-
-  /**
    * Gets the <b>VCAP_SERVICES</b> environment variable and return it as a {@link JsonObject}.
    *
    * @return the VCAP_SERVICES as a {@link JsonObject}.
    */
   private static JsonObject getVcapServices() {
-    final String envServices = services != null ? services : System.getenv(VCAP_SERVICES);
+    final String envServices = EnvironmentUtils.getenv(VCAP_SERVICES);
     if (envServices == null) {
       return null;
     }
@@ -293,6 +126,12 @@ public final class CredentialUtils {
     return null;
   }
 
+  /**
+   * Returns the property named 'key' associated with the specified service.
+   * @param serviceName the name of the service
+   * @param key the name of the property to retrieve
+   * @return the value of the specified property
+   */
   public static String getVcapValue(String serviceName, String key) {
     return getVcapValue(serviceName, key, null);
   }
@@ -325,41 +164,7 @@ public final class CredentialUtils {
     return null;
   }
 
-  /**
-   * Sets the VCAP_SERVICES variable. This is utility variable for testing
-   *
-   * @param services the VCAP_SERVICES
-   */
-  public static void setServices(String services) {
-    CredentialUtils.services = services;
-  }
-
-  /**
-   * Sets the context variable for JNDI. This is a utility method for testing.
-   *
-   * @param env Configuration options for the context
-   */
-  public static void setContext(Hashtable<String, String> env) {
-    try {
-      CredentialUtils.context = new InitialContext(env);
-    } catch (Exception e) {
-      log.fine("Error setting up JNDI context: " + e.getMessage());
-    }
-  }
-
   // Credential file-related methods
-
-  /**
-   * Calls methods to find and parse a credential file in various locations.
-   *
-   * @param serviceName the service name
-   * @return ServiceCredentials object containing parsed values
-   */
-  public static ServiceCredentials getFileCredentials(String serviceName) {
-    List<File> files = getFilesToCheck();
-    List<String> credentialFileContents = getFirstExistingFileContents(files);
-    return setCredentialFields(serviceName, credentialFileContents);
-  }
 
   /**
    * Creates a list of files to check for credentials. The file locations are:
@@ -373,19 +178,31 @@ public final class CredentialUtils {
   private static List<File> getFilesToCheck() {
     List<File> files = new ArrayList<>();
 
-    String userSpecifiedPath = System.getenv("IBM_CREDENTIALS_FILE");
-    String unixHomeDirectory = System.getenv("HOME");
-    String windowsFirstHomeDirectory = System.getenv("HOMEDRIVE") + System.getenv("HOMEPATH");
-    String windowsSecondHomeDirectory = System.getenv("USERPROFILE");
+    String userSpecifiedPath = EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE");
+    String unixHomeDirectory = EnvironmentUtils.getenv("HOME");
+    String windowsFirstHomeDirectory = EnvironmentUtils.getenv("HOMEDRIVE") + EnvironmentUtils.getenv("HOMEPATH");
+    String windowsSecondHomeDirectory = EnvironmentUtils.getenv("USERPROFILE");
     String projectDirectory = System.getProperty("user.dir");
 
-    if (userSpecifiedPath != null) {
+    if (StringUtils.isNotEmpty(userSpecifiedPath)) {
       files.add(new File(userSpecifiedPath));
     }
-    files.add(new File(String.format("%s/%s", unixHomeDirectory, DEFAULT_CREDENTIAL_FILE_NAME)));
-    files.add(new File(String.format("%s/%s", windowsFirstHomeDirectory, DEFAULT_CREDENTIAL_FILE_NAME)));
-    files.add(new File(String.format("%s/%s", windowsSecondHomeDirectory, DEFAULT_CREDENTIAL_FILE_NAME)));
-    files.add(new File(String.format("%s/%s", projectDirectory, DEFAULT_CREDENTIAL_FILE_NAME)));
+
+    if (StringUtils.isNotEmpty(unixHomeDirectory)) {
+      files.add(new File(String.format("%s/%s", unixHomeDirectory, DEFAULT_CREDENTIAL_FILE_NAME)));
+    }
+
+    if (StringUtils.isNotEmpty(windowsFirstHomeDirectory) && !"nullnull".equals(windowsFirstHomeDirectory)) {
+      files.add(new File(String.format("%s/%s", windowsFirstHomeDirectory, DEFAULT_CREDENTIAL_FILE_NAME)));
+    }
+
+    if (StringUtils.isNotEmpty(windowsSecondHomeDirectory)) {
+      files.add(new File(String.format("%s/%s", windowsSecondHomeDirectory, DEFAULT_CREDENTIAL_FILE_NAME)));
+    }
+
+    if (StringUtils.isNotEmpty(projectDirectory)) {
+      files.add(new File(String.format("%s/%s", projectDirectory, DEFAULT_CREDENTIAL_FILE_NAME)));
+    }
 
     return files;
   }
@@ -413,53 +230,152 @@ public final class CredentialUtils {
   }
 
   /**
-   * Parses provided list of strings to create and set values for a ServiceCredentials instance.
-   *
-   * @param serviceName the service name
-   * @param credentialFileContents list of lines in the user's credential file
-   * @return ServiceCredentials object containing the parsed values
+   * Returns a Map containing properties found within the credential file that are associated with the
+   * specified cloud service.
+   * @param serviceName the name of the cloud service whose properties should be loaded
+   * @return a Map containing the properties
    */
-  private static ServiceCredentials setCredentialFields(String serviceName, List<String> credentialFileContents) {
-    ServiceCredentials serviceCredentials = new ServiceCredentials();
-
-    if (credentialFileContents == null) {
-      return serviceCredentials;
+  public static Map<String, String> getFileCredentialsAsMap(String serviceName) {
+    List<File> files = getFilesToCheck();
+    List<String> contents = getFirstExistingFileContents(files);
+    if (contents != null && !contents.isEmpty()) {
+      return parseCredentials(serviceName, contents);
     }
 
-    for (String line : credentialFileContents) {
-      String[] keyAndVal = line.split("=");
-      String lowercaseKey = keyAndVal[0].toLowerCase();
-      if (lowercaseKey.contains(serviceName)) {
-        String credentialType = lowercaseKey.substring(serviceName.length() + 1);
-        String credentialValue = keyAndVal[1];
+    return Collections.emptyMap();
+  }
 
-        switch (credentialType) {
-          case USERNAME:
-            serviceCredentials.username = credentialValue;
-            break;
-          case PASSWORD:
-            serviceCredentials.password = credentialValue;
-            break;
-          case OLD_APIKEY:
-            serviceCredentials.oldApiKey = credentialValue;
-            break;
-          case URL:
-            serviceCredentials.url = credentialValue;
-            break;
-          case APIKEY:
-          case IAM_APIKEY:
-            serviceCredentials.iamApiKey = credentialValue;
-            break;
-          case IAM_URL:
-            serviceCredentials.iamUrl = credentialValue;
-            break;
-          default:
-            log.warning("Unknown credential key found in credential file: " + credentialType);
-            break;
+  /**
+   * Returns a Map containing properties found within the process' environment that are associated with the
+   * specified cloud service.
+   * @param serviceName the name of the cloud service whose properties should be retrieved
+   * @return a Map containing the properties
+   */
+  public static Map<String, String> getEnvCredentialsAsMap(String serviceName) {
+    // Retrieve the Map of environment variables from the current process.
+    Map<String, String> env = EnvironmentUtils.getenv();
+
+    // Extract the properties related to the specified service and populate the result Map.
+    if (env != null && !env.isEmpty()) {
+      Map<String, String> props = new HashMap<>();
+      serviceName = serviceName.toUpperCase();
+      for (Map.Entry<String, String> entry : env.entrySet()) {
+        String key = entry.getKey();
+        String value = entry.getValue();
+
+        if (key.startsWith(serviceName + "_")) {
+          String credentialName = key.substring(serviceName.length() + 1);
+          if (StringUtils.isNotEmpty(credentialName) && StringUtils.isNotEmpty(value)) {
+            props.put(credentialName, value);
+          }
+        }
+      }
+      return props;
+    }
+
+    return Collections.emptyMap();
+  }
+
+  /**
+   * Returns a Map containing properties found within the VCAP_SERVICES environment variable that are associated
+   * with the specified cloud service.
+   * @param serviceName the name of the cloud service whose properties should be retrieved
+   * @return a Map containing the properties
+   */
+  public static Map<String, String> getVcapCredentialsAsMap(String serviceName) {
+    Map<String, String> props = new HashMap<>();
+    addToMap(props, Authenticator.PROPNAME_USERNAME, getVcapValue(serviceName, USERNAME));
+    addToMap(props, Authenticator.PROPNAME_PASSWORD, getVcapValue(serviceName, PASSWORD));
+    addToMap(props, BaseService.PROPNAME_URL, getVcapValue(serviceName, URL));
+    addToMap(props, Authenticator.PROPNAME_URL, getVcapValue(serviceName, IAM_URL));
+
+    // For the IAM apikey, the "apikey" property has higher precedence than "iam_apikey".
+    addToMap(props, Authenticator.PROPNAME_APIKEY, getVcapValue(serviceName, IAM_APIKEY));
+    addToMap(props, Authenticator.PROPNAME_APIKEY, getVcapValue(serviceName, APIKEY));
+
+    // Try to guess at the auth type based on the properties found.
+    if (StringUtils.isNotEmpty(props.get(Authenticator.PROPNAME_APIKEY))) {
+      addToMap(props, Authenticator.PROPNAME_AUTH_TYPE, Authenticator.AUTHTYPE_IAM);
+    } else if (StringUtils.isNotEmpty(props.get(Authenticator.PROPNAME_USERNAME))
+        || StringUtils.isNotEmpty(props.get(Authenticator.PROPNAME_PASSWORD))) {
+      addToMap(props, Authenticator.PROPNAME_AUTH_TYPE, Authenticator.AUTHTYPE_BASIC);
+    }
+
+    return props;
+  }
+
+  /**
+   * This function forms a wrapper around the "getFileCredentialsAsMap", "getEnvCredentialsAsMap", and
+   * "getVcapCredentialsAsMap" methods and provides a convenient way to retrieve the configuration
+   * properties for the specified service from any of the three config sources.
+   * The properties are retrieved from one of the following sources (in precendence order):
+   * 1) Credential file
+   * 2) Environment variables
+   * 3) VCAP_SERVICES
+   * @param serviceName the name of the service
+   * @return a Map of properties associated with the service
+   */
+  public static Map<String, String> getServiceProperties(String serviceName) {
+    Map<String, String> props = getFileCredentialsAsMap(serviceName);
+    if (props.isEmpty()) {
+      props = getEnvCredentialsAsMap(serviceName);
+    }
+    if (props.isEmpty()) {
+      props = getVcapCredentialsAsMap(serviceName);
+    }
+    return props;
+  }
+
+  /**
+   * Adds the specified key/value pair to the map if the value is not null or "".
+   * @param map the map
+   * @param key the key
+   * @param value the value
+   */
+  private static void addToMap(Map<String, String> map, String key, String value) {
+    if (StringUtils.isNotEmpty(value)) {
+      map.put(key, value);
+    }
+  }
+
+  /**
+   * Parses each of the entries in "contents" that are related to the specified cloud service.
+   * @param serviceName the name of the service whose properties will be returned
+   * @param contents a list of strings representing the contents of a credential file
+   * @return a Map containing the properties related to the specified cloud service
+   */
+  protected static Map<String, String> parseCredentials(String serviceName, List<String> contents) {
+    Map<String, String> props = new HashMap<>();
+
+    serviceName = serviceName.toUpperCase();
+
+    // Within "contents", we're looking for lines of the form:
+    //    <serviceName>_<credentialName>=<value>
+    //    Example:  ASSISTANT_APIKEY=myapikey
+    // Each such line will be parsed into <credentialName> and <value>,
+    // and added to the result Map.
+    for (String line : contents) {
+      // Skip comment lines and empty lines.
+      if (line.startsWith("#") || line.trim().isEmpty()) {
+        continue;
+      }
+
+      String[] lineTokens = line.split("=");
+      if (lineTokens.length != 2) {
+        continue;
+      }
+
+      String key = lineTokens[0];
+      String value = lineTokens[1];
+
+      if (key.startsWith(serviceName + "_")) {
+        String credentialName = key.substring(serviceName.length() + 1);
+        if (StringUtils.isNotEmpty(credentialName) && StringUtils.isNotEmpty(value)) {
+          props.put(credentialName, value);
         }
       }
     }
 
-    return serviceCredentials;
+    return props;
   }
 }

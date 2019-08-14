@@ -29,6 +29,8 @@ import com.ibm.cloud.sdk.core.http.Response;
 import com.ibm.cloud.sdk.core.http.ResponseConverter;
 import com.ibm.cloud.sdk.core.http.ServiceCall;
 import com.ibm.cloud.sdk.core.http.ServiceCallback;
+import com.ibm.cloud.sdk.core.security.Authenticator;
+import com.ibm.cloud.sdk.core.security.NoauthAuthenticator;
 import com.ibm.cloud.sdk.core.service.BaseService;
 import com.ibm.cloud.sdk.core.service.model.GenericModel;
 import com.ibm.cloud.sdk.core.test.BaseServiceUnitTest;
@@ -54,8 +56,8 @@ public class ResponseTest extends BaseServiceUnitTest {
 
     private static final String SERVICE_NAME = "test";
 
-    TestService() {
-      super(SERVICE_NAME);
+    TestService(Authenticator auth) {
+      super(SERVICE_NAME, auth);
     }
 
     ServiceCall<TestModel> getTestModel() {
@@ -132,8 +134,7 @@ public class ResponseTest extends BaseServiceUnitTest {
   @Before
   public void setUp() throws Exception {
     super.setUp();
-    service = new TestService();
-    service.setUsernameAndPassword("", "");
+    service = new TestService(new NoauthAuthenticator());
     service.setEndPoint(getMockWebServerUrl());
   }
 

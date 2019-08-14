@@ -15,6 +15,8 @@ package com.ibm.cloud.sdk.core.test.service;
 import com.ibm.cloud.sdk.core.http.HttpMediaType;
 import com.ibm.cloud.sdk.core.http.RequestBuilder;
 import com.ibm.cloud.sdk.core.http.ServiceCall;
+import com.ibm.cloud.sdk.core.security.Authenticator;
+import com.ibm.cloud.sdk.core.security.NoauthAuthenticator;
 import com.ibm.cloud.sdk.core.service.BaseService;
 import com.ibm.cloud.sdk.core.service.model.GenericModel;
 import com.ibm.cloud.sdk.core.test.BaseServiceUnitTest;
@@ -36,8 +38,8 @@ public class HeadersTest extends BaseServiceUnitTest {
 
     private static final String SERVICE_NAME = "test";
 
-    public TestService() {
-      super(SERVICE_NAME);
+    public TestService(Authenticator auth) {
+      super(SERVICE_NAME, auth);
     }
 
     public ServiceCall<TestModel> testMethod() {
@@ -57,8 +59,7 @@ public class HeadersTest extends BaseServiceUnitTest {
   @Before
   public void setUp() throws Exception {
     super.setUp();
-    service = new TestService();
-    service.setUsernameAndPassword("", "");
+    service = new TestService(new NoauthAuthenticator());
     service.setEndPoint(getMockWebServerUrl());
   }
 

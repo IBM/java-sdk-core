@@ -2,8 +2,8 @@ package com.ibm.cloud.sdk.core.test.security;
 
 import com.google.common.io.BaseEncoding;
 import com.ibm.cloud.sdk.core.http.HttpHeaders;
-import com.ibm.cloud.sdk.core.security.basicauth.BasicAuthConfig;
-import com.ibm.cloud.sdk.core.security.basicauth.BasicAuthenticator;
+import com.ibm.cloud.sdk.core.security.Authenticator;
+import com.ibm.cloud.sdk.core.security.BasicAuthenticator;
 
 import okhttp3.Request;
 import org.junit.Test;
@@ -11,26 +11,84 @@ import org.junit.Test;
 import static junit.framework.TestCase.assertNotNull;
 import static org.junit.Assert.assertEquals;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class BasicAuthenticatorTest {
 
   @Test
-  public void testAuthenticate() {
-    String username = "test-username";
-    String password = "test-password";
+  public void testSuccess() {
+    String username = "good-username";
+    String password = "good-password";
 
-    BasicAuthConfig config = new BasicAuthConfig.Builder()
-        .username(username)
-        .password(password)
-        .build();
-    BasicAuthenticator authenticator = new BasicAuthenticator(config);
+    BasicAuthenticator auth = new BasicAuthenticator(username, password);
+    assertEquals(Authenticator.AUTHTYPE_BASIC, auth.authenticationType());
+    assertEquals(username, auth.getUsername());
+    assertEquals(password, auth.getPassword());
 
     Request.Builder requestBuilder = new Request.Builder().url("https://test.com");
-    authenticator.authenticate(requestBuilder);
+    auth.authenticate(requestBuilder);
     Request request = requestBuilder.build();
 
     String authHeader = request.header(HttpHeaders.AUTHORIZATION);
-    System.out.println(authHeader);
     assertNotNull(authHeader);
     assertEquals("Basic " + BaseEncoding.base64().encode((username + ":" + password).getBytes()), authHeader);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testInvalidUsername() {
+    new BasicAuthenticator("{bad-username}", "good-password");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testMissingUsernameMap() {
+    Map<String, String> props = new HashMap<>();
+    props.put(Authenticator.PROPNAME_PASSWORD, "good-password");
+    new BasicAuthenticator(props);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testInvalidUsernameMap() {
+    Map<String, String> props = new HashMap<>();
+    props.put(Authenticator.PROPNAME_USERNAME, "{bad-username}");
+    props.put(Authenticator.PROPNAME_PASSWORD, "good-password");
+    new BasicAuthenticator(props);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testInvalidPassword() {
+    new BasicAuthenticator("good-username", "{bad-password}");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testMissingUsername() {
+    new BasicAuthenticator(null, "good-password");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testMissingPassword() {
+    new BasicAuthenticator("good-username", null);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testEmptyUsername() {
+    new BasicAuthenticator("", "good-password");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testEmptyPassword() {
+    new BasicAuthenticator("good-username", "");
+  }
+
+  @Test
+  public void testGoodMapConfig() {
+    Map<String, String> props = new HashMap<>();
+    props.put(Authenticator.PROPNAME_USERNAME, "good-username");
+    props.put(Authenticator.PROPNAME_PASSWORD, "good-password");
+    BasicAuthenticator authenticator = new BasicAuthenticator(props);
+    assertNotNull(authenticator);
+    assertEquals(Authenticator.AUTHTYPE_BASIC, authenticator.authenticationType());
+    assertEquals("good-username", authenticator.getUsername());
+    assertEquals("good-password", authenticator.getPassword());
   }
 }

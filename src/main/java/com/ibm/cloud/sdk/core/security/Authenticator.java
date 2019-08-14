@@ -15,7 +15,7 @@ package com.ibm.cloud.sdk.core.security;
 import okhttp3.Request.Builder;
 
 /**
- * This interface defines the common methods associated with an Authenticator implementation.
+ * This interface defines the common methods and constants associated with an Authenticator implementation.
  */
 public interface Authenticator {
 
@@ -25,7 +25,26 @@ public interface Authenticator {
   String AUTHTYPE_BASIC = "basic";
   String AUTHTYPE_NOAUTH = "noauth";
   String AUTHTYPE_IAM = "iam";
-  String AUTHTYPE_ICP4D = "icp4d";
+  String AUTHTYPE_CP4D = "cp4d";
+  String AUTHTYPE_BEARER_TOKEN = "bearerToken";
+
+  /**
+   * Constants which define the names of external config propreties (credential file, environment variable, etc.).
+   */
+  String PROPNAME_AUTH_TYPE = "AUTH_TYPE";
+  String PROPNAME_USERNAME = "USERNAME";
+  String PROPNAME_PASSWORD = "PASSWORD";
+  String PROPNAME_BEARER_TOKEN = "BEARER_TOKEN";
+  String PROPNAME_URL = "AUTH_URL";
+  String PROPNAME_DISABLE_SSL = "AUTH_DISABLE_SSL";
+  String PROPNAME_APIKEY = "APIKEY";
+  String PROPNAME_CLIENT_ID = "CLIENT_ID";
+  String PROPNAME_CLIENT_SECRET = "CLIENT_SECRET";
+
+  /**
+   * Validates the current set of configuration information in the Authenticator.
+   */
+  void validate();
 
   /**
    * Returns the authentication type associated with the Authenticator instance.

@@ -15,6 +15,8 @@ package com.ibm.cloud.sdk.core.test.service;
 import com.ibm.cloud.sdk.core.http.HttpMediaType;
 import com.ibm.cloud.sdk.core.http.RequestBuilder;
 import com.ibm.cloud.sdk.core.http.ServiceCall;
+import com.ibm.cloud.sdk.core.security.Authenticator;
+import com.ibm.cloud.sdk.core.security.NoauthAuthenticator;
 import com.ibm.cloud.sdk.core.service.BaseService;
 import com.ibm.cloud.sdk.core.service.exception.BadRequestException;
 import com.ibm.cloud.sdk.core.service.exception.ConflictException;
@@ -44,8 +46,8 @@ public class ErrorResponseTest extends BaseServiceUnitTest {
 
     private static final String SERVICE_NAME = "test";
 
-    TestService() {
-      super(SERVICE_NAME);
+    TestService(Authenticator auth) {
+      super(SERVICE_NAME, auth);
     }
 
     ServiceCall<GenericModel> testMethod() {
@@ -65,8 +67,7 @@ public class ErrorResponseTest extends BaseServiceUnitTest {
   @Before
   public void setUp() throws Exception {
     super.setUp();
-    service = new TestService();
-    service.setUsernameAndPassword("", "");
+    service = new TestService(new NoauthAuthenticator());
     service.setEndPoint(getMockWebServerUrl());
   }
 
