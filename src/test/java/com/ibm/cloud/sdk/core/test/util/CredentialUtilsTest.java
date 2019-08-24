@@ -63,22 +63,22 @@ public class CredentialUtilsTest {
     env.put("SERVICE4_DISABLE_SSL", "false");
     env.put("SERVICE5_URL", "https://service5/api");
     env.put("SERVICE5_DISABLE_SSL", "true");
-    env.put("SERVICE1_AUTH_TYPE", "iam");
+    env.put("SERVICE1_AUTH_TYPE", Authenticator.AUTHTYPE_IAM);
     env.put("SERVICE1_APIKEY", "my-api-key");
     env.put("SERVICE1_CLIENT_ID", "my-client-id");
     env.put("SERVICE1_CLIENT_SECRET", "my-client-secret");
     env.put("SERVICE1_AUTH_URL", "https://iamhost/iam/api");
     env.put("SERVICE1_AUTH_DISABLE_SSL", "true");
-    env.put("SERVICE2_AUTH_TYPE", "basic");
+    env.put("SERVICE2_AUTH_TYPE", Authenticator.AUTHTYPE_BASIC);
     env.put("SERVICE2_USERNAME", "my-user");
     env.put("SERVICE2_PASSWORD", "my-password");
-    env.put("SERVICE3_AUTH_TYPE", "cp4d");
+    env.put("SERVICE3_AUTH_TYPE", Authenticator.AUTHTYPE_CP4D);
     env.put("SERVICE3_AUTH_URL", "https://cp4dhost/cp4d/api");
     env.put("SERVICE3_USERNAME", "my-cp4d-user");
     env.put("SERVICE3_PASSWORD", "my-cp4d-password");
     env.put("SERVICE3_AUTH_DISABLE_SSL", "false");
-    env.put("SERVICE4_AUTH_TYPE", "noauth");
-    env.put("SERVICE5_AUTH_TYPE", "bearerToken");
+    env.put("SERVICE4_AUTH_TYPE", Authenticator.AUTHTYPE_NOAUTH);
+    env.put("SERVICE5_AUTH_TYPE", Authenticator.AUTHTYPE_BEARER_TOKEN);
     env.put("SERVICE5_BEARER_TOKEN", "my-bearer-token");
 
     return env;

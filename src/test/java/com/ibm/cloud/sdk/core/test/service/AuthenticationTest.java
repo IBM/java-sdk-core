@@ -11,7 +11,7 @@ import com.ibm.cloud.sdk.core.security.BasicAuthenticator;
 import com.ibm.cloud.sdk.core.security.CloudPakForDataAuthenticator;
 import com.ibm.cloud.sdk.core.security.ConfigBasedAuthenticatorFactory;
 import com.ibm.cloud.sdk.core.security.IamAuthenticator;
-import com.ibm.cloud.sdk.core.security.NoauthAuthenticator;
+import com.ibm.cloud.sdk.core.security.NoAuthAuthenticator;
 import com.ibm.cloud.sdk.core.service.BaseService;
 
 import okhttp3.OkHttpClient;
@@ -54,7 +54,7 @@ public class AuthenticationTest {
 
   @Test
   public void authenticateNoauth() {
-    NoauthAuthenticator auth = new NoauthAuthenticator();
+    NoAuthAuthenticator auth = new NoAuthAuthenticator();
     TestService service = new TestService(auth);
     assertEquals(Authenticator.AUTHTYPE_NOAUTH, service.getAuthenticator().authenticationType());
   }

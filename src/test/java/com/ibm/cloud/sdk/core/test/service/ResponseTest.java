@@ -30,7 +30,7 @@ import com.ibm.cloud.sdk.core.http.ResponseConverter;
 import com.ibm.cloud.sdk.core.http.ServiceCall;
 import com.ibm.cloud.sdk.core.http.ServiceCallback;
 import com.ibm.cloud.sdk.core.security.Authenticator;
-import com.ibm.cloud.sdk.core.security.NoauthAuthenticator;
+import com.ibm.cloud.sdk.core.security.NoAuthAuthenticator;
 import com.ibm.cloud.sdk.core.service.BaseService;
 import com.ibm.cloud.sdk.core.service.model.GenericModel;
 import com.ibm.cloud.sdk.core.test.BaseServiceUnitTest;
@@ -134,7 +134,7 @@ public class ResponseTest extends BaseServiceUnitTest {
   @Before
   public void setUp() throws Exception {
     super.setUp();
-    service = new TestService(new NoauthAuthenticator());
+    service = new TestService(new NoAuthAuthenticator());
     service.setEndPoint(getMockWebServerUrl());
   }
 

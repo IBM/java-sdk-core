@@ -41,20 +41,7 @@ public class ConfigBasedAuthenticatorFactory {
     // - 1) Credential file
     // - 2) Environment variables
     // - 3) VCAP_SERVICES env variable
-    Map<String, String> authProps;
-
-    // First check to see if this service has any properties defined in a credential file.
-    authProps = CredentialUtils.getFileCredentialsAsMap(serviceName);
-
-    // If we didn't find any properties so far, then try the environment.
-    if (authProps.isEmpty()) {
-      authProps = CredentialUtils.getEnvCredentialsAsMap(serviceName);
-    }
-
-    // If we didn't find any properties so far, then try VCAP_SERVICES
-    if (authProps.isEmpty()) {
-      authProps = CredentialUtils.getVcapCredentialsAsMap(serviceName);
-    }
+    Map<String, String> authProps = CredentialUtils.getServiceProperties(serviceName);
 
     // Now create an authenticator from the map.
     if (!authProps.isEmpty()) {
@@ -80,7 +67,7 @@ public class ConfigBasedAuthenticatorFactory {
 
     switch (authType) {
       case Authenticator.AUTHTYPE_NOAUTH:
-        authenticator = new NoauthAuthenticator(props);
+        authenticator = new NoAuthAuthenticator(props);
         break;
 
       case Authenticator.AUTHTYPE_BASIC:

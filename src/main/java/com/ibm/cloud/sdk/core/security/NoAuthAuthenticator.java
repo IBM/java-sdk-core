@@ -20,12 +20,12 @@ import okhttp3.Request.Builder;
  * This class is a placeholder implementation of the Authenticator interface
  * which performs no authentication of outgoing REST API requests.
  */
-public class NoauthAuthenticator implements Authenticator {
+public class NoAuthAuthenticator implements Authenticator {
 
-  public NoauthAuthenticator() {
+  public NoAuthAuthenticator() {
   }
 
-  public NoauthAuthenticator(Map<String, String> config) {
+  public NoAuthAuthenticator(Map<String, String> config) {
   }
 
 

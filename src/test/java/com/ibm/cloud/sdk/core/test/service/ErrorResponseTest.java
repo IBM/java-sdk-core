@@ -16,7 +16,7 @@ import com.ibm.cloud.sdk.core.http.HttpMediaType;
 import com.ibm.cloud.sdk.core.http.RequestBuilder;
 import com.ibm.cloud.sdk.core.http.ServiceCall;
 import com.ibm.cloud.sdk.core.security.Authenticator;
-import com.ibm.cloud.sdk.core.security.NoauthAuthenticator;
+import com.ibm.cloud.sdk.core.security.NoAuthAuthenticator;
 import com.ibm.cloud.sdk.core.service.BaseService;
 import com.ibm.cloud.sdk.core.service.exception.BadRequestException;
 import com.ibm.cloud.sdk.core.service.exception.ConflictException;
@@ -67,7 +67,7 @@ public class ErrorResponseTest extends BaseServiceUnitTest {
   @Before
   public void setUp() throws Exception {
     super.setUp();
-    service = new TestService(new NoauthAuthenticator());
+    service = new TestService(new NoAuthAuthenticator());
     service.setEndPoint(getMockWebServerUrl());
   }
 
