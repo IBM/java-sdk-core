@@ -23,7 +23,7 @@ public interface Authenticator {
    * These are the valid authentication types.
    */
   String AUTHTYPE_BASIC = "basic";
-  String AUTHTYPE_NOAUTH = "noauth";
+  String AUTHTYPE_NOAUTH = "noAuth";
   String AUTHTYPE_IAM = "iam";
   String AUTHTYPE_CP4D = "cp4d";
   String AUTHTYPE_BEARER_TOKEN = "bearerToken";
