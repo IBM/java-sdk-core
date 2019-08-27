@@ -35,10 +35,12 @@ public class HttpConfigTest {
         .disableSslVerification(true)
         .proxy(proxy)
         .proxyAuthenticator(authenticator)
+        .loggingLevel(HttpConfigOptions.LoggingLevel.HEADERS)
         .build();
 
     assertEquals(true, configOptions.shouldDisableSslVerification());
     assertEquals(authenticator, configOptions.getProxyAuthenticator());
     assertEquals(proxy, configOptions.getProxy());
+    assertEquals(HttpConfigOptions.LoggingLevel.HEADERS, configOptions.getLoggingLevel());
   }
 }
