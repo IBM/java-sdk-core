@@ -12,21 +12,18 @@
  */
 package com.ibm.cloud.sdk.core.http;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import okhttp3.internal.Util;
-import okhttp3.logging.HttpLoggingInterceptor;
 import okio.BufferedSink;
 import okio.Okio;
 import okio.Source;
 import org.apache.commons.io.IOUtils;
 
-import com.ibm.cloud.sdk.core.util.HttpLogging;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * RequestBody that takes an {@link InputStream}.
@@ -53,18 +50,15 @@ public class InputStreamRequestBody extends RequestBody {
     this.inputStream = inputStream;
     this.mediaType = mediaType;
 
-    // if we're logging everything, we'll need to store the bytes to reuse later
-    if (HttpLogging.getLoggingInterceptor().getLevel().equals(HttpLoggingInterceptor.Level.BODY)) {
-      ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
-      try {
-        IOUtils.copy(inputStream, outputStream);
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
-
-      this.bytes = outputStream.toByteArray();
+    try {
+      IOUtils.copy(inputStream, outputStream);
+    } catch (IOException e) {
+      e.printStackTrace();
     }
+
+    this.bytes = outputStream.toByteArray();
   }
 
   /*

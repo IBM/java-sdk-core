@@ -12,14 +12,15 @@
  */
 package com.ibm.cloud.sdk.core.http;
 
+import com.ibm.cloud.sdk.core.http.HttpConfigOptions.LoggingLevel;
 import com.ibm.cloud.sdk.core.service.BaseService;
 import com.ibm.cloud.sdk.core.service.security.DelegatingSSLSocketFactory;
-import com.ibm.cloud.sdk.core.util.HttpLogging;
 import okhttp3.Authenticator;
 import okhttp3.ConnectionSpec;
 import okhttp3.OkHttpClient;
 import okhttp3.OkHttpClient.Builder;
 import okhttp3.TlsVersion;
+import okhttp3.logging.HttpLoggingInterceptor;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
@@ -115,8 +116,6 @@ public class HttpClientSingleton {
     builder.writeTimeout(60, TimeUnit.SECONDS);
     builder.readTimeout(90, TimeUnit.SECONDS);
 
-    builder.addNetworkInterceptor(HttpLogging.getLoggingInterceptor());
-
     ConnectionSpec spec = new ConnectionSpec.Builder(ConnectionSpec.MODERN_TLS).allEnabledCipherSuites().build();
     builder.connectionSpecs(Arrays.asList(spec, ConnectionSpec.CLEARTEXT));
 
@@ -187,6 +186,35 @@ public class HttpClientSingleton {
    */
   private OkHttpClient setProxyAuthenticator(OkHttpClient client, Authenticator proxyAuthenticator) {
     OkHttpClient.Builder builder = client.newBuilder().proxyAuthenticator(proxyAuthenticator);
+    return builder.build();
+  }
+
+  /**
+   * Sets the logging level for the specified {@link OkHttpClient} instance and returns
+   * a new instance with the logging configured as requested.
+   *
+   * @param client the {@link OkHttpClient} instance to set the proxy authenticator on
+   * @param loggingLevel the {@link LoggingLevel}
+   * @return the new {@link OkHttpClient} instance with the logging configured
+   */
+  private OkHttpClient setLoggingLevel(OkHttpClient client, LoggingLevel loggingLevel) {
+    HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
+
+    switch (loggingLevel) {
+      case BODY:
+        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+        break;
+      case HEADERS:
+        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.HEADERS);
+        break;
+      case BASIC:
+        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BASIC);
+        break;
+      default:
+        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.NONE);
+    }
+    OkHttpClient.Builder builder = client.newBuilder().addNetworkInterceptor(loggingInterceptor);
+
     return builder.build();
   }
 
@@ -275,6 +303,9 @@ public class HttpClientSingleton {
       }
       if (options.getProxyAuthenticator() != null) {
         client = setProxyAuthenticator(client, options.getProxyAuthenticator());
+      }
+      if (options.getLoggingLevel() != null) {
+        client = setLoggingLevel(client, options.getLoggingLevel());
       }
     }
     return client;
