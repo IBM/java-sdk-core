@@ -53,4 +53,9 @@ public interface ServiceCall<T> {
    * @return a Single object containing the service call to be observed/subscribed to
    */
   Single<Response<T>> reactiveRequest();
+
+  /**
+   * Cancel the current request if possible.
+   */
+  void cancel();
 }
