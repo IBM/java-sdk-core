@@ -15,10 +15,12 @@ package com.ibm.cloud.sdk.core.test.service;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -351,4 +353,49 @@ public class ResponseTest extends BaseServiceUnitTest {
     assertEquals("The response status message should be 'No Content'.", "No Content", response.getStatusMessage());
   }
 
+  /**
+   * Test canceling a service call by mimicking setting a timeout and canceling if the call exceeds that value.
+   *
+   * @throws InterruptedException the interrupted exception
+   */
+  @Test
+  public void testRequestCancel() throws InterruptedException {
+    server.enqueue(new MockResponse().setBody(testResponseBody1).setBodyDelay(5000, TimeUnit.MILLISECONDS));
+
+    // time to consider timeout (in ms)
+    long timeoutThreshold = 3000;
+    final boolean[] hasCallCompleted = {false};
+    final boolean[] callWasCanceled = {false};
+
+    ServiceCall<TestModel> testCall = service.getTestModel();
+    long startTime = System.currentTimeMillis();
+    testCall.enqueue(new ServiceCallback<TestModel>() {
+      @Override
+      public void onResponse(Response<TestModel> response) {
+        hasCallCompleted[0] = true;
+        System.out.println("We got a response!");
+      }
+
+      @Override
+      public void onFailure(Exception e) {
+        callWasCanceled[0] = true;
+        System.out.println("The request failed :(");
+      }
+    });
+
+    // keep waiting for the call to complete while we're within the timeout bounds
+    while (!hasCallCompleted[0] && (System.currentTimeMillis() - startTime < timeoutThreshold)) {
+      Thread.sleep(500);
+    }
+
+    // if we timed out and it's STILL not complete, we'll just cancel the call
+    if (!hasCallCompleted[0]) {
+      testCall.cancel();
+    }
+
+    // sleep for a bit to make sure all async operations are complete, and then verify we set this value
+    // in onFailure()
+    Thread.sleep(500);
+    assertTrue(callWasCanceled[0]);
+  }
 }
