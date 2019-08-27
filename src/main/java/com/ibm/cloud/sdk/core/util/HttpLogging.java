@@ -23,6 +23,9 @@ import okhttp3.logging.HttpLoggingInterceptor.Level;
  * Instantiates a new HTTP logging. The logging level will be determinate by the {@link Logger} used in this class.
  * Basic HTTP request response will be log if Level is INFO, HEADERS if level is FINE and all the bodies if Level is
  * ALL.
+ *
+ * @deprecated This class functionality is now handled by {@link com.ibm.cloud.sdk.core.http.HttpConfigOptions} and
+ * should no longer be needed.
  */
 public class HttpLogging {
   private static final Logger LOG = Logger.getLogger(HttpLogging.class.getName());

@@ -8,9 +8,21 @@ import java.net.Proxy;
  * Options class for configuring the HTTP client.
  */
 public class HttpConfigOptions {
+
+  /**
+   * Levels of information to log when making HTTP requests, from least (NONE) to most (BODY).
+   */
+  public enum LoggingLevel {
+    NONE,
+    BASIC,
+    HEADERS,
+    BODY,
+  }
+
   private boolean disableSslVerification;
   private Proxy proxy;
   private Authenticator proxyAuthenticator;
+  private LoggingLevel loggingLevel;
 
   public boolean shouldDisableSslVerification() {
     return this.disableSslVerification;
@@ -24,10 +36,15 @@ public class HttpConfigOptions {
     return this.proxyAuthenticator;
   }
 
+  public LoggingLevel getLoggingLevel() {
+    return this.loggingLevel;
+  }
+
   public static class Builder {
     private boolean disableSslVerification;
     private Proxy proxy;
     private Authenticator proxyAuthenticator;
+    private LoggingLevel loggingLevel;
 
     public HttpConfigOptions build() {
       return new HttpConfigOptions(this);
@@ -67,11 +84,22 @@ public class HttpConfigOptions {
       return this;
     }
 
+    /**
+     * Sets HTTP logging level to be used by the current client.
+     *
+     * @param loggingLevel the {@link LoggingLevel} specifying how much information should be logged
+     * @return the builder
+     */
+    public Builder loggingLevel(LoggingLevel loggingLevel) {
+      this.loggingLevel = loggingLevel;
+      return this;
+    }
   }
 
   private HttpConfigOptions(Builder builder) {
     this.disableSslVerification = builder.disableSslVerification;
     this.proxy = builder.proxy;
     this.proxyAuthenticator = builder.proxyAuthenticator;
+    this.loggingLevel = builder.loggingLevel;
   }
 }
