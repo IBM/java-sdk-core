@@ -425,6 +425,11 @@ public abstract class BaseService {
     }
 
     @Override
+    public void cancel() {
+      this.call.cancel();
+    }
+
+    @Override
     protected void finalize() throws Throwable {
       super.finalize();
 
