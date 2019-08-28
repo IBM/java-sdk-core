@@ -258,13 +258,13 @@ public final class CredentialUtils {
     // Extract the properties related to the specified service and populate the result Map.
     if (env != null && !env.isEmpty()) {
       Map<String, String> props = new HashMap<>();
-      serviceName = serviceName.toUpperCase();
+      serviceName = serviceName.toUpperCase().replaceAll("-", "_") + "_";
       for (Map.Entry<String, String> entry : env.entrySet()) {
         String key = entry.getKey();
         String value = entry.getValue();
 
-        if (key.startsWith(serviceName + "_")) {
-          String credentialName = key.substring(serviceName.length() + 1);
+        if (key.startsWith(serviceName)) {
+          String credentialName = key.substring(serviceName.length());
           if (StringUtils.isNotEmpty(credentialName) && StringUtils.isNotEmpty(value)) {
             props.put(credentialName, value);
           }
@@ -347,7 +347,7 @@ public final class CredentialUtils {
   protected static Map<String, String> parseCredentials(String serviceName, List<String> contents) {
     Map<String, String> props = new HashMap<>();
 
-    serviceName = serviceName.toUpperCase();
+    serviceName = serviceName.toUpperCase().replaceAll("-", "_") + "_";
 
     // Within "contents", we're looking for lines of the form:
     //    <serviceName>_<credentialName>=<value>
@@ -368,8 +368,8 @@ public final class CredentialUtils {
       String key = lineTokens[0];
       String value = lineTokens[1];
 
-      if (key.startsWith(serviceName + "_")) {
-        String credentialName = key.substring(serviceName.length() + 1);
+      if (key.startsWith(serviceName)) {
+        String credentialName = key.substring(serviceName.length());
         if (StringUtils.isNotEmpty(credentialName) && StringUtils.isNotEmpty(value)) {
           props.put(credentialName, value);
         }

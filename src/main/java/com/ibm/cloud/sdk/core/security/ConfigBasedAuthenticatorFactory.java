@@ -23,6 +23,7 @@ import com.ibm.cloud.sdk.core.util.CredentialUtils;
  * It will detect and use various configuration sources in order to produce an Authenticator instance.
  */
 public class ConfigBasedAuthenticatorFactory {
+  public static final String ERRORMSG_AUTHTYPE_UNKNOWN = "Unrecognized authentication type: %s";
 
   // The default ctor is hidden since this is a utility class.
   protected ConfigBasedAuthenticatorFactory() {
@@ -65,28 +66,19 @@ public class ConfigBasedAuthenticatorFactory {
       authType = Authenticator.AUTHTYPE_IAM;
     }
 
-    switch (authType) {
-      case Authenticator.AUTHTYPE_NOAUTH:
-        authenticator = new NoAuthAuthenticator(props);
-        break;
-
-      case Authenticator.AUTHTYPE_BASIC:
-        authenticator = new BasicAuthenticator(props);
-        break;
-
-      case Authenticator.AUTHTYPE_IAM:
-        authenticator = new IamAuthenticator(props);
-        break;
-
-      case Authenticator.AUTHTYPE_CP4D:
-        authenticator = new CloudPakForDataAuthenticator(props);
-        break;
-
-      case Authenticator.AUTHTYPE_BEARER_TOKEN:
-        authenticator = new BearerTokenAuthenticator(props);
-        break;
-      default:
-        break;
+    // Create the appropriate authenticator based on the auth type.
+    if (authType.equalsIgnoreCase(Authenticator.AUTHTYPE_BASIC)) {
+      authenticator = new BasicAuthenticator(props);
+    } else if (authType.equalsIgnoreCase(Authenticator.AUTHTYPE_BEARER_TOKEN)) {
+      authenticator = new BearerTokenAuthenticator(props);
+    } else if (authType.equalsIgnoreCase(Authenticator.AUTHTYPE_CP4D)) {
+      authenticator = new CloudPakForDataAuthenticator(props);
+    } else if (authType.equalsIgnoreCase(Authenticator.AUTHTYPE_IAM)) {
+      authenticator = new IamAuthenticator(props);
+    } else if (authType.equalsIgnoreCase(Authenticator.AUTHTYPE_NOAUTH)) {
+      authenticator = new NoAuthAuthenticator(props);
+    } else {
+      throw new IllegalArgumentException(String.format(ERRORMSG_AUTHTYPE_UNKNOWN, authType));
     }
 
     return authenticator;

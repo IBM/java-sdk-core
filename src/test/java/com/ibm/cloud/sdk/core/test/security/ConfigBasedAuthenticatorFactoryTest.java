@@ -44,8 +44,8 @@ public class ConfigBasedAuthenticatorFactoryTest {
   // Creates a mock set of environment variables that are returned by EnvironmentUtils.getenv().
   private Map<String, String> getTestProcessEnvironment() {
     Map<String, String> env = new HashMap<>();
-    env.put("SERVICE1_URL", "https://service1/api");
-    env.put("SERVICE1_DISABLE_SSL", "true");
+    env.put("SERVICE_1_URL", "https://service1/api");
+    env.put("SERVICE_1_DISABLE_SSL", "true");
     env.put("SERVICE2_URL", "https://service2/api");
     env.put("SERVICE2_DISABLE_SSL", "false");
     env.put("SERVICE3_URL", "https://service3/api");
@@ -54,16 +54,16 @@ public class ConfigBasedAuthenticatorFactoryTest {
     env.put("SERVICE4_DISABLE_SSL", "false");
     env.put("SERVICE5_URL", "https://service5/api");
     env.put("SERVICE5_DISABLE_SSL", "true");
-    env.put("SERVICE1_AUTH_TYPE", Authenticator.AUTHTYPE_IAM);
-    env.put("SERVICE1_APIKEY", "my-api-key");
-    env.put("SERVICE1_CLIENT_ID", "my-client-id");
-    env.put("SERVICE1_CLIENT_SECRET", "my-client-secret");
-    env.put("SERVICE1_AUTH_URL", "https://iamhost/iam/api");
-    env.put("SERVICE1_IAM_DISABLE_SSL", "true");
+    env.put("SERVICE_1_AUTH_TYPE", "IaM");
+    env.put("SERVICE_1_APIKEY", "my-api-key");
+    env.put("SERVICE_1_CLIENT_ID", "my-client-id");
+    env.put("SERVICE_1_CLIENT_SECRET", "my-client-secret");
+    env.put("SERVICE_1_AUTH_URL", "https://iamhost/iam/api");
+    env.put("SERVICE_1_IAM_DISABLE_SSL", "true");
     env.put("SERVICE2_AUTH_TYPE", Authenticator.AUTHTYPE_BASIC);
     env.put("SERVICE2_USERNAME", "my-user");
     env.put("SERVICE2_PASSWORD", "my-password");
-    env.put("SERVICE3_AUTH_TYPE", Authenticator.AUTHTYPE_CP4D);
+    env.put("SERVICE3_AUTH_TYPE", "Cp4D");
     env.put("SERVICE3_AUTH_URL", "https://cp4dhost/cp4d/api");
     env.put("SERVICE3_USERNAME", "my-cp4d-user");
     env.put("SERVICE3_PASSWORD", "my-cp4d-password");
@@ -72,6 +72,7 @@ public class ConfigBasedAuthenticatorFactoryTest {
     env.put("SERVICE5_AUTH_TYPE", Authenticator.AUTHTYPE_BEARER_TOKEN);
     env.put("SERVICE5_BEARER_TOKEN", "my-bearer-token");
     env.put("ERROR1_AUTH_TYPE", Authenticator.AUTHTYPE_CP4D);
+    env.put("ERROR2_AUTH_TYPE", "BAD_AUTH_TYPE");
 
     return env;
   }
@@ -92,7 +93,7 @@ public class ConfigBasedAuthenticatorFactoryTest {
     PowerMockito.spy(EnvironmentUtils.class);
     PowerMockito.when(EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(null);
 
-    Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service1");
+    Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service-1");
     assertNull(auth);
   }
 
@@ -102,7 +103,7 @@ public class ConfigBasedAuthenticatorFactoryTest {
     PowerMockito.when(EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
     assertEquals(ALTERNATE_CRED_FILENAME, EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE"));
 
-    Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service1");
+    Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service-1");
     assertNotNull(auth);
     assertEquals(Authenticator.AUTHTYPE_IAM, auth.authenticationType());
   }
@@ -171,12 +172,20 @@ public class ConfigBasedAuthenticatorFactoryTest {
     ConfigBasedAuthenticatorFactory.getAuthenticator("error3");
   }
 
+  @Test(expected = IllegalArgumentException.class)
+  public void testFileCredentialsError4() {
+    PowerMockito.spy(EnvironmentUtils.class);
+    PowerMockito.when(EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
+
+    ConfigBasedAuthenticatorFactory.getAuthenticator("error4");
+  }
+
   @Test
   public void testEnvCredentialsService1() {
     PowerMockito.spy(EnvironmentUtils.class);
     PowerMockito.when(EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
 
-    Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service1");
+    Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service-1");
     assertNotNull(auth);
     assertEquals(Authenticator.AUTHTYPE_IAM, auth.authenticationType());
   }
@@ -187,6 +196,14 @@ public class ConfigBasedAuthenticatorFactoryTest {
     PowerMockito.when(EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
 
     ConfigBasedAuthenticatorFactory.getAuthenticator("error1");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testEnvCredentialsError2() {
+    PowerMockito.spy(EnvironmentUtils.class);
+    PowerMockito.when(EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
+
+    ConfigBasedAuthenticatorFactory.getAuthenticator("error2");
   }
 
   @Test

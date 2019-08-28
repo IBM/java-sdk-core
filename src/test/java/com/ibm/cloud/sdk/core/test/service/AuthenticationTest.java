@@ -22,7 +22,7 @@ public class AuthenticationTest {
   private static final String BASIC_USERNAME = "basicUser";
 
   public class TestService extends BaseService {
-    private static final String SERVICE_NAME = "service1";
+    private static final String SERVICE_NAME = "service-1";
 
     public TestService() {
       this(null);

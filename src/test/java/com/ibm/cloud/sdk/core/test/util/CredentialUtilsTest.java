@@ -53,8 +53,8 @@ public class CredentialUtilsTest {
 
   private Map<String, String> getTestProcessEnvironment() {
     Map<String, String> env = new HashMap<>();
-    env.put("SERVICE1_URL", "https://service1/api");
-    env.put("SERVICE1_DISABLE_SSL", "true");
+    env.put("SERVICE_1_URL", "https://service1/api");
+    env.put("SERVICE_1_DISABLE_SSL", "true");
     env.put("SERVICE2_URL", "https://service2/api");
     env.put("SERVICE2_DISABLE_SSL", "false");
     env.put("SERVICE3_URL", "https://service3/api");
@@ -63,16 +63,16 @@ public class CredentialUtilsTest {
     env.put("SERVICE4_DISABLE_SSL", "false");
     env.put("SERVICE5_URL", "https://service5/api");
     env.put("SERVICE5_DISABLE_SSL", "true");
-    env.put("SERVICE1_AUTH_TYPE", Authenticator.AUTHTYPE_IAM);
-    env.put("SERVICE1_APIKEY", "my-api-key");
-    env.put("SERVICE1_CLIENT_ID", "my-client-id");
-    env.put("SERVICE1_CLIENT_SECRET", "my-client-secret");
-    env.put("SERVICE1_AUTH_URL", "https://iamhost/iam/api");
-    env.put("SERVICE1_AUTH_DISABLE_SSL", "true");
+    env.put("SERVICE_1_AUTH_TYPE", Authenticator.AUTHTYPE_IAM);
+    env.put("SERVICE_1_APIKEY", "my-api-key");
+    env.put("SERVICE_1_CLIENT_ID", "my-client-id");
+    env.put("SERVICE_1_CLIENT_SECRET", "my-client-secret");
+    env.put("SERVICE_1_AUTH_URL", "https://iamhost/iam/api");
+    env.put("SERVICE_1_AUTH_DISABLE_SSL", "true");
     env.put("SERVICE2_AUTH_TYPE", Authenticator.AUTHTYPE_BASIC);
     env.put("SERVICE2_USERNAME", "my-user");
     env.put("SERVICE2_PASSWORD", "my-password");
-    env.put("SERVICE3_AUTH_TYPE", Authenticator.AUTHTYPE_CP4D);
+    env.put("SERVICE3_AUTH_TYPE", "Cp4D");
     env.put("SERVICE3_AUTH_URL", "https://cp4dhost/cp4d/api");
     env.put("SERVICE3_USERNAME", "my-cp4d-user");
     env.put("SERVICE3_PASSWORD", "my-cp4d-password");
@@ -146,7 +146,7 @@ public class CredentialUtilsTest {
   public void testFileCredentialsMapEmpty() {
     PowerMockito.spy(EnvironmentUtils.class);
     PowerMockito.when(EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(null);
-    Map<String, String> props = CredentialUtils.getFileCredentialsAsMap("service1");
+    Map<String, String> props = CredentialUtils.getFileCredentialsAsMap("service-1");
     assertTrue(props.isEmpty());
   }
 
@@ -156,7 +156,7 @@ public class CredentialUtilsTest {
     PowerMockito.when(EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
     assertEquals(ALTERNATE_CRED_FILENAME, EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE"));
 
-    Map<String, String> props = CredentialUtils.getFileCredentialsAsMap("service1");
+    Map<String, String> props = CredentialUtils.getFileCredentialsAsMap("service-1");
     verifyMapService1(props);
   }
 
@@ -204,7 +204,7 @@ public class CredentialUtilsTest {
   public void testEnvCredentialsMapEmpty() {
     PowerMockito.spy(EnvironmentUtils.class);
     PowerMockito.when(EnvironmentUtils.getenv()).thenReturn(new HashMap<String, String>());
-    Map<String, String> props = CredentialUtils.getEnvCredentialsAsMap("service1");
+    Map<String, String> props = CredentialUtils.getEnvCredentialsAsMap("service-1");
     assertTrue(props.isEmpty());
   }
 
@@ -213,7 +213,7 @@ public class CredentialUtilsTest {
     PowerMockito.spy(EnvironmentUtils.class);
     PowerMockito.when(EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
 
-    Map<String, String> props = CredentialUtils.getEnvCredentialsAsMap("service1");
+    Map<String, String> props = CredentialUtils.getEnvCredentialsAsMap("service-1");
     verifyMapService1(props);
   }
 
@@ -310,7 +310,7 @@ public class CredentialUtilsTest {
   private void verifyMapService3(Map<String, String> props) {
     assertNotNull(props);
     assertFalse(props.isEmpty());
-    assertEquals(Authenticator.AUTHTYPE_CP4D, props.get(Authenticator.PROPNAME_AUTH_TYPE));
+    assertEquals("Cp4D", props.get(Authenticator.PROPNAME_AUTH_TYPE));
     assertEquals("my-cp4d-user", props.get(CloudPakForDataAuthenticator.PROPNAME_USERNAME));
     assertEquals("my-cp4d-password", props.get(CloudPakForDataAuthenticator.PROPNAME_PASSWORD));
     assertEquals("https://cp4dhost/cp4d/api", props.get(CloudPakForDataAuthenticator.PROPNAME_URL));
