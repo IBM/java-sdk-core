@@ -63,6 +63,33 @@ public final class CredentialUtils {
   }
 
   /**
+   * This function will retrieve configuration properties for the specified service from the following
+   * external config sources (in priority order):
+   * 1) Credential file
+   * 2) Environment variables
+   * 3) VCAP_SERVICES
+   * The properties are returned in a Map.
+   *
+   * @param serviceName the name of the service. When searching for service-related properties in the
+   * credential file and environment variable config sources, this service name is transformed by
+   * folding it to upper case and replacing "-" with "_". (e.g. "my-service" yields "MY_SERVICE").
+   * When searching for the service within the VCAP_SERVICES setting, no transformation of the service name
+   * is performed.
+   *
+   * @return a Map of properties associated with the service
+   */
+  public static Map<String, String> getServiceProperties(String serviceName) {
+    Map<String, String> props = getFileCredentialsAsMap(serviceName);
+    if (props.isEmpty()) {
+      props = getEnvCredentialsAsMap(serviceName);
+    }
+    if (props.isEmpty()) {
+      props = getVcapCredentialsAsMap(serviceName);
+    }
+    return props;
+  }
+
+  /**
    * Returns true if the supplied value begins or ends with curly brackets or quotation marks. Returns false for null
    * inputs.
    *
@@ -235,7 +262,7 @@ public final class CredentialUtils {
    * @param serviceName the name of the cloud service whose properties should be loaded
    * @return a Map containing the properties
    */
-  public static Map<String, String> getFileCredentialsAsMap(String serviceName) {
+  static Map<String, String> getFileCredentialsAsMap(String serviceName) {
     List<File> files = getFilesToCheck();
     List<String> contents = getFirstExistingFileContents(files);
     if (contents != null && !contents.isEmpty()) {
@@ -251,7 +278,7 @@ public final class CredentialUtils {
    * @param serviceName the name of the cloud service whose properties should be retrieved
    * @return a Map containing the properties
    */
-  public static Map<String, String> getEnvCredentialsAsMap(String serviceName) {
+  static Map<String, String> getEnvCredentialsAsMap(String serviceName) {
     // Retrieve the Map of environment variables from the current process.
     Map<String, String> env = EnvironmentUtils.getenv();
 
@@ -282,7 +309,7 @@ public final class CredentialUtils {
    * @param serviceName the name of the cloud service whose properties should be retrieved
    * @return a Map containing the properties
    */
-  public static Map<String, String> getVcapCredentialsAsMap(String serviceName) {
+  static Map<String, String> getVcapCredentialsAsMap(String serviceName) {
     Map<String, String> props = new HashMap<>();
     addToMap(props, Authenticator.PROPNAME_USERNAME, getVcapValue(serviceName, USERNAME));
     addToMap(props, Authenticator.PROPNAME_PASSWORD, getVcapValue(serviceName, PASSWORD));
@@ -305,28 +332,6 @@ public final class CredentialUtils {
   }
 
   /**
-   * This function forms a wrapper around the "getFileCredentialsAsMap", "getEnvCredentialsAsMap", and
-   * "getVcapCredentialsAsMap" methods and provides a convenient way to retrieve the configuration
-   * properties for the specified service from any of the three config sources.
-   * The properties are retrieved from one of the following sources (in precendence order):
-   * 1) Credential file
-   * 2) Environment variables
-   * 3) VCAP_SERVICES
-   * @param serviceName the name of the service
-   * @return a Map of properties associated with the service
-   */
-  public static Map<String, String> getServiceProperties(String serviceName) {
-    Map<String, String> props = getFileCredentialsAsMap(serviceName);
-    if (props.isEmpty()) {
-      props = getEnvCredentialsAsMap(serviceName);
-    }
-    if (props.isEmpty()) {
-      props = getVcapCredentialsAsMap(serviceName);
-    }
-    return props;
-  }
-
-  /**
    * Adds the specified key/value pair to the map if the value is not null or "".
    * @param map the map
    * @param key the key
@@ -344,7 +349,7 @@ public final class CredentialUtils {
    * @param contents a list of strings representing the contents of a credential file
    * @return a Map containing the properties related to the specified cloud service
    */
-  protected static Map<String, String> parseCredentials(String serviceName, List<String> contents) {
+  private static Map<String, String> parseCredentials(String serviceName, List<String> contents) {
     Map<String, String> props = new HashMap<>();
 
     serviceName = serviceName.toUpperCase().replaceAll("-", "_") + "_";
