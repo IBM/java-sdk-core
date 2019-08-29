@@ -165,8 +165,7 @@ public final class CredentialUtils {
   }
 
   /**
-   * Returns the value associated with the provided key from the VCAP_SERVICES, or null if it doesn't exist. In the
-   * case of the API URL, if VCAP_SERVICES aren't present, this method will also search in JNDI.
+   * Returns the value associated with the provided key from the VCAP_SERVICES, or null if it doesn't exist.
    *
    * @param serviceName the service name
    * @param key the key whose value should be returned
