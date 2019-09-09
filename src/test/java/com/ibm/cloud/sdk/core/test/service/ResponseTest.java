@@ -64,52 +64,52 @@ public class ResponseTest extends BaseServiceUnitTest {
     }
 
     ServiceCall<TestModel> getTestModel() {
-      RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getEndPoint() + "/v1/test"));
+      RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getServiceUrl() + "/v1/test"));
       return createServiceCall(builder.build(), ResponseConverterUtils.getObject(TestModel.class));
     }
 
     ServiceCall<TestModel> getTestModel2() {
-      RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getEndPoint() + "/v1/test"));
+      RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getServiceUrl() + "/v1/test"));
       ResponseConverter<TestModel> responseConverter =
           ResponseConverterUtils.getValue(new TypeToken<TestModel>(){}.getType());
       return createServiceCall(builder.build(), responseConverter);
     }
 
     ServiceCall<Void> headMethod() {
-      RequestBuilder builder = RequestBuilder.head(HttpUrl.parse(getEndPoint() + "/v1/test"));
+      RequestBuilder builder = RequestBuilder.head(HttpUrl.parse(getServiceUrl() + "/v1/test"));
       return createServiceCall(builder.build(), ResponseConverterUtils.getVoid());
     }
 
     ServiceCall<String> getString() {
-      RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getEndPoint() + "/v1/test"));
+      RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getServiceUrl() + "/v1/test"));
       ResponseConverter<String> responseConverter =
           ResponseConverterUtils.getValue(new TypeToken<String>(){}.getType());
       return createServiceCall(builder.build(), responseConverter);
     }
 
     ServiceCall<List<String>> getListString() {
-      RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getEndPoint() + "/v1/test"));
+      RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getServiceUrl() + "/v1/test"));
       ResponseConverter<List<String>> responseConverter =
           ResponseConverterUtils.getValue(new TypeToken<List<String>>(){}.getType());
       return createServiceCall(builder.build(), responseConverter);
     }
 
     ServiceCall<Long> getLong() {
-      RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getEndPoint() + "/v1/test"));
+      RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getServiceUrl() + "/v1/test"));
       ResponseConverter<Long> responseConverter =
           ResponseConverterUtils.getValue(new TypeToken<Long>(){}.getType());
       return createServiceCall(builder.build(), responseConverter);
     }
 
     ServiceCall<List<Long>> getListLong() {
-      RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getEndPoint() + "/v1/test"));
+      RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getServiceUrl() + "/v1/test"));
       ResponseConverter<List<Long>> responseConverter =
           ResponseConverterUtils.getValue(new TypeToken<List<Long>>(){}.getType());
       return createServiceCall(builder.build(), responseConverter);
     }
 
     ServiceCall<List<TestModel>> getListTestModel() {
-      RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getEndPoint() + "/v1/test"));
+      RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getServiceUrl() + "/v1/test"));
       ResponseConverter<List<TestModel>> responseConverter =
           ResponseConverterUtils.getValue(new TypeToken<List<TestModel>>(){}.getType());
       return createServiceCall(builder.build(), responseConverter);
@@ -138,7 +138,7 @@ public class ResponseTest extends BaseServiceUnitTest {
   public void setUp() throws Exception {
     super.setUp();
     service = new TestService(new NoAuthAuthenticator());
-    service.setEndPoint(getMockWebServerUrl());
+    service.setServiceUrl(getMockWebServerUrl());
   }
 
   /**

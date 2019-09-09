@@ -63,7 +63,7 @@ public abstract class BaseService {
 
   private static final String ERRORMSG_NO_AUTHENTICATOR = "Authentication information was not properly configured.";
 
-  private String endPoint;
+  private String serviceUrl;
   private final String name;
   private Authenticator authenticator;
 
@@ -101,7 +101,7 @@ public abstract class BaseService {
     Map<String, String> props = CredentialUtils.getServiceProperties(name);
     String url = props.get(PROPNAME_URL);
     if (StringUtils.isNotEmpty(url)) {
-      setEndPoint(url);
+      this.setServiceUrl(url);
     }
 
     // Configure a default client instance.
@@ -229,16 +229,6 @@ public abstract class BaseService {
   }
 
   /**
-   * Gets the API end point.
-   *
-   *
-   * @return the API end point
-   */
-  public String getEndPoint() {
-    return endPoint;
-  }
-
-  /**
    * Gets the name.
    *
    * @return the name
@@ -265,20 +255,26 @@ public abstract class BaseService {
   }
 
   /**
+   * Gets the API end point.
+   *
+   *
+   * @return the API end point
+   * @deprecated Use getServiceURL() instead.
+   */
+  @Deprecated
+  public String getEndPoint() {
+    return this.getServiceUrl();
+  }
+
+  /**
    * Sets the end point.
    *
    * @param endPoint the new end point. Will be ignored if empty or null
+   * @deprecated Use setServiceURL() instead.
    */
+  @Deprecated
   public void setEndPoint(final String endPoint) {
-    if (CredentialUtils.hasBadStartOrEndChar(endPoint)) {
-      throw new IllegalArgumentException("The URL shouldn't start or end with curly brackets or quotes. Please "
-          + "remove any surrounding {, }, or \" characters.");
-    }
-
-    if ((endPoint != null) && !endPoint.isEmpty()) {
-      String newEndPoint = endPoint.endsWith("/") ? endPoint.substring(0, endPoint.length() - 1) : endPoint;
-      this.endPoint = newEndPoint;
-    }
+    this.setServiceUrl(endPoint);
   }
 
   /**
@@ -302,6 +298,32 @@ public abstract class BaseService {
     return this.authenticator;
   }
 
+  /**
+   * Set the service URL (the base URL for the service instance).
+   * @param serviceUrl the new service URL value
+   */
+  public void setServiceUrl(String serviceUrl) {
+    if (CredentialUtils.hasBadStartOrEndChar(serviceUrl)) {
+      throw new IllegalArgumentException("The URL shouldn't start or end with curly brackets or quotes. Please "
+          + "remove any surrounding {, }, or \" characters.");
+    }
+
+    // Remove any potential trailing / character from the input value.
+    String newValue = serviceUrl;
+    if ((newValue != null) && !newValue.isEmpty()) {
+      newValue = newValue.endsWith("/") ? newValue.substring(0, newValue.length() - 1) : newValue;
+    }
+    this.serviceUrl = newValue;
+  }
+
+  /**
+   * Returns the service URL value associated with this service instance.
+   * @return the service URL
+   */
+  public String getServiceUrl() {
+    return this.serviceUrl;
+  }
+
   /*
    * (non-Javadoc)
    *
@@ -310,11 +332,7 @@ public abstract class BaseService {
   @Override
   public String toString() {
     final StringBuilder builder = new StringBuilder().append(name).append(" [");
-
-    if (endPoint != null) {
-      builder.append("endPoint=").append(endPoint);
-    }
-
+    builder.append("serviceUrl=").append(serviceUrl != null ? serviceUrl : "<null>");
     return builder.append(']').toString();
   }
 

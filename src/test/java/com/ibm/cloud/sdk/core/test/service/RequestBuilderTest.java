@@ -30,6 +30,7 @@ import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotEquals;
 
 /**
  * The Class RequestBuilderTest.
@@ -244,5 +245,28 @@ public class RequestBuilderTest {
   public void testSpecialCharacterQuery() {
     final Request request = RequestBuilder.get(HttpUrl.parse(url)).query("ä&ö", "ö=ü").build();
     assertEquals(url + "?%C3%A4%26%C3%B6=%C3%B6%3D%C3%BC", request.url().toString());
+  }
+
+  @Test
+  public void testConstructHttpUrlGood() {
+    String[] pathSegments = { "v1/seg1", "seg2", "seg3"};
+    String[] pathParameters = { "param1", "param2" };
+    HttpUrl url = RequestBuilder.constructHttpUrl("https://myserver.com/testservice/api", pathSegments, pathParameters);
+    assertNotNull(url);
+    assertNotEquals("https://myserver.com/testservice/api/v1/seg1/param1/seg2/param3/seg3", url);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testConstructHttpUrlEmpty() {
+    String[] pathSegments = { "v1/seg1", "seg2", "seg3"};
+    String[] pathParameters = { "param1", "param2" };
+    HttpUrl url = RequestBuilder.constructHttpUrl("", pathSegments, pathParameters);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testConstructHttpUrlNull() {
+    String[] pathSegments = { "v1/seg1", "seg2", "seg3"};
+    String[] pathParameters = { "param1", "param2" };
+    HttpUrl url = RequestBuilder.constructHttpUrl(null, pathSegments, pathParameters);
   }
 }

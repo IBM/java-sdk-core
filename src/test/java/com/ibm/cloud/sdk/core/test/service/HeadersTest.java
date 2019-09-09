@@ -44,7 +44,7 @@ public class HeadersTest extends BaseServiceUnitTest {
     }
 
     public ServiceCall<TestModel> testMethod() {
-      RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getEndPoint() + "/v1/test"));
+      RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getServiceUrl() + "/v1/test"));
       return createServiceCall(builder.build(), ResponseConverterUtils.getObject(TestModel.class));
     }
   }
@@ -61,7 +61,7 @@ public class HeadersTest extends BaseServiceUnitTest {
   public void setUp() throws Exception {
     super.setUp();
     service = new TestService(new NoAuthAuthenticator());
-    service.setEndPoint(getMockWebServerUrl());
+    service.setServiceUrl(getMockWebServerUrl());
   }
 
   /**

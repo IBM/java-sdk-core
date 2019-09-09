@@ -52,7 +52,7 @@ public class ErrorResponseTest extends BaseServiceUnitTest {
     }
 
     ServiceCall<GenericModel> testMethod() {
-      RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getEndPoint() + "/v1/test"));
+      RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getServiceUrl() + "/v1/test"));
       return createServiceCall(builder.build(), ResponseConverterUtils.getObject(GenericModel.class));
     }
   }
@@ -69,7 +69,7 @@ public class ErrorResponseTest extends BaseServiceUnitTest {
   public void setUp() throws Exception {
     super.setUp();
     service = new TestService(new NoAuthAuthenticator());
-    service.setEndPoint(getMockWebServerUrl());
+    service.setServiceUrl(getMockWebServerUrl());
   }
 
   /**
