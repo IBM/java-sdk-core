@@ -108,12 +108,13 @@ public class RequestBuilder {
   /**
    * Creates a properly encoded HttpUrl object with no path parameters.
    *
-   * @param endPoint the API end point
+   * @param serviceUrl the base service URL associated with the service instance
    * @param pathSegments the path segments for a specific API call
    * @return the HttpUrl object
    */
-  public static HttpUrl constructHttpUrl(String endPoint, String[] pathSegments) {
-    HttpUrl.Builder httpUrlBuilder = HttpUrl.parse(endPoint).newBuilder();
+  public static HttpUrl constructHttpUrl(String serviceUrl, String[] pathSegments) {
+    Validator.notEmpty(serviceUrl, "The serviceUrl cannot be null");
+    HttpUrl.Builder httpUrlBuilder = HttpUrl.parse(serviceUrl).newBuilder();
     for (String segment : pathSegments) {
       httpUrlBuilder.addPathSegments(segment);
     }
@@ -123,13 +124,14 @@ public class RequestBuilder {
   /**
    * Creates a properly encoded HttpUrl object with path parameters.
    *
-   * @param endPoint the API end point
+   * @param serviceUrl the base service URL associated with the service instance
    * @param pathSegments the path segments for a specific API call
    * @param pathParameters the path parameters for a specific API call
    * @return the HttpUrl object
    */
-  public static HttpUrl constructHttpUrl(String endPoint, String[] pathSegments, String[] pathParameters) {
-    HttpUrl.Builder httpUrlBuilder = HttpUrl.parse(endPoint).newBuilder();
+  public static HttpUrl constructHttpUrl(String serviceUrl, String[] pathSegments, String[] pathParameters) {
+    Validator.notEmpty(serviceUrl, "The serviceUrl cannot be null");
+    HttpUrl.Builder httpUrlBuilder = HttpUrl.parse(serviceUrl).newBuilder();
     for (int i = 0; i < pathSegments.length; i++) {
       httpUrlBuilder.addPathSegments(pathSegments[i]);
       if (i < pathParameters.length) {
