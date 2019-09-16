@@ -196,9 +196,9 @@ public final class CredentialUtils {
   /**
    * Creates a list of files to check for credentials. The file locations are:
    * * Location provided by user-specified IBM_CREDENTIALS_FILE environment variable
+   * * Current working directory this code is being called in
    * * System home directory (Unix)
    * * System home directory (Windows)
-   * * Top-level directory of the project this code is being called in
    *
    * @return list of credential files to check
    */
@@ -206,13 +206,17 @@ public final class CredentialUtils {
     List<File> files = new ArrayList<>();
 
     String userSpecifiedPath = EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE");
+    String currentWorkingDirectory = System.getProperty("user.dir");
     String unixHomeDirectory = EnvironmentUtils.getenv("HOME");
     String windowsFirstHomeDirectory = EnvironmentUtils.getenv("HOMEDRIVE") + EnvironmentUtils.getenv("HOMEPATH");
     String windowsSecondHomeDirectory = EnvironmentUtils.getenv("USERPROFILE");
-    String projectDirectory = System.getProperty("user.dir");
 
     if (StringUtils.isNotEmpty(userSpecifiedPath)) {
       files.add(new File(userSpecifiedPath));
+    }
+
+    if (StringUtils.isNotEmpty(currentWorkingDirectory)) {
+      files.add(new File(String.format("%s/%s", currentWorkingDirectory, DEFAULT_CREDENTIAL_FILE_NAME)));
     }
 
     if (StringUtils.isNotEmpty(unixHomeDirectory)) {
@@ -225,10 +229,6 @@ public final class CredentialUtils {
 
     if (StringUtils.isNotEmpty(windowsSecondHomeDirectory)) {
       files.add(new File(String.format("%s/%s", windowsSecondHomeDirectory, DEFAULT_CREDENTIAL_FILE_NAME)));
-    }
-
-    if (StringUtils.isNotEmpty(projectDirectory)) {
-      files.add(new File(String.format("%s/%s", projectDirectory, DEFAULT_CREDENTIAL_FILE_NAME)));
     }
 
     return files;
