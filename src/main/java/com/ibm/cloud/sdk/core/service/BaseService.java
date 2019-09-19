@@ -412,7 +412,7 @@ public abstract class BaseService {
         Response response = call.execute();
         T responseModel = processServiceCall(converter, response);
         return new com.ibm.cloud.sdk.core.http.Response<>(responseModel, response);
-      } catch (Exception e) {
+      } catch (IOException e) {
         if (e instanceof SSLHandshakeException) {
           LOG.warning(ERRORMSG_SSL);
         }
@@ -452,7 +452,7 @@ public abstract class BaseService {
             Response response = call.execute();
             T responseModel = processServiceCall(converter, response);
             return new com.ibm.cloud.sdk.core.http.Response<>(responseModel, response);
-          } catch (Exception e) {
+          } catch (IOException e) {
             if (e instanceof SSLHandshakeException) {
               LOG.warning(ERRORMSG_SSL);
             }
