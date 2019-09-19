@@ -52,6 +52,8 @@ import okhttp3.Request;
 import okhttp3.Request.Builder;
 import okhttp3.Response;
 
+import javax.net.ssl.SSLHandshakeException;
+
 /**
  * Abstracts common functionality of various IBM Cloud services.
  */
@@ -62,6 +64,10 @@ public abstract class BaseService {
   private static final Logger LOG = Logger.getLogger(BaseService.class.getName());
 
   private static final String ERRORMSG_NO_AUTHENTICATOR = "Authentication information was not properly configured.";
+  private static final String ERRORMSG_SSL = "If you're trying to call a service on ICP or Cloud Pak for Data, you "
+      + "may not have a valid SSL certificate. If you need to access the service without setting that up, try using "
+      + "the disableSsl option in your authentication configuration and/or the disableSslVerification option in the "
+      + "HttpConfigOptions.";
 
   private String serviceUrl;
   private final String name;
@@ -407,6 +413,9 @@ public abstract class BaseService {
         T responseModel = processServiceCall(converter, response);
         return new com.ibm.cloud.sdk.core.http.Response<>(responseModel, response);
       } catch (IOException e) {
+        if (e instanceof SSLHandshakeException) {
+          LOG.warning(ERRORMSG_SSL);
+        }
         throw new RuntimeException(e);
       }
     }
@@ -416,6 +425,9 @@ public abstract class BaseService {
       call.enqueue(new Callback() {
         @Override
         public void onFailure(Call call, IOException e) {
+          if (e instanceof SSLHandshakeException) {
+            LOG.warning(ERRORMSG_SSL);
+          }
           callback.onFailure(e);
         }
 
@@ -435,10 +447,17 @@ public abstract class BaseService {
     public Single<com.ibm.cloud.sdk.core.http.Response<T>> reactiveRequest() {
       return Single.fromCallable(new Callable<com.ibm.cloud.sdk.core.http.Response<T>>() {
         @Override
-        public com.ibm.cloud.sdk.core.http.Response<T> call() throws Exception {
-          Response response = call.execute();
-          T responseModel = processServiceCall(converter, response);
-          return new com.ibm.cloud.sdk.core.http.Response<>(responseModel, response);
+        public com.ibm.cloud.sdk.core.http.Response<T> call() {
+          try {
+            Response response = call.execute();
+            T responseModel = processServiceCall(converter, response);
+            return new com.ibm.cloud.sdk.core.http.Response<>(responseModel, response);
+          } catch (IOException e) {
+            if (e instanceof SSLHandshakeException) {
+              LOG.warning(ERRORMSG_SSL);
+            }
+            throw new RuntimeException(e);
+          }
         }
       });
     }
