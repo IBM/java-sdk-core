@@ -19,7 +19,7 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 
 /**
- * A file and its associated metadata
+ * A file and its associated metadata.
  */
 public class FileWithMetadata {
 
@@ -64,8 +64,7 @@ public class FileWithMetadata {
          * @throws FileNotFoundException if the file could not be found
          */
         public Builder(File file) throws FileNotFoundException {
-            this.data = new FileInputStream(file);
-            this.filename = file.getName();
+            this.data(file);
         }
 
         /**
@@ -75,6 +74,17 @@ public class FileWithMetadata {
          */
         public FileWithMetadata build() {
             return new FileWithMetadata(this);
+        }
+
+        /**
+         * Set the data.
+         *
+         * @param data the data
+         * @return the FileWithMetadata builder
+         */
+        public Builder data(InputStream data) {
+            this.data = data;
+            return this;
         }
 
         /**
@@ -98,6 +108,18 @@ public class FileWithMetadata {
             this.contentType = contentType;
             return this;
         }
+
+        /**
+         * Set the data.
+         *
+         * @param file the file to use as the source of file contents and filename
+         * @throws FileNotFoundException if the file could not be found
+         */
+        public Builder data(File file) throws FileNotFoundException {
+            this.data = new FileInputStream(file);
+            this.filename = file.getName();
+            return this;
+        }
     }
 
     private FileWithMetadata(Builder builder) {
@@ -118,7 +140,7 @@ public class FileWithMetadata {
     }
 
     /**
-     * The data / contents of the file
+     * The data / contents of the file.
      */
     public InputStream data() {
         return this.data;
