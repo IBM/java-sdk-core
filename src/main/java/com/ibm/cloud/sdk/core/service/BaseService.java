@@ -64,10 +64,8 @@ public abstract class BaseService {
   private static final Logger LOG = Logger.getLogger(BaseService.class.getName());
 
   private static final String ERRORMSG_NO_AUTHENTICATOR = "Authentication information was not properly configured.";
-  private static final String ERRORMSG_SSL = "If you're trying to call a service on ICP or Cloud Pak for Data, you "
-      + "may not have a valid SSL certificate. If you need to access the service without setting that up, try using "
-      + "the disableSsl option in your authentication configuration and/or the disableSslVerification option in the "
-      + "HttpConfigOptions.";
+  private static final String ERRORMSG_SSL = "The connection failed because the SSL certificate is not valid. To use"
+      + " a self-signed certificate, set the disableSslVerification parameter in HttpConfigOptions.";
 
   private String serviceUrl;
   private final String name;
