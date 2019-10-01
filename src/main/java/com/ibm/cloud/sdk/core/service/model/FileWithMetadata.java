@@ -113,6 +113,7 @@ public class FileWithMetadata {
          * Set the data.
          *
          * @param file the file to use as the source of file contents and filename
+         * @return the FileWithMetadata builder
          * @throws FileNotFoundException if the file could not be found
          */
         public Builder data(File file) throws FileNotFoundException {
@@ -141,6 +142,7 @@ public class FileWithMetadata {
 
     /**
      * The data / contents of the file.
+     * @return the contents of the file
      */
     public InputStream data() {
         return this.data;
@@ -148,6 +150,7 @@ public class FileWithMetadata {
 
     /**
      * The filename for file.
+     * @return the filename
      */
     public String filename() {
         return this.filename;
@@ -155,6 +158,7 @@ public class FileWithMetadata {
 
     /**
      * The content type of file. Values for this parameter can be obtained from the HttpMediaType class.
+     * @return the content-type associated with the file
      */
     public String contentType() {
         return this.contentType;

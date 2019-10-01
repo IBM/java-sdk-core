@@ -13,15 +13,11 @@
 
 package com.ibm.cloud.sdk.core.test.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.testng.Assert.assertNotEquals;
+import static org.junit.Assert.*;
 
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Test;
+import org.testng.annotations.Test;
 
 import com.ibm.cloud.sdk.core.http.HttpClientSingleton;
 import com.ibm.cloud.sdk.core.http.HttpConfigOptions;
@@ -38,14 +34,14 @@ import okhttp3.internal.tls.OkHostnameVerifier;
 public class BaseServiceTest {
 
   // Simulated generated service class.
-  public static class TestService extends BaseService {
+  public class TestService extends BaseService {
     public TestService(String name) {
       super(name, new NoAuthAuthenticator());
     }
   }
 
   // A second simulated generated service class.
-  public static class AnotherTestService extends BaseService {
+  public class AnotherTestService extends BaseService {
     public AnotherTestService(String name) {
       super(name, new NoAuthAuthenticator());
     }
