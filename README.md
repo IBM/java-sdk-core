@@ -28,6 +28,16 @@ To find the correct version to specify in your dependency definitions, consult t
 ## Javadoc
 You can find the Javadoc for this project here: https://ibm.github.io/java-sdk-core/
 
+## Authentication
+The java-sdk-core project supports the following types of authentication:
+- Basic Authentication
+- Bearer Token 
+- Identity and Access Management (IAM)
+- Cloud Pak for Data
+- No Authentication
+
+For more information about the various authentication types and how to use them with your services, click [here](Authentication.md)
+
 ## Issues
 
 If you encounter an issue with this project, you are welcome to submit a [bug report](https://github.com/IBM/java-sdk-core/issues).
