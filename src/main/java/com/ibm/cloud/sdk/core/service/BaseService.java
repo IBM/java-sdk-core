@@ -101,15 +101,23 @@ public abstract class BaseService {
     }
     this.authenticator = authenticator;
 
+    // Configure a default client instance.
+    this.client = configureHttpClient();
+
+    // temp: set any external configuration from the constructor
+    configureService(name);
+  }
+
+  protected void configureService(String serviceName) {
+    if (serviceName == null || serviceName.isEmpty()) {
+      throw new IllegalArgumentException("Error configuring service. Service name is required.");
+    }
     // Try to retrieve the service URL from either a credential file, environment, or VCAP_SERVICES.
-    Map<String, String> props = CredentialUtils.getServiceProperties(name);
+    Map<String, String> props = CredentialUtils.getServiceProperties(serviceName);
     String url = props.get(PROPNAME_URL);
     if (StringUtils.isNotEmpty(url)) {
       this.setServiceUrl(url);
     }
-
-    // Configure a default client instance.
-    this.client = configureHttpClient();
 
     // Check to see if "disable ssl" was set in the service properties.
     Boolean disableSSL = Boolean.valueOf(props.get(PROPNAME_DISABLE_SSL));
