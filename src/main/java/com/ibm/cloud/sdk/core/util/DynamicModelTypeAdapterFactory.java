@@ -81,9 +81,13 @@ public class DynamicModelTypeAdapterFactory implements TypeAdapterFactory {
   @Override
   public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
 
-    // If "type" represents a type OTHER THAN a DynamicModel subclass, then bail out now.
+    // Grab the Class associated with the instance to be serialized/deserialized.
     Class<? super T> rawType = type.getRawType();
+    LOGGER.fine(this.getClass().getSimpleName() + " examining class: " + rawType.getName());
+
+    // If "type" represents a type OTHER THAN a DynamicModel subclass, then bail out now.
     if (!DynamicModel.class.isAssignableFrom(rawType)) {
+      LOGGER.fine("Class '" + rawType.getName() + "' is not a DynamicModel.");
       return null;
     }
 
@@ -95,6 +99,7 @@ public class DynamicModelTypeAdapterFactory implements TypeAdapterFactory {
       return null;
     }
 
+    LOGGER.fine("Returning TypeAdapter instance to handle class: " + rawType.getName());
     return new Adapter<T>(gson, ctor, getBoundFields(gson, type));
   }
 

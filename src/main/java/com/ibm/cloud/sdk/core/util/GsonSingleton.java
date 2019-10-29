@@ -64,6 +64,9 @@ public final class GsonSingleton {
 
     // Type adapter factory for DynamicModel subclasses.
     builder.registerTypeAdapterFactory(new DynamicModelTypeAdapterFactory());
+
+    // Type adapter factory for classes that use a discriminator.
+    builder.registerTypeAdapterFactory(new DiscriminatorBasedTypeAdapterFactory());
   }
 
   /**
