@@ -183,9 +183,8 @@ public final class CredentialUtils {
       }
       // Second, try to find a service list with the specified key.
       List<VcapService> services = vcapObj.get(serviceName);
-      if (services != null && services.size() > 0) {
-        VcapService service = (services.get(0) != null) ? services.get(0) : null;
-        return service;
+      if (services != null && !services.isEmpty()) {
+        return services.get(0);
       }
     }
     return null;

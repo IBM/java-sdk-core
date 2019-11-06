@@ -11,3 +11,4 @@ config
 .iml
 .pre-commit-config.yaml
 .secrets.baseline
+.vscode/
