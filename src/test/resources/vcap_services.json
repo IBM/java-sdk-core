@@ -45,6 +45,16 @@
             "username": "not-a-username",
             "password": "not-a-password"
          }
+      },
+      {
+         "name": "discovery2",
+         "label": "discovery2",
+         "plan": "experimental",
+         "credentials": {
+            "url": "https://gateway.watsonplatform.net/discovery-experimental/api",
+            "username": "not-a-username",
+            "password": "not-a-password"
+         }
       }
    ],
    "document_conversion": [
@@ -213,5 +223,92 @@
             "password": "not-a-password"
          }
       }
-   ]
+   ],
+   "no_matching_name": [
+      {
+         "name": "different_name_two",
+         "label": "different_name_two",
+         "plan": "different_name__two_plan",
+         "credentials": {
+            "url": "https://gateway.watsonplatform.net/different-name-two/api",
+            "username": "not-a-username",
+            "password": "not-a-password"
+         }
+      },
+      {
+         "name": "different_name",
+         "label": "different_name",
+         "plan": "different_name_plan",
+         "credentials": {
+            "url": "https://gateway.watsonplatform.net/different-name/api",
+            "username": "not-a-username",
+            "password": "not-a-password"
+         }
+      }
+   ],
+   "key_to_service_entry_1": [
+      {
+           "name": "service_entry_key_and_key_to_service_entries",
+           "label": "devops-insights",
+           "plan": "standard",
+           "credentials": {
+              "url": "https://on.the.toolchainplatform.net/devops-insights/api",
+               "username": "not-a-username",
+               "password": "not-a-password"
+           }
+      },
+      {
+         "name": "service_entry_key_and_key_to_service_entries_two",
+         "label": "devops-insights",
+         "plan": "standard",
+         "credentials": {
+            "url": "https://on.the.toolchainplatform.net/devops-insights-2/api",
+             "username": "not-a-username",
+             "password": "not-a-password"
+         }
+    }
+  ],
+  "key_to_service_entry_2": [
+     {
+          "label": "devops-insights",
+          "plan": "standard",
+          "credentials": {
+             "url": "https://on.the.toolchainplatform.net/devops-insights-3/api",
+              "username": "not-a-username-3",
+              "password": "not-a-password-3"
+          }
+     }
+ ],
+  "service_entry_key_and_key_to_service_entries": [
+     {
+        "name": "service_entry_key-2",
+        "label": "devops-insights",
+        "plan": "elite",
+        "credentials": {
+            "url": "https://on.the.toolchainplatform.net/devops-insights-2/api",
+            "username": "not-a-username-2",
+            "password": "not-a-password-2"
+        }
+   }
+  ],
+  "empty_service": [
+     
+  ],
+  "no-creds-service": [
+     {
+      "name": "no-creds-service-one",
+      "label": "devops-insights",
+      "plan": "elite",
+      "credentials": {
+         "url": "https://on.the.toolchainplatform.net/no-creds-service-one/api",
+         "username": "not-a-username-2",
+         "password": "not-a-password-2"
+      }
+     },
+     {
+      "name": "no-creds-service-two",
+      "label": "devops-insights",
+      "plan": "elite"
+     }
+  ]
 }

@@ -17,25 +17,24 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonSyntaxException;
+import com.google.gson.annotations.SerializedName;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.ibm.cloud.sdk.core.security.Authenticator;
 import com.ibm.cloud.sdk.core.service.BaseService;
+
 
 /**
  * CredentialUtils retrieves service credentials from the environment.
@@ -46,18 +45,7 @@ public final class CredentialUtils {
   public static final String PLAN_STANDARD = "standard";
 
   private static final String DEFAULT_CREDENTIAL_FILE_NAME = "ibm-credentials.env";
-
   private static final String VCAP_SERVICES = "VCAP_SERVICES";
-
-  private static final String CREDENTIALS = "credentials";
-  private static final String PLAN = "plan";
-  private static final String USERNAME = "username";
-  private static final String PASSWORD = "password";
-  private static final String URL = "url";
-  private static final String IAM_APIKEY = "iam_apikey";
-  // this value was used previously for IAM API keys as well
-  private static final String APIKEY = "apikey";
-  private static final String IAM_URL = "iam_url";
 
   private CredentialUtils() {
     // This is a utility class - no instantiation allowed.
@@ -108,84 +96,96 @@ public final class CredentialUtils {
   // VCAP-related methods
 
   /**
-   * Gets the <b>VCAP_SERVICES</b> environment variable and return it as a {@link JsonObject}.
-   *
-   * @return the VCAP_SERVICES as a {@link JsonObject}.
+   * This class is used to unmarshal the contents of the "credentials" field within
+   * a vcap service entry.
    */
-  private static JsonObject getVcapServices() {
-    final String envServices = EnvironmentUtils.getenv(VCAP_SERVICES);
-    if (envServices == null) {
-      return null;
-    }
-
-    JsonObject vcapServices = null;
-
-    try {
-      final JsonParser parser = new JsonParser();
-      vcapServices = (JsonObject) parser.parse(envServices);
-    } catch (final JsonSyntaxException e) {
-      log.log(Level.INFO, "Error parsing VCAP_SERVICES", e);
-    }
-    return vcapServices;
+  public static class VcapCredentials {
+    public String url;
+    public String username;
+    public String password;
+    public String apikey;
+    @SerializedName("iam_apikey")
+    public String iamApiKey;
+    @SerializedName("iam_url")
+    public String iamUrl;
+    @SerializedName("iam_apikey_description")
+    public String iamApikeyDescription;
+    @SerializedName("iam_apikey_name")
+    public String iamApikeyName;
+    @SerializedName("iam_role_crn")
+    public String iamRoleCrn;
+    @SerializedName("iam_serviceid_crn")
+    public String iamServiceCrn;
   }
 
   /**
-   * A helper method to retrieve the appropriate 'credentials' JSON property value from the VCAP_SERVICES.
-   *
-   * @param vcapServices JSON object representing the VCAP_SERVICES
-   * @param serviceName the name of the service whose credentials are sought
-   * @param plan the name of the plan for which the credentials are sought, e.g. 'standard', 'beta' etc, may be null
-   * @return the first set of credentials that match the search criteria, service name and plan. May return null
+   * This class is used to unmarshal an item in the list of services belonging to a particular service key.
    */
-  private static JsonObject getCredentialsObject(JsonObject vcapServices, String serviceName, String plan) {
-    for (final Entry<String, JsonElement> entry : vcapServices.entrySet()) {
-      final String key = entry.getKey();
-      if (key.startsWith(serviceName)) {
-        final JsonArray servInstances = vcapServices.getAsJsonArray(key);
-        for (final JsonElement instance : servInstances) {
-          final JsonObject service = instance.getAsJsonObject();
-          final String instancePlan = service.get(PLAN).getAsString();
-          if ((plan == null) || plan.equalsIgnoreCase(instancePlan)) {
-            return instance.getAsJsonObject().getAsJsonObject(CREDENTIALS);
+  public static class VcapService {
+    public String name;
+    public String label;
+    public String plan;
+    public List<String> tags;
+    public VcapCredentials credentials;
+  }
+
+  /**
+   * Retrieves the VCAP_SERVICES environment variable and unmarshals it.
+   * @return a map containing the unmarshalled VCAP_SERVICES value
+   */
+  public static Map<String, List<VcapService>> getVcapServicesObj() {
+    Map<String, List<VcapService>> result = null;
+
+    // Retrieve the environment variable's value.
+    String vcapValue = EnvironmentUtils.getenv(VCAP_SERVICES);
+    if (StringUtils.isNotEmpty(vcapValue)) {
+      Gson gson = GsonSingleton.getGson();
+      // Parse it into a map of VcapService lists keyed by service name.
+      Type typeToken = new TypeToken<Map<String, List<VcapService>>>() { }.getType();
+      try {
+        result = gson.fromJson(vcapValue, typeToken);
+      } catch (Throwable t) {
+        log.log(Level.WARNING, "Error parsing VCAP_SERVICES", t);
+      }
+    }
+    return result;
+  }
+
+   /**
+   * Returns an appropriate "service" list item for the specific 'serviceName' value.
+   *
+   * @param serviceName the name used to locate the appropriate entry within the VCAP_SERVICES structure.
+   * This value will be used in two ways:
+   *
+   * First, a search will be done to find a service entry whose 'name' field matches the 'vcapName'
+   * parameter value.
+   * Second, if no entry with a matching 'name' field was found, then the first service entry within the
+   * services list whose key matches 'serviceName' will be returned.
+   *
+   *
+   * @return a VcapService instance if found, or null
+   */
+  protected static VcapService getVcapServiceEntry(String serviceName) {
+    // check if param is defined
+    if (serviceName == null || serviceName.isEmpty()) {
+      return null;
+    }
+    // Retrieve the VCAP_SERVICES environment variable and unmarshal into a Map.
+    Map<String, List<VcapService>> vcapObj = getVcapServicesObj();
+    if (vcapObj != null) {
+      // search the inner entries of the vcap for the matching serviceName
+      for (List<VcapService> serviceList : vcapObj.values()) {
+        for (VcapService service : serviceList) {
+          if (serviceName.equals(service.name)) {
+            return service;
           }
         }
       }
-    }
-    return null;
-  }
-
-  /**
-   * Returns the property named 'key' associated with the specified service.
-   * @param serviceName the name of the service
-   * @param key the name of the property to retrieve
-   * @return the value of the specified property
-   */
-  public static String getVcapValue(String serviceName, String key) {
-    return getVcapValue(serviceName, key, null);
-  }
-
-  /**
-   * Returns the value associated with the provided key from the VCAP_SERVICES, or null if it doesn't exist.
-   *
-   * @param serviceName the service name
-   * @param key the key whose value should be returned
-   * @param plan the plan name
-   * @return the value of the provided key
-   */
-  public static String getVcapValue(String serviceName, String key, String plan) {
-    if ((serviceName == null) || serviceName.isEmpty()) {
-      return null;
-    }
-
-    final JsonObject services = getVcapServices();
-    if (services == null) {
-      return null;
-    }
-
-    JsonObject jsonCredentials = getCredentialsObject(services, serviceName, plan);
-    if (jsonCredentials != null) {
-      if (jsonCredentials.has(key)) {
-        return jsonCredentials.get(key).getAsString();
+      // Second, try to find a service list with the specified key.
+      List<VcapService> services = vcapObj.get(serviceName);
+      if (services != null && services.size() > 0) {
+        VcapService service = (services.get(0) != null) ? services.get(0) : null;
+        return service;
       }
     }
     return null;
@@ -311,23 +311,25 @@ public final class CredentialUtils {
    */
   static Map<String, String> getVcapCredentialsAsMap(String serviceName) {
     Map<String, String> props = new HashMap<>();
-    addToMap(props, Authenticator.PROPNAME_USERNAME, getVcapValue(serviceName, USERNAME));
-    addToMap(props, Authenticator.PROPNAME_PASSWORD, getVcapValue(serviceName, PASSWORD));
-    addToMap(props, BaseService.PROPNAME_URL, getVcapValue(serviceName, URL));
-    addToMap(props, Authenticator.PROPNAME_URL, getVcapValue(serviceName, IAM_URL));
+    // Retrieve the vcap service entry for the specific key and name, then copy its values to the map.
+    VcapService vcapService = getVcapServiceEntry(serviceName);
 
-    // For the IAM apikey, the "apikey" property has higher precedence than "iam_apikey".
-    addToMap(props, Authenticator.PROPNAME_APIKEY, getVcapValue(serviceName, IAM_APIKEY));
-    addToMap(props, Authenticator.PROPNAME_APIKEY, getVcapValue(serviceName, APIKEY));
-
-    // Try to guess at the auth type based on the properties found.
-    if (StringUtils.isNotEmpty(props.get(Authenticator.PROPNAME_APIKEY))) {
-      addToMap(props, Authenticator.PROPNAME_AUTH_TYPE, Authenticator.AUTHTYPE_IAM);
-    } else if (StringUtils.isNotEmpty(props.get(Authenticator.PROPNAME_USERNAME))
-        || StringUtils.isNotEmpty(props.get(Authenticator.PROPNAME_PASSWORD))) {
-      addToMap(props, Authenticator.PROPNAME_AUTH_TYPE, Authenticator.AUTHTYPE_BASIC);
+    if (vcapService != null && vcapService.credentials != null) {
+      addToMap(props, Authenticator.PROPNAME_USERNAME, vcapService.credentials.username);
+      addToMap(props, Authenticator.PROPNAME_PASSWORD, vcapService.credentials.password);
+      addToMap(props, BaseService.PROPNAME_URL, vcapService.credentials.url);
+      addToMap(props, Authenticator.PROPNAME_URL, vcapService.credentials.iamUrl);
+      // For the IAM apikey, the "apikey" property has higher precedence than "iam_apikey".
+      addToMap(props, Authenticator.PROPNAME_APIKEY, vcapService.credentials.iamApiKey);
+      addToMap(props, Authenticator.PROPNAME_APIKEY, vcapService.credentials.apikey);
+      // Try to guess at the auth type based on the properties found.
+      if (StringUtils.isNotEmpty(props.get(Authenticator.PROPNAME_APIKEY))) {
+        addToMap(props, Authenticator.PROPNAME_AUTH_TYPE, Authenticator.AUTHTYPE_IAM);
+      } else if (StringUtils.isNotEmpty(props.get(Authenticator.PROPNAME_USERNAME))
+      || StringUtils.isNotEmpty(props.get(Authenticator.PROPNAME_PASSWORD))) {
+         addToMap(props, Authenticator.PROPNAME_AUTH_TYPE, Authenticator.AUTHTYPE_BASIC);
+      }
     }
-
     return props;
   }
 
