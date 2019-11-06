@@ -36,10 +36,10 @@ import java.util.logging.Logger;
  *
  */
 public final class RequestUtils {
-
   private static final Logger LOG = Logger.getLogger(RequestUtils.class.getName());
   private static final String[] properties =
       new String[] { "java.vendor", "java.version", "os.arch", "os.name", "os.version" };
+  private static final String VERSION_PROPS_FILENAME = "sdk-core-version.properties";
   private static String userAgent;
 
   private RequestUtils() {
@@ -141,18 +141,19 @@ public final class RequestUtils {
     return sb.toString();
   }
 
+  /**
+   * Retrieve the library's version from the sdk-core-version.properties file.
+   * @return the core library's version number
+   */
   private static String loadCoreVersion() {
-    ClassLoader classLoader = RequestUtils.class.getClassLoader();
-    InputStream inputStream = classLoader.getResourceAsStream("sdk-core-version.properties");
-    Properties properties = new Properties();
-
-    try {
-      properties.load(inputStream);
+    try (InputStream is = RequestUtils.class.getClassLoader().getResourceAsStream(VERSION_PROPS_FILENAME)) {
+      Properties properties = new Properties();
+      properties.load(is);
+      return properties.getProperty("version", "unknown-version");
     } catch (Exception e) {
-      LOG.log(Level.WARNING, "Could not load sdk-core-version.properties", e);
+      LOG.log(Level.WARNING, "Could not load file: " + VERSION_PROPS_FILENAME, e);
+      return "unknown-version";
     }
-
-    return properties.getProperty("version", "unknown-version");
   }
 
   /**
