@@ -38,8 +38,6 @@
         <testng-version>6.14.3</testng-version>
         <surefire-version>3.0.0-M3</surefire-version>
         <checkstyle-plugin-version>3.0.0</checkstyle-plugin-version>
-        <findbugs-plugin-version>3.0.5</findbugs-plugin-version>
-        <findbugs-version>3.0.1</findbugs-version>
         <jacoco-plugin-version>0.8.3</jacoco-plugin-version>
         <compiler-plugin-version>3.8.0</compiler-plugin-version>
         <okhttp3-version>3.12.1</okhttp3-version>
@@ -118,16 +116,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.google.code.findbugs</groupId>
-            <artifactId>annotations</artifactId>
-            <version>${findbugs-version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.code.findbugs</groupId>
-            <artifactId>jsr305</artifactId>
-            <version>${findbugs-version}</version>
-        </dependency>
-        <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>${guava-version}</version>
@@ -146,6 +134,7 @@
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <version>${mockito-version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.powermock</groupId>
@@ -207,25 +196,6 @@
                     <configLocation>build/checkstyle.xml</configLocation>
                     <consoleOutput>true</consoleOutput>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>findbugs-maven-plugin</artifactId>
-                <version>${findbugs-plugin-version}</version>
-                <configuration>
-                    <xmlOutput>true</xmlOutput>
-                    <excludeFilterFile>build/findbugs-exclude.xml</excludeFilterFile>
-                    <effort>Max</effort>
-                    <threshold>Low</threshold>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>findbugs</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
