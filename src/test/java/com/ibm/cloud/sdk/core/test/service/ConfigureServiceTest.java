@@ -24,7 +24,6 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import com.ibm.cloud.sdk.core.security.Authenticator;
 import com.ibm.cloud.sdk.core.security.BasicAuthenticator;
-import com.ibm.cloud.sdk.core.security.ConfigBasedAuthenticatorFactory;
 import com.ibm.cloud.sdk.core.service.BaseService;
 import com.ibm.cloud.sdk.core.util.EnvironmentUtils;
 import static com.ibm.cloud.sdk.core.test.TestUtils.getStringFromInputStream;
@@ -45,13 +44,18 @@ public class ConfigureServiceTest {
   // Simulated generated service class.
   public class TestService extends BaseService {
     public TestService(String name, Authenticator authenticator) {
-      super(name,
-        (authenticator != null ? authenticator : ConfigBasedAuthenticatorFactory.getAuthenticator(name)));
+      super(name, authenticator);
     }
     public void configureSvc(String serviceName) {
-        configureService(serviceName);
+        this.configureService(serviceName);
     }
-    
+  }
+  public class TestServiceConfigured extends BaseService {
+    public TestServiceConfigured(String name, Authenticator authenticator) {
+      super(name, authenticator);
+      this.configureService(name);
+    }
+
   }
   /**
    * Setup.
@@ -65,12 +69,37 @@ public class ConfigureServiceTest {
   }
 
   @Test
-  public void testConfigureServiceOnInitiation() {
+  public void testUnConfigureServiceOnInitiationCreds() {
     PowerMockito.spy(EnvironmentUtils.class);
     PowerMockito.when(EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
+    BasicAuthenticator auth = new BasicAuthenticator(BASIC_USERNAME, "password1");
+    TestService svc = new TestService("SERVICE_1", auth);
+    assertNull(svc.getServiceUrl());
+  }
 
-    TestService svc = new TestService("SERVICE_1", null);
+  @Test
+  public void testConfigureServiceOnInitiationCreds() {
+    PowerMockito.spy(EnvironmentUtils.class);
+    PowerMockito.when(EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
+    BasicAuthenticator auth = new BasicAuthenticator(BASIC_USERNAME, "password1");
+    TestServiceConfigured svc = new TestServiceConfigured("SERVICE_1", auth);
     assertEquals("https://service1/api", svc.getServiceUrl());
+  }
+
+  @Test
+  public void testUnConfigureServiceOnInitiationVcap() {
+    setupVCAP();
+    BasicAuthenticator auth = new BasicAuthenticator(BASIC_USERNAME, "password1");
+    TestService svc = new TestService("key_to_service_entry_2", auth);
+    assertNull(svc.getServiceUrl());
+  }
+
+  @Test
+  public void testConfigureServiceOnInitiationVcap() {
+    setupVCAP();
+    BasicAuthenticator auth = new BasicAuthenticator(BASIC_USERNAME, "password1");
+    TestServiceConfigured svc = new TestServiceConfigured("service_entry_key_and_key_to_service_entries", auth);
+    assertEquals("https://on.the.toolchainplatform.net/devops-insights/api", svc.getServiceUrl());
   }
 
   @Test

@@ -49,6 +49,10 @@ public class AuthenticationTest {
       super(name,
         (authenticator != null ? authenticator : ConfigBasedAuthenticatorFactory.getAuthenticator(name)));
     }
+
+    public void configureSvc(String serviceName) {
+      configureService(serviceName);
+    }
   }
 
   @Test
@@ -87,6 +91,7 @@ public class AuthenticationTest {
   @Test
   public void testCredentialFileAuthenticator() {
     TestService service = new TestService("natural_language_classifier", null);
+    service.configureSvc("natural_language_classifier");
     assertNotNull(service.getAuthenticator());
     assertEquals(Authenticator.AUTHTYPE_IAM, service.getAuthenticator().authenticationType());
     assertEquals("https://gateway.watsonplatform.net/natural-language-classifier/api", service.getServiceUrl());

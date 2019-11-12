@@ -103,12 +103,9 @@ public abstract class BaseService {
 
     // Configure a default client instance.
     this.client = configureHttpClient();
-
-    // temp: set any external configuration from the constructor
-    configureService(name);
   }
 
-  protected void configureService(String serviceName) {
+  public void configureService(String serviceName) {
     if (serviceName == null || serviceName.isEmpty()) {
       throw new IllegalArgumentException("Error configuring service. Service name is required.");
     }

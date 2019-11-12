@@ -42,15 +42,9 @@ import com.ibm.cloud.sdk.core.util.EnvironmentUtils;
 @PrepareForTest({ EnvironmentUtils.class })
 public class CredentialUtilsTest {
   private static final String ALTERNATE_CRED_FILENAME = "src/test/resources/my-credentials.env";
-  private static final String SERVICE_NAME = "personality_insights";
   private static final String VCAP_SERVICES = "vcap_services.json";
-  private static final String APIKEY = "apikey";
-  private static final String USERNAME = "username";
-  private static final String OLD_API_KEY = "api_key";
   private static final String NOT_A_USERNAME = "not-a-username";
   private static final String NOT_A_PASSWORD = "not-a-password";
-  private static final String NOT_A_FREE_USERNAME = "not-a-free-username";
-  private static final String VISUAL_RECOGNITION = "watson_vision_combined";
 
   private Map<String, String> getTestProcessEnvironment() {
     Map<String, String> env = new HashMap<>();
@@ -99,26 +93,20 @@ public class CredentialUtilsTest {
   @Test
   public void testGetVcapValueWithNullOrEmptyService() {
     setupVCAP();
-    assertNull(CredentialUtils.getVcapValue(null, APIKEY));
-    assertNull(CredentialUtils.getVcapValue("", APIKEY));
+    assertNull(CredentialUtils.getVcapServiceEntry(null));
+    assertNull(CredentialUtils.getVcapServiceEntry(""));
   }
 
   @Test
-  public void testGetVcapValueWithPlan() {
+  public void testGetVcapValueWithNoValuesSet() {
     setupVCAP();
-    assertEquals(NOT_A_USERNAME, CredentialUtils.getVcapValue(SERVICE_NAME, USERNAME, CredentialUtils.PLAN_STANDARD));
+    assertNull(CredentialUtils.getVcapServiceEntry("empty_service"));
   }
 
   @Test
-  public void testGetVcapValueWithoutPlan() {
+  public void testGetVcapValueWithServiceName() {
     setupVCAP();
-    assertEquals(NOT_A_PASSWORD, CredentialUtils.getVcapValue(VISUAL_RECOGNITION, OLD_API_KEY));
-  }
-
-  @Test
-  public void testGetVcapValueWithMultiplePlans() {
-    setupVCAP();
-    assertEquals(NOT_A_FREE_USERNAME, CredentialUtils.getVcapValue(SERVICE_NAME, USERNAME));
+    assertNotNull(CredentialUtils.getVcapServiceEntry("discovery"));
   }
 
   @Test
@@ -274,6 +262,103 @@ public class CredentialUtilsTest {
     assertEquals(NOT_A_USERNAME, props.get(Authenticator.PROPNAME_USERNAME));
     assertEquals(NOT_A_PASSWORD, props.get(Authenticator.PROPNAME_PASSWORD));
     assertEquals("https://gateway.watsonplatform.net/discovery-experimental/api", props.get("URL"));
+  }
+  @Test
+  public void testVcapCredentialsNoMatchingName() {
+    setupVCAP();
+
+    Map<String, String> props = CredentialUtils.getVcapCredentialsAsMap("no_matching_name");
+    assertNotNull(props);
+    assertFalse(props.isEmpty());
+    assertEquals(Authenticator.AUTHTYPE_BASIC, props.get(Authenticator.PROPNAME_AUTH_TYPE));
+    assertEquals(NOT_A_USERNAME, props.get(Authenticator.PROPNAME_USERNAME));
+    assertEquals(NOT_A_PASSWORD, props.get(Authenticator.PROPNAME_PASSWORD));
+    assertEquals("https://gateway.watsonplatform.net/different-name-two/api", props.get("URL"));
+  }
+
+  @Test
+  public void testVcapCredentialsDuplicateName() {
+    setupVCAP();
+
+    Map<String, String> props = CredentialUtils.getVcapCredentialsAsMap("service_entry_key_and_key_to_service_entries");
+    assertNotNull(props);
+    assertFalse(props.isEmpty());
+    assertEquals(Authenticator.AUTHTYPE_BASIC, props.get(Authenticator.PROPNAME_AUTH_TYPE));
+    assertEquals(NOT_A_USERNAME, props.get(Authenticator.PROPNAME_USERNAME));
+    assertEquals(NOT_A_PASSWORD, props.get(Authenticator.PROPNAME_PASSWORD));
+    assertEquals("https://on.the.toolchainplatform.net/devops-insights/api", props.get("URL"));
+  }
+
+  @Test
+  public void testVcapCredentialsMissingNameField() {
+    setupVCAP();
+    final String username = "not-a-username-3";
+    final String password = "not-a-password-3";
+
+    Map<String, String> props = CredentialUtils.getVcapCredentialsAsMap("key_to_service_entry_2");
+    assertNotNull(props);
+    assertFalse(props.isEmpty());
+    assertEquals(Authenticator.AUTHTYPE_BASIC, props.get(Authenticator.PROPNAME_AUTH_TYPE));
+    assertEquals(username, props.get(Authenticator.PROPNAME_USERNAME));
+    assertEquals(password, props.get(Authenticator.PROPNAME_PASSWORD));
+    assertEquals("https://on.the.toolchainplatform.net/devops-insights-3/api", props.get("URL"));
+  }
+
+  @Test
+  public void testVcapCredentialsEntryNotFound() {
+    setupVCAP();
+
+    Map<String, String> props = CredentialUtils.getVcapCredentialsAsMap("fake_entry");
+    assertNotNull(props);
+    assertTrue(props.isEmpty());
+    assertNull(props.get(Authenticator.PROPNAME_AUTH_TYPE));
+    assertNull(props.get(Authenticator.PROPNAME_USERNAME));
+    assertNull(props.get(Authenticator.PROPNAME_PASSWORD));
+    assertNull(props.get("URL"));
+  }
+
+  @Test
+  public void testVcapCredentialsVcapNotSet() {
+    Map<String, String> props = CredentialUtils.getVcapCredentialsAsMap("fake_entry");
+    assertNotNull(props);
+    assertTrue(props.isEmpty());
+    assertNull(props.get(Authenticator.PROPNAME_AUTH_TYPE));
+    assertNull(props.get(Authenticator.PROPNAME_USERNAME));
+    assertNull(props.get(Authenticator.PROPNAME_PASSWORD));
+    assertNull(props.get("URL"));
+  }
+
+  @Test
+  public void testVcapCredentialsEmptySvcName() {
+    Map<String, String> props = CredentialUtils.getVcapCredentialsAsMap("");
+    assertNotNull(props);
+    assertTrue(props.isEmpty());
+    assertNull(props.get(Authenticator.PROPNAME_AUTH_TYPE));
+    assertNull(props.get(Authenticator.PROPNAME_USERNAME));
+    assertNull(props.get(Authenticator.PROPNAME_PASSWORD));
+    assertNull(props.get("URL"));
+  }
+
+  @Test
+  public void testVcapCredentialsNullSvcName() {
+    Map<String, String> props = CredentialUtils.getVcapCredentialsAsMap(null);
+    assertNotNull(props);
+    assertTrue(props.isEmpty());
+    assertNull(props.get(Authenticator.PROPNAME_AUTH_TYPE));
+    assertNull(props.get(Authenticator.PROPNAME_USERNAME));
+    assertNull(props.get(Authenticator.PROPNAME_PASSWORD));
+    assertNull(props.get("URL"));
+  }
+
+  @Test
+  public void testVcapCredentialsNoCreds() {
+    Map<String, String> props = CredentialUtils.getVcapCredentialsAsMap("no-creds-service-two");
+    assertNotNull(props);
+    assertTrue(props.isEmpty());
+    assertNull(props.get(Authenticator.PROPNAME_AUTH_TYPE));
+    assertNull(props.get(Authenticator.PROPNAME_USERNAME));
+    assertNull(props.get(Authenticator.PROPNAME_PASSWORD));
+    assertNull(props.get("URL"));
   }
 
   @Test
