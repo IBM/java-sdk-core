@@ -25,6 +25,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -65,7 +66,7 @@ public class InputStreamRequestBody extends RequestBody {
     try {
       outputStream.close();
     } catch (IOException e) {
-      LOGGER.severe("Could not close inputStream byte array.");
+      LOGGER.log(Level.SEVERE, "Could not close inputStream byte array.", e);
       e.printStackTrace();
     }
   }
