@@ -68,6 +68,10 @@ public abstract class TokenRequestBasedAuthenticator<T extends AbstractToken, R 
   // The object which holds the data returned by the Token Server.
   protected T tokenData = null;
 
+  // This says whether or not there's an active request for a new token. If so, any new requests for a token will
+  // wait until there's a stored token.
+  private boolean isTokenRequestInProgress = false;
+
   /**
    * Validates the configuration properties associated with the Authenticator.
    * Each concrete subclass must implement this method.
@@ -211,6 +215,15 @@ public abstract class TokenRequestBasedAuthenticator<T extends AbstractToken, R 
   public String getToken() {
     String token;
 
+    // Wait for token to get stored.
+    while (this.isTokenRequestInProgress) {
+      try {
+        Thread.sleep(1000);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
+
     if (this.tokenData == null || !this.tokenData.isTokenValid()) {
       // request new token
       this.tokenData = requestToken();
@@ -233,6 +246,7 @@ public abstract class TokenRequestBasedAuthenticator<T extends AbstractToken, R 
    */
   @SuppressWarnings("unchecked")
   protected R invokeRequest(final RequestBuilder requestBuilder, final Class<? extends R> responseClass) {
+    this.isTokenRequestInProgress = true;
 
     // Finish building the request to be sent out.
 
@@ -286,6 +300,8 @@ public abstract class TokenRequestBasedAuthenticator<T extends AbstractToken, R 
     } catch (Throwable t) {
       throw new RuntimeException(ERRORMSG_REQ_FAILED, t);
     }
+
+    this.isTokenRequestInProgress = false;
     return (R) responseObj[0];
   }
 }
