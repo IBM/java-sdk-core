@@ -25,12 +25,14 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.logging.Logger;
 
 /**
  * RequestBody that takes an {@link InputStream}.
  *
  */
 public class InputStreamRequestBody extends RequestBody {
+  private static final Logger LOGGER = Logger.getLogger(InputStreamRequestBody.class.getName());
 
   private InputStream inputStream;
   private MediaType mediaType;
@@ -60,6 +62,12 @@ public class InputStreamRequestBody extends RequestBody {
     }
 
     this.bytes = outputStream.toByteArray();
+    try {
+      outputStream.close();
+    } catch (IOException e) {
+      LOGGER.severe("Could not close inputStream byte array.");
+      e.printStackTrace();
+    }
   }
 
   /*
