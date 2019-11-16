@@ -75,4 +75,23 @@ public class IamToken extends AbstractToken implements ObjectModel, TokenServerR
 
     return currentTime < refreshTime;
   }
+
+  /**
+   * Check if the currently stored access token is expired. This is different from the isTokenValid method in that it
+   * uses the actual TTL to calculate the expiration, rather than just a fraction.
+   *
+   * @return true iff is the current access token is not expired
+   */
+  @Override
+  public boolean isTokenExpired() {
+    return Math.floor(System.currentTimeMillis() / 1000) >= this.expiration;
+  }
+
+  /**
+   * Advances the refresh time of the currently stored access token by 60 seconds.
+   */
+  @Override
+  public void advanceRefreshTime() {
+    this.expiration += 60;
+  }
 }

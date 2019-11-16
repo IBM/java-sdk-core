@@ -18,5 +18,7 @@ package com.ibm.cloud.sdk.core.security;
  */
 public abstract class AbstractToken {
   public abstract boolean isTokenValid();
+  public abstract boolean isTokenExpired();
+  public abstract void advanceRefreshTime();
   public abstract String getAccessToken();
 }

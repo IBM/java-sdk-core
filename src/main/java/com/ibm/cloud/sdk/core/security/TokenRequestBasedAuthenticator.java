@@ -203,17 +203,59 @@ public abstract class TokenRequestBasedAuthenticator<T extends AbstractToken, R 
   public abstract T requestToken();
 
   /**
+   * Calls the extending class' requestToken implementation in a synchronized way, returning the existing token data
+   * if it's been made valid since this method's initial call.
+   *
+   * @return the token object
+   */
+  private synchronized T synchronizedRequestToken() {
+    if (this.tokenData != null && this.tokenData.isTokenValid()) {
+      return this.tokenData;
+    }
+
+    return requestToken();
+  }
+
+  /**
+   * Requests a new token. The refresh time for the token is also updated to some point in the future to prevent
+   * other threads from also calling this method while the new token is set.
+   */
+  private synchronized void refreshToken() {
+    // Another thread may have already updated this time. In that case, we can just return.
+    if (this.tokenData.isTokenValid()) {
+      return;
+    }
+
+    this.tokenData.advanceRefreshTime();
+    this.tokenData = synchronizedRequestToken();
+  }
+
+  /**
    * This function returns the access token fetched from the Token Server.
    * If no token currently exists or the current token has expired, a new token is fetched from the Token Server.
    *
    * @return the access token
    */
-  public synchronized String getToken() {
+  public String getToken() {
     String token;
 
-    if (this.tokenData == null || !this.tokenData.isTokenValid()) {
-      // request new token
-      this.tokenData = requestToken();
+    if (this.tokenData == null) {
+      this.tokenData = synchronizedRequestToken();
+    } else if (!this.tokenData.isTokenValid()) {
+
+      // Token is "invalid" but it's not expired, meaning it's in our buffer zone. We can still return the stored
+      // token while we go ahead and get a new token in the background.
+      if (!this.tokenData.isTokenExpired()) {
+        Thread updateTokenCall = new Thread(new Runnable() {
+          @Override
+          public void run() {
+            refreshToken();
+          }
+        });
+        updateTokenCall.start();
+      } else {
+        this.tokenData = synchronizedRequestToken();
+      }
     }
 
     // Return the access token from our IamToken object.

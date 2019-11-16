@@ -19,8 +19,9 @@ import org.apache.commons.lang3.StringUtils;
  * This class holds relevant info re: a CP4D access token for use by the CloudPakForDataAuthenticator class.
  */
 public class Cp4dToken extends AbstractToken {
-  public String accessToken;
-  public long expirationTimeInMillis;
+  private String accessToken;
+  private long expirationTimeInMillis;
+  private long refreshTimeInMillis;
 
   /**
    * This ctor is used to store a user-managed access token which will never expire.
@@ -28,7 +29,7 @@ public class Cp4dToken extends AbstractToken {
    */
   public Cp4dToken(String accessToken) {
     this.accessToken = accessToken;
-    this.expirationTimeInMillis = -1;
+    this.refreshTimeInMillis = -1;
   }
 
   /**
@@ -46,9 +47,11 @@ public class Cp4dToken extends AbstractToken {
 
     Long iat = jwt.getPayload().getIssuedAt();
     Long exp = jwt.getPayload().getExpiresAt();
+    this.expirationTimeInMillis = jwt.getPayload().getExpiresAt();
+
     if (iat != null && exp != null) {
       long ttl = exp.longValue() - iat.longValue();
-      this.expirationTimeInMillis = (iat.longValue() + (long) (0.8 * ttl)) * 1000;
+      this.refreshTimeInMillis = (iat.longValue() + (long) (0.8 * ttl)) * 1000;
     } else {
       throw new RuntimeException("Properties 'iat' and 'exp' MUST be present within the encoded access token");
     }
@@ -61,7 +64,26 @@ public class Cp4dToken extends AbstractToken {
   @Override
   public boolean isTokenValid() {
     return StringUtils.isNotEmpty(this.accessToken)
-        && (this.expirationTimeInMillis < 0 || System.currentTimeMillis() <= this.expirationTimeInMillis);
+        && (this.refreshTimeInMillis < 0 || System.currentTimeMillis() <= this.refreshTimeInMillis);
+  }
+
+  /**
+   * Check if the currently stored access token is expired. This is different from the isTokenValid method in that it
+   * uses the actual TTL to calculate the expiration, rather than just a fraction.
+   *
+   * @return true iff is the current access token is not expired
+   */
+  @Override
+  public boolean isTokenExpired() {
+    return System.currentTimeMillis() >= this.expirationTimeInMillis;
+  }
+
+  /**
+   * Advances the refresh time of the currently stored access token by 60 seconds.
+   */
+  @Override
+  public void advanceRefreshTime() {
+    this.refreshTimeInMillis += 60000;
   }
 
   /**
