@@ -34,7 +34,7 @@ public class Cp4dToken extends AbstractToken {
 
   /**
    * This ctor will extract the ICP4D access token from the specified Cp4dTokenResponse instance,
-   * and compute the expiration time as "80% of the timeToLive added to the issued-at time".
+   * and compute the refresh time as "80% of the timeToLive added to the issued-at time".
    * This means that we'll trigger the acquisition of a new token shortly before it is set to expire.
    * @param response the Cp4dTokenResponse instance
    */
@@ -47,43 +47,47 @@ public class Cp4dToken extends AbstractToken {
 
     Long iat = jwt.getPayload().getIssuedAt();
     Long exp = jwt.getPayload().getExpiresAt();
-    this.expirationTimeInMillis = jwt.getPayload().getExpiresAt();
 
     if (iat != null && exp != null) {
-      long ttl = exp.longValue() - iat.longValue();
-      this.refreshTimeInMillis = (iat.longValue() + (long) (0.8 * ttl)) * 1000;
+      long ttl = exp - iat;
+      this.expirationTimeInMillis = exp * 1000;
+      this.refreshTimeInMillis = (iat + (long) (0.8 * ttl)) * 1000;
     } else {
       throw new RuntimeException("Properties 'iat' and 'exp' MUST be present within the encoded access token");
     }
   }
 
   /**
-   * Returns true iff this object holds a valid non-expired access token.
-   * @return true if token is valid and not expired, false otherwise
+   * Returns true iff this object does not hold a valid access token or has one which has crossed our refresh
+   * time. This method also updates the refresh time if it determines the token needs refreshed to prevent other
+   * threads from making multiple refresh calls.
+   *
+   * @return true if token is invalid or past the refresh time, false otherwise
    */
   @Override
-  public boolean isTokenValid() {
-    return StringUtils.isNotEmpty(this.accessToken)
-        && (this.refreshTimeInMillis < 0 || System.currentTimeMillis() <= this.refreshTimeInMillis);
+  public synchronized boolean needsRefresh() {
+    if (
+        StringUtils.isEmpty(this.accessToken)
+            || (this.refreshTimeInMillis >= 0 && System.currentTimeMillis() > this.refreshTimeInMillis)
+        ) {
+      // Advance refresh time by one minute.
+      this.refreshTimeInMillis += 60000;
+
+      return true;
+    }
+
+    return false;
   }
 
   /**
-   * Check if the currently stored access token is expired. This is different from the isTokenValid method in that it
+   * Check if the currently stored access token is valid. This is different from the needsRefresh method in that it
    * uses the actual TTL to calculate the expiration, rather than just a fraction.
    *
    * @return true iff is the current access token is not expired
    */
   @Override
-  public boolean isTokenExpired() {
-    return System.currentTimeMillis() >= this.expirationTimeInMillis;
-  }
-
-  /**
-   * Advances the refresh time of the currently stored access token by 60 seconds.
-   */
-  @Override
-  public void advanceRefreshTime() {
-    this.refreshTimeInMillis += 60000;
+  public boolean isTokenValid() {
+    return System.currentTimeMillis() < this.expirationTimeInMillis;
   }
 
   /**

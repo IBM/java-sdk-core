@@ -217,16 +217,13 @@ public abstract class TokenRequestBasedAuthenticator<T extends AbstractToken, R 
   }
 
   /**
-   * Requests a new token. The refresh time for the token is also updated to some point in the future to prevent
-   * other threads from also calling this method while the new token is set.
+   * Requests a new token after performing one last check that the token still needs refreshing, in case another thread
+   * has since refreshed it.
    */
   private synchronized void refreshToken() {
-    // Another thread may have already updated this time. In that case, we can just return.
-    if (this.tokenData.isTokenValid()) {
+    if (!this.tokenData.needsRefresh()) {
       return;
     }
-
-    this.tokenData.advanceRefreshTime();
     this.tokenData = synchronizedRequestToken();
   }
 
@@ -241,24 +238,24 @@ public abstract class TokenRequestBasedAuthenticator<T extends AbstractToken, R 
 
     if (this.tokenData == null) {
       this.tokenData = synchronizedRequestToken();
-    } else if (!this.tokenData.isTokenValid()) {
+    } else if (this.tokenData.needsRefresh()) {
 
-      // Token is "invalid" but it's not expired, meaning it's in our buffer zone. We can still return the stored
-      // token while we go ahead and get a new token in the background.
-      if (!this.tokenData.isTokenExpired()) {
-        Thread updateTokenCall = new Thread(new Runnable() {
-          @Override
-          public void run() {
-            refreshToken();
-          }
-        });
-        updateTokenCall.start();
-      } else {
+      // Kick off background task to refresh token.
+      Thread updateTokenCall = new Thread(new Runnable() {
+        @Override
+        public void run() {
+          refreshToken();
+        }
+      });
+      updateTokenCall.start();
+
+      // If the stored token is completely expired, we'll need to request a new one.
+      if (!this.tokenData.isTokenValid()) {
         this.tokenData = synchronizedRequestToken();
       }
     }
 
-    // Return the access token from our IamToken object.
+    // Return the access token from our stored tokenData object.
     token = tokenData.getAccessToken();
 
     return token;

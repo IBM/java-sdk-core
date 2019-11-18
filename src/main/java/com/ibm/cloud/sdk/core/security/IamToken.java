@@ -52,19 +52,23 @@ public class IamToken extends AbstractToken implements ObjectModel, TokenServerR
   }
 
   /**
-   * Check if currently stored access token is valid.
+   * Returns true iff currently stored access token is invalid.
    *
-   * Using a buffer to prevent the edge case of the
-   * token expiring before the request could be made.
+   * This method uses a buffer to prevent the edge case of the
+   * token expiring before the request could be made, so this method will return true
+   * if the current time is within that buffer.
    *
    * The buffer will be a fraction of the total TTL. Using 80%.
    *
-   * @return true iff the current access token is valid and not expired
+   * This method also updates the expiration time if it determines the token needs refreshed to prevent other
+   * threads from making multiple refresh calls.
+   *
+   * @return true iff the current access token is invalid or past the expiration buffer
    */
   @Override
-  public boolean isTokenValid() {
+  public synchronized boolean needsRefresh() {
     if (getAccessToken() == null || getExpiresIn() == null || getExpiration() == null) {
-      return false;
+      return true;
     }
 
     Double fractionOfTimeToLive = 0.8;
@@ -73,25 +77,24 @@ public class IamToken extends AbstractToken implements ObjectModel, TokenServerR
     Double refreshTime = expirationTime - (timeToLive * (1.0 - fractionOfTimeToLive));
     Double currentTime = Math.floor(System.currentTimeMillis() / 1000);
 
-    return currentTime < refreshTime;
+    if (currentTime > refreshTime) {
+      // Advance expiration time by one minute.
+      this.expiration += 60;
+
+      return true;
+    }
+
+    return false;
   }
 
   /**
-   * Check if the currently stored access token is expired. This is different from the isTokenValid method in that it
+   * Check if the currently stored access token is valid. This is different from the needsRefresh method in that it
    * uses the actual TTL to calculate the expiration, rather than just a fraction.
    *
    * @return true iff is the current access token is not expired
    */
   @Override
-  public boolean isTokenExpired() {
-    return Math.floor(System.currentTimeMillis() / 1000) >= this.expiration;
-  }
-
-  /**
-   * Advances the refresh time of the currently stored access token by 60 seconds.
-   */
-  @Override
-  public void advanceRefreshTime() {
-    this.expiration += 60;
+  public boolean isTokenValid() {
+    return Math.floor(System.currentTimeMillis() / 1000) < this.expiration;
   }
 }
