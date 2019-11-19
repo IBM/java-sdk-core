@@ -203,28 +203,16 @@ public abstract class TokenRequestBasedAuthenticator<T extends AbstractToken, R 
   public abstract T requestToken();
 
   /**
-   * Calls the extending class' requestToken implementation in a synchronized way, returning the existing token data
-   * if it's been made valid since this method's initial call.
-   *
-   * @return the token object
+   * Calls the extending class' requestToken implementation in a synchronized way to set the stored token data.
+   * The requestToken implementation will not be called if the stored token has been made valid since this method's
+   * initial call.
    */
-  private synchronized T synchronizedRequestToken() {
+  private synchronized void synchronizedRequestToken() {
     if (this.tokenData != null && this.tokenData.isTokenValid()) {
-      return this.tokenData;
-    }
-
-    return requestToken();
-  }
-
-  /**
-   * Requests a new token after performing one last check that the token still needs refreshing, in case another thread
-   * has since refreshed it.
-   */
-  private synchronized void refreshToken() {
-    if (!this.tokenData.needsRefresh()) {
       return;
     }
-    this.tokenData = synchronizedRequestToken();
+
+    this.tokenData = requestToken();
   }
 
   /**
@@ -236,23 +224,18 @@ public abstract class TokenRequestBasedAuthenticator<T extends AbstractToken, R 
   public String getToken() {
     String token;
 
-    if (this.tokenData == null) {
-      this.tokenData = synchronizedRequestToken();
+    if (this.tokenData == null || !this.tokenData.isTokenValid()) {
+      synchronizedRequestToken();
     } else if (this.tokenData.needsRefresh()) {
 
       // Kick off background task to refresh token.
       Thread updateTokenCall = new Thread(new Runnable() {
         @Override
         public void run() {
-          refreshToken();
+          synchronizedRequestToken();
         }
       });
       updateTokenCall.start();
-
-      // If the stored token is completely expired, we'll need to request a new one.
-      if (!this.tokenData.isTokenValid()) {
-        this.tokenData = synchronizedRequestToken();
-      }
     }
 
     // Return the access token from our stored tokenData object.

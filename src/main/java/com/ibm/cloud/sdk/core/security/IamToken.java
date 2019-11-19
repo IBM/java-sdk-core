@@ -29,6 +29,7 @@ public class IamToken extends AbstractToken implements ObjectModel, TokenServerR
   @SerializedName("expires_in")
   private Long expiresIn;
   private Long expiration;
+  private Long refreshTime;
 
   @Override
   public String getAccessToken() {
@@ -51,8 +52,17 @@ public class IamToken extends AbstractToken implements ObjectModel, TokenServerR
     return expiration;
   }
 
+  IamToken() {
+    if (getExpiresIn() != null && getExpiration() != null) {
+      Double fractionOfTimeToLive = 0.8;
+      Long timeToLive = getExpiresIn();
+      Long expirationTime = getExpiration();
+      this.refreshTime = expirationTime - (long) (timeToLive * (1.0 - fractionOfTimeToLive));
+    }
+  }
+
   /**
-   * Returns true iff currently stored access token is invalid.
+   * Returns true iff currently stored access token should be refreshed.
    *
    * This method uses a buffer to prevent the edge case of the
    * token expiring before the request could be made, so this method will return true
@@ -67,17 +77,9 @@ public class IamToken extends AbstractToken implements ObjectModel, TokenServerR
    */
   @Override
   public synchronized boolean needsRefresh() {
-    if (getAccessToken() == null || getExpiresIn() == null || getExpiration() == null) {
-      return true;
-    }
+    long currentTime = System.currentTimeMillis() / 1000;
 
-    Double fractionOfTimeToLive = 0.8;
-    Long timeToLive = getExpiresIn();
-    Long expirationTime = getExpiration();
-    Double refreshTime = expirationTime - (timeToLive * (1.0 - fractionOfTimeToLive));
-    Double currentTime = Math.floor(System.currentTimeMillis() / 1000);
-
-    if (currentTime > refreshTime) {
+    if (refreshTime == null || currentTime > refreshTime) {
       // Advance expiration time by one minute.
       this.expiration += 60;
 
@@ -95,6 +97,6 @@ public class IamToken extends AbstractToken implements ObjectModel, TokenServerR
    */
   @Override
   public boolean isTokenValid() {
-    return Math.floor(System.currentTimeMillis() / 1000) < this.expiration;
+    return System.currentTimeMillis() / 1000 < this.expiration;
   }
 }
