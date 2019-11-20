@@ -52,7 +52,7 @@ public class IamToken extends AbstractToken implements ObjectModel, TokenServerR
     return expiration;
   }
 
-  IamToken() {
+  private IamToken() {
     if (getExpiresIn() != null && getExpiration() != null) {
       Double fractionOfTimeToLive = 0.8;
       Long timeToLive = getExpiresIn();
@@ -79,9 +79,9 @@ public class IamToken extends AbstractToken implements ObjectModel, TokenServerR
   public synchronized boolean needsRefresh() {
     long currentTime = System.currentTimeMillis() / 1000;
 
-    if (refreshTime == null || currentTime > refreshTime) {
-      // Advance expiration time by one minute.
-      this.expiration += 60;
+    if (this.refreshTime != null && currentTime > this.refreshTime) {
+      // Advance refresh time by one minute.
+      this.refreshTime += 60;
 
       return true;
     }
