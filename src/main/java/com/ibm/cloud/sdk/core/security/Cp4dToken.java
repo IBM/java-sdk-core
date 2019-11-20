@@ -30,6 +30,7 @@ public class Cp4dToken extends AbstractToken {
   public Cp4dToken(String accessToken) {
     this.accessToken = accessToken;
     this.refreshTimeInMillis = -1;
+    this.expirationTimeInMillis = -1;
   }
 
   /**
@@ -87,7 +88,7 @@ public class Cp4dToken extends AbstractToken {
    */
   @Override
   public boolean isTokenValid() {
-    return System.currentTimeMillis() < this.expirationTimeInMillis;
+    return (this.expirationTimeInMillis >= 0) && (System.currentTimeMillis() < this.expirationTimeInMillis);
   }
 
   /**
