@@ -15,6 +15,7 @@ package com.ibm.cloud.sdk.core.security;
 
 import com.google.gson.annotations.SerializedName;
 import com.ibm.cloud.sdk.core.service.model.ObjectModel;
+import com.ibm.cloud.sdk.core.util.Clock;
 
 /**
  * Represents response from IAM API.
@@ -52,15 +53,6 @@ public class IamToken extends AbstractToken implements ObjectModel, TokenServerR
     return expiration;
   }
 
-  private IamToken() {
-    if (getExpiresIn() != null && getExpiration() != null) {
-      Double fractionOfTimeToLive = 0.8;
-      Long timeToLive = getExpiresIn();
-      Long expirationTime = getExpiration();
-      this.refreshTime = expirationTime - (long) (timeToLive * (1.0 - fractionOfTimeToLive));
-    }
-  }
-
   /**
    * Returns true iff currently stored access token should be refreshed.
    *
@@ -77,9 +69,14 @@ public class IamToken extends AbstractToken implements ObjectModel, TokenServerR
    */
   @Override
   public synchronized boolean needsRefresh() {
-    long currentTime = System.currentTimeMillis() / 1000;
+    if (this.refreshTime == null && getExpiresIn() != null && getExpiration() != null) {
+      Double fractionOfTimeToLive = 0.8;
+      Long timeToLive = getExpiresIn();
+      Long expirationTime = getExpiration();
+      this.refreshTime = expirationTime - (long) (timeToLive * (1.0 - fractionOfTimeToLive));
+    }
 
-    if (this.refreshTime != null && currentTime > this.refreshTime) {
+    if (this.refreshTime != null && Clock.getCurrentTimeInSeconds() > this.refreshTime) {
       // Advance refresh time by one minute.
       this.refreshTime += 60;
 
@@ -97,6 +94,6 @@ public class IamToken extends AbstractToken implements ObjectModel, TokenServerR
    */
   @Override
   public boolean isTokenValid() {
-    return System.currentTimeMillis() / 1000 < this.expiration;
+    return Clock.getCurrentTimeInSeconds() < this.expiration;
   }
 }
