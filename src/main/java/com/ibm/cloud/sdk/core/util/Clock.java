@@ -5,6 +5,8 @@ package com.ibm.cloud.sdk.core.util;
  */
 public class Clock {
 
+  private Clock() { }
+
   public static long getCurrentTimeInMillis() {
     return System.currentTimeMillis();
   }

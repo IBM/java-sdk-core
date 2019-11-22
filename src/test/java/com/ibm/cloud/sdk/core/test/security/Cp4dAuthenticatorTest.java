@@ -22,7 +22,9 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
+import com.ibm.cloud.sdk.core.util.Clock;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -35,11 +37,23 @@ import com.ibm.cloud.sdk.core.test.BaseServiceUnitTest;
 import okhttp3.Headers;
 import okhttp3.Request;
 import okhttp3.mockwebserver.RecordedRequest;
+import org.junit.runner.RunWith;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({ Clock.class })
+@PowerMockIgnore("javax.net.ssl.*")
 public class Cp4dAuthenticatorTest extends BaseServiceUnitTest {
 
-  private Cp4dTokenResponse validTokenData;
-  private Cp4dTokenResponse expiredTokenData;
+  // Token with issued-at time of 1574353085 and expiration time of 1574453956
+  private Cp4dTokenResponse tokenData;
+
+  // Token with issued-at time of 1602788645 and expiration time of 1999999999
+  private Cp4dTokenResponse refreshedTokenData;
+
   private String url;
   private String testUsername = "test-username";
   private String testPassword = "test-password";
@@ -49,8 +63,8 @@ public class Cp4dAuthenticatorTest extends BaseServiceUnitTest {
   public void setUp() throws Exception {
     super.setUp();
     url = getMockWebServerUrl();
-    validTokenData = loadFixture("src/test/resources/valid_icp4d_token.json", Cp4dTokenResponse.class);
-    expiredTokenData = loadFixture("src/test/resources/expired_icp4d_token.json", Cp4dTokenResponse.class);
+    tokenData = loadFixture("src/test/resources/cp4d_token.json", Cp4dTokenResponse.class);
+    refreshedTokenData = loadFixture("src/test/resources/refreshed_cp4d_token.json", Cp4dTokenResponse.class);
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -130,7 +144,11 @@ public class Cp4dAuthenticatorTest extends BaseServiceUnitTest {
 
   @Test
   public void testAuthenticateNewAndStoredToken() {
-    server.enqueue(jsonResponse(validTokenData));
+    server.enqueue(jsonResponse(tokenData));
+
+    // Mock current time to ensure that we're way before the token expiration time.
+    PowerMockito.mockStatic(Clock.class);
+    PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
 
     CloudPakForDataAuthenticator authenticator = new CloudPakForDataAuthenticator(url, testUsername, testPassword);
     authenticator.setDisableSSLVerification(true);
@@ -140,19 +158,23 @@ public class Cp4dAuthenticatorTest extends BaseServiceUnitTest {
     authenticator.authenticate(requestBuilder);
 
     Request request = requestBuilder.build();
-    assertEquals("Bearer " + validTokenData.getAccessToken(), request.header(HttpHeaders.AUTHORIZATION));
+    assertEquals("Bearer " + tokenData.getAccessToken(), request.header(HttpHeaders.AUTHORIZATION));
 
     // Authenticator should just return the same token this time since we have a valid one stored.
     Request.Builder newBuilder = request.newBuilder();
     authenticator.authenticate(newBuilder);
 
     Request newRequest = newBuilder.build();
-    assertEquals("Bearer " + validTokenData.getAccessToken(), newRequest.header(HttpHeaders.AUTHORIZATION));
+    assertEquals("Bearer " + tokenData.getAccessToken(), newRequest.header(HttpHeaders.AUTHORIZATION));
   }
 
   @Test
   public void testAuthenticationExpiredToken() {
-    server.enqueue(jsonResponse(expiredTokenData));
+    server.enqueue(jsonResponse(tokenData));
+
+    // Mock current time to ensure that we've passed the token expiration time.
+    PowerMockito.mockStatic(Clock.class);
+    PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn((long) 1800000000);
 
     CloudPakForDataAuthenticator authenticator = new CloudPakForDataAuthenticator(url, testUsername, testPassword);
     Request.Builder requestBuilder = new Request.Builder().url("https://test.com");
@@ -162,16 +184,56 @@ public class Cp4dAuthenticatorTest extends BaseServiceUnitTest {
     authenticator.authenticate(requestBuilder);
 
     // Authenticator should detect the expiration and request a new access token when we call authenticate() again.
-    server.enqueue(jsonResponse(validTokenData));
+    server.enqueue(jsonResponse(refreshedTokenData));
     authenticator.authenticate(requestBuilder);
 
     Request request = requestBuilder.build();
-    assertEquals("Bearer " + validTokenData.getAccessToken(), request.header(HttpHeaders.AUTHORIZATION));
+    assertEquals("Bearer " + refreshedTokenData.getAccessToken(), request.header(HttpHeaders.AUTHORIZATION));
+  }
+
+  @Test
+  public void testAuthenticationBackgroundTokenRefresh() throws InterruptedException {
+    server.enqueue(jsonResponse(tokenData));
+
+    // Mock current time to put us in the "refresh window" where the token is not expired but still needs refreshed.
+    PowerMockito.mockStatic(Clock.class);
+    PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn((long) 1574453700);
+
+    CloudPakForDataAuthenticator authenticator = new CloudPakForDataAuthenticator(url, testUsername, testPassword);
+    authenticator.setDisableSSLVerification(true);
+    Request.Builder requestBuilder = new Request.Builder().url("https://test.com");
+
+    // This will bootstrap the test by forcing the Authenticator to store the token needing refreshed, which was
+    // set above in the mock server.
+    authenticator.authenticate(requestBuilder);
+
+    // Authenticator should detect the need to refresh and request a new access token IN THE BACKGROUND when we call
+    // authenticate() again. The immediate response should be the token which was already stored, since it's not yet
+    // expired.
+    server.enqueue(jsonResponse(refreshedTokenData).setBodyDelay(2, TimeUnit.SECONDS));
+    authenticator.authenticate(requestBuilder);
+
+    Request request = requestBuilder.build();
+    assertEquals("Bearer " + tokenData.getAccessToken(), request.header(HttpHeaders.AUTHORIZATION));
+
+    // Sleep to wait out the background refresh of our access token.
+    Thread.sleep(3000);
+
+    // Next request should use the refreshed token.
+    Request.Builder newBuilder = request.newBuilder();
+    authenticator.authenticate(newBuilder);
+
+    Request newRequest = newBuilder.build();
+    assertEquals("Bearer " + refreshedTokenData.getAccessToken(), newRequest.header(HttpHeaders.AUTHORIZATION));
   }
 
   @Test
   public void testUserHeaders() throws Throwable {
-    server.enqueue(jsonResponse(validTokenData));
+    server.enqueue(jsonResponse(tokenData));
+
+    // Mock current time to ensure the token is valid.
+    PowerMockito.mockStatic(Clock.class);
+    PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
 
     CloudPakForDataAuthenticator authenticator = new CloudPakForDataAuthenticator(url, testUsername, testPassword);
     authenticator.setDisableSSLVerification(true);
@@ -187,7 +249,7 @@ public class Cp4dAuthenticatorTest extends BaseServiceUnitTest {
     authenticator.authenticate(requestBuilder);
 
     Request request = requestBuilder.build();
-    assertEquals("Bearer " + validTokenData.getAccessToken(), request.header(HttpHeaders.AUTHORIZATION));
+    assertEquals("Bearer " + tokenData.getAccessToken(), request.header(HttpHeaders.AUTHORIZATION));
 
     // Now do some validation on the mock request sent to the token server.
     RecordedRequest tokenServerRequest = server.takeRequest();
@@ -202,6 +264,6 @@ public class Cp4dAuthenticatorTest extends BaseServiceUnitTest {
     authenticator.authenticate(newBuilder);
 
     Request newRequest = newBuilder.build();
-    assertEquals("Bearer " + validTokenData.getAccessToken(), newRequest.header(HttpHeaders.AUTHORIZATION));
+    assertEquals("Bearer " + tokenData.getAccessToken(), newRequest.header(HttpHeaders.AUTHORIZATION));
   }
 }
