@@ -13,6 +13,7 @@
 
 package com.ibm.cloud.sdk.core.security;
 
+import com.ibm.cloud.sdk.core.util.Clock;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -20,8 +21,8 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class Cp4dToken extends AbstractToken {
   private String accessToken;
-  private long expirationTimeInMillis;
-  private long refreshTimeInMillis;
+  private long expirationTime;
+  private long refreshTime;
 
   /**
    * This ctor is used to store a user-managed access token which will never expire.
@@ -29,8 +30,8 @@ public class Cp4dToken extends AbstractToken {
    */
   public Cp4dToken(String accessToken) {
     this.accessToken = accessToken;
-    this.refreshTimeInMillis = -1;
-    this.expirationTimeInMillis = -1;
+    this.expirationTime = -1;
+    this.refreshTime = -1;
   }
 
   /**
@@ -51,8 +52,9 @@ public class Cp4dToken extends AbstractToken {
 
     if (iat != null && exp != null) {
       long ttl = exp - iat;
-      this.expirationTimeInMillis = exp * 1000;
-      this.refreshTimeInMillis = (iat + (long) (0.8 * ttl)) * 1000;
+
+      this.expirationTime = exp;
+      this.refreshTime = iat + (long) (0.8 * ttl);
     } else {
       throw new RuntimeException("Properties 'iat' and 'exp' MUST be present within the encoded access token");
     }
@@ -69,10 +71,10 @@ public class Cp4dToken extends AbstractToken {
   public synchronized boolean needsRefresh() {
     if (
         StringUtils.isEmpty(this.accessToken)
-            || (this.refreshTimeInMillis >= 0 && System.currentTimeMillis() > this.refreshTimeInMillis)
+            || (this.refreshTime >= 0 && Clock.getCurrentTimeInSeconds() > this.refreshTime)
         ) {
       // Advance refresh time by one minute.
-      this.refreshTimeInMillis += 60000;
+      this.refreshTime += 60;
 
       return true;
     }
@@ -88,7 +90,7 @@ public class Cp4dToken extends AbstractToken {
    */
   @Override
   public boolean isTokenValid() {
-    return (this.expirationTimeInMillis >= 0) && (System.currentTimeMillis() < this.expirationTimeInMillis);
+    return (this.expirationTime >= 0) && (Clock.getCurrentTimeInSeconds() < this.expirationTime);
   }
 
   /**
