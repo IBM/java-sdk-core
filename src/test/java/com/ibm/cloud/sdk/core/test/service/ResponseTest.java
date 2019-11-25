@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import com.ibm.cloud.sdk.core.util.Clock;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -369,7 +370,7 @@ public class ResponseTest extends BaseServiceUnitTest {
     final boolean[] callWasCanceled = {false};
 
     ServiceCall<TestModel> testCall = service.getTestModel();
-    long startTime = System.currentTimeMillis();
+    long startTime = Clock.getCurrentTimeInMillis();
     testCall.enqueue(new ServiceCallback<TestModel>() {
       @Override
       public void onResponse(Response<TestModel> response) {
@@ -385,7 +386,7 @@ public class ResponseTest extends BaseServiceUnitTest {
     });
 
     // keep waiting for the call to complete while we're within the timeout bounds
-    while (!hasCallCompleted[0] && (System.currentTimeMillis() - startTime < timeoutThreshold)) {
+    while (!hasCallCompleted[0] && (Clock.getCurrentTimeInMillis() - startTime < timeoutThreshold)) {
       Thread.sleep(500);
     }
 

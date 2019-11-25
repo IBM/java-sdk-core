@@ -22,7 +22,9 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
+import com.ibm.cloud.sdk.core.util.Clock;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -36,11 +38,19 @@ import com.ibm.cloud.sdk.core.test.BaseServiceUnitTest;
 import okhttp3.Headers;
 import okhttp3.Request;
 import okhttp3.mockwebserver.RecordedRequest;
+import org.junit.runner.RunWith;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({ Clock.class })
+@PowerMockIgnore("javax.net.ssl.*")
 public class IamAuthenticatorTest extends BaseServiceUnitTest {
 
-  private IamToken validTokenData;
-  private IamToken expiredTokenData;
+  private IamToken tokenData;
+  private IamToken refreshedTokenData;
   private String url;
 
   private static final String API_KEY = "123456789";
@@ -50,8 +60,8 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
   public void setUp() throws Exception {
     super.setUp();
     url = getMockWebServerUrl();
-    expiredTokenData = loadFixture("src/test/resources/expired_iam_token.json", IamToken.class);
-    validTokenData = loadFixture("src/test/resources/valid_iam_token.json", IamToken.class);
+    tokenData = loadFixture("src/test/resources/iam_token.json", IamToken.class);
+    refreshedTokenData = loadFixture("src/test/resources/refreshed_iam_token.json", IamToken.class);
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -152,7 +162,11 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
 
   @Test
   public void testAuthenticateNewAndStoredToken() throws Throwable {
-    server.enqueue(jsonResponse(validTokenData));
+    server.enqueue(jsonResponse(tokenData));
+
+    // Mock current time to ensure that we're way before the token expiration time.
+    PowerMockito.mockStatic(Clock.class);
+    PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
 
     IamAuthenticator authenticator = new IamAuthenticator(API_KEY, url, null, null, true, null);
 
@@ -162,7 +176,7 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
     authenticator.authenticate(requestBuilder);
 
     Request request = requestBuilder.build();
-    assertEquals("Bearer " + validTokenData.getAccessToken(), request.header(HttpHeaders.AUTHORIZATION));
+    assertEquals("Bearer " + tokenData.getAccessToken(), request.header(HttpHeaders.AUTHORIZATION));
 
     // Now make sure the token server request did not contain an Authorization header,
     // since we didn't set clientId/clientSecret.
@@ -177,12 +191,16 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
     authenticator.authenticate(newBuilder);
 
     Request newRequest = newBuilder.build();
-    assertEquals("Bearer " + validTokenData.getAccessToken(), newRequest.header(HttpHeaders.AUTHORIZATION));
+    assertEquals("Bearer " + tokenData.getAccessToken(), newRequest.header(HttpHeaders.AUTHORIZATION));
   }
 
   @Test
   public void testAuthenticationExpiredToken() {
-    server.enqueue(jsonResponse(expiredTokenData));
+    server.enqueue(jsonResponse(tokenData));
+
+    // Mock current time to ensure that we've passed the token expiration time.
+    PowerMockito.mockStatic(Clock.class);
+    PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn((long) 1800000000);
 
     IamAuthenticator authenticator = new IamAuthenticator(API_KEY);
     authenticator.setURL(url);
@@ -194,16 +212,57 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
     authenticator.authenticate(requestBuilder);
 
     // Authenticator should detect the expiration and request a new access token when we call authenticate() again.
-    server.enqueue(jsonResponse(validTokenData));
+    server.enqueue(jsonResponse(refreshedTokenData));
     authenticator.authenticate(requestBuilder);
 
     Request request = requestBuilder.build();
-    assertEquals("Bearer " + validTokenData.getAccessToken(), request.header(HttpHeaders.AUTHORIZATION));
+    assertEquals("Bearer " + refreshedTokenData.getAccessToken(), request.header(HttpHeaders.AUTHORIZATION));
+  }
+
+  @Test
+  public void testAuthenticationBackgroundTokenRefresh() throws InterruptedException {
+    server.enqueue(jsonResponse(tokenData));
+
+    // Mock current time to put us in the "refresh window" where the token is not expired but still needs refreshed.
+    PowerMockito.mockStatic(Clock.class);
+    PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn((long) 1522788600);
+
+    IamAuthenticator authenticator = new IamAuthenticator(API_KEY);
+    authenticator.setURL(url);
+
+    Request.Builder requestBuilder = new Request.Builder().url("https://test.com");
+
+    // This will bootstrap the test by forcing the Authenticator to store the token needing refreshed, which was
+    // set above in the mock server.
+    authenticator.authenticate(requestBuilder);
+
+    // Authenticator should detect the need to refresh and request a new access token IN THE BACKGROUND when we call
+    // authenticate() again. The immediate response should be the token which was already stored, since it's not yet
+    // expired.
+    server.enqueue(jsonResponse(refreshedTokenData).setBodyDelay(2, TimeUnit.SECONDS));
+    authenticator.authenticate(requestBuilder);
+
+    Request request = requestBuilder.build();
+    assertEquals("Bearer " + tokenData.getAccessToken(), request.header(HttpHeaders.AUTHORIZATION));
+
+    // Sleep to wait out the background refresh of our access token.
+    Thread.sleep(3000);
+
+    // Next request should use the refreshed token.
+    Request.Builder newBuilder = request.newBuilder();
+    authenticator.authenticate(newBuilder);
+
+    Request newRequest = newBuilder.build();
+    assertEquals("Bearer " + refreshedTokenData.getAccessToken(), newRequest.header(HttpHeaders.AUTHORIZATION));
   }
 
   @Test
   public void testUserHeaders() throws Throwable {
-    server.enqueue(jsonResponse(validTokenData));
+    server.enqueue(jsonResponse(tokenData));
+
+    // Mock current time to ensure the token is valid.
+    PowerMockito.mockStatic(Clock.class);
+    PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
 
     Map<String, String> headers = new HashMap<>();
     headers.put("header1", "value1");
@@ -216,7 +275,7 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
     authenticator.authenticate(requestBuilder);
 
     Request request = requestBuilder.build();
-    assertEquals("Bearer " + validTokenData.getAccessToken(), request.header(HttpHeaders.AUTHORIZATION));
+    assertEquals("Bearer " + tokenData.getAccessToken(), request.header(HttpHeaders.AUTHORIZATION));
 
     // Now do some validation on the mock request sent to the token server.
     RecordedRequest tokenServerRequest = server.takeRequest();
@@ -231,12 +290,16 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
     authenticator.authenticate(newBuilder);
 
     Request newRequest = newBuilder.build();
-    assertEquals("Bearer " + validTokenData.getAccessToken(), newRequest.header(HttpHeaders.AUTHORIZATION));
+    assertEquals("Bearer " + tokenData.getAccessToken(), newRequest.header(HttpHeaders.AUTHORIZATION));
   }
 
   @Test
   public void testClientIdSecret() throws Throwable {
-    server.enqueue(jsonResponse(validTokenData));
+    server.enqueue(jsonResponse(tokenData));
+
+    // Mock current time to ensure the token is valid.
+    PowerMockito.mockStatic(Clock.class);
+    PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
 
     IamAuthenticator authenticator = new IamAuthenticator(API_KEY, url, "clientId", "clientSecret", false, null);
     String expectedIAMAuthHeader = AuthenticatorBase.constructBasicAuthHeader("clientId", "clientSecret");
@@ -247,7 +310,7 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
     authenticator.authenticate(requestBuilder);
 
     Request request = requestBuilder.build();
-    assertEquals("Bearer " + validTokenData.getAccessToken(), request.header(HttpHeaders.AUTHORIZATION));
+    assertEquals("Bearer " + tokenData.getAccessToken(), request.header(HttpHeaders.AUTHORIZATION));
 
     // Now make sure the token server request contained the correct Authorization header.
     RecordedRequest tokenServerRequest = server.takeRequest();
@@ -261,6 +324,6 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
     authenticator.authenticate(newBuilder);
 
     Request newRequest = newBuilder.build();
-    assertEquals("Bearer " + validTokenData.getAccessToken(), newRequest.header(HttpHeaders.AUTHORIZATION));
+    assertEquals("Bearer " + tokenData.getAccessToken(), newRequest.header(HttpHeaders.AUTHORIZATION));
   }
 }

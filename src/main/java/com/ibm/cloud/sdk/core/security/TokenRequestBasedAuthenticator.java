@@ -13,13 +13,6 @@
 
 package com.ibm.cloud.sdk.core.security;
 
-import java.net.Proxy;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.lang3.StringUtils;
-
 import com.ibm.cloud.sdk.core.http.HttpClientSingleton;
 import com.ibm.cloud.sdk.core.http.HttpConfigOptions;
 import com.ibm.cloud.sdk.core.http.HttpHeaders;
@@ -27,11 +20,16 @@ import com.ibm.cloud.sdk.core.http.RequestBuilder;
 import com.ibm.cloud.sdk.core.http.ResponseConverter;
 import com.ibm.cloud.sdk.core.service.exception.ServiceResponseException;
 import com.ibm.cloud.sdk.core.util.ResponseConverterUtils;
-
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Request.Builder;
+import org.apache.commons.lang3.StringUtils;
+
+import java.net.Proxy;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * This class serves as a common base class for Authenticator implementations that interact with a Token Server
@@ -67,6 +65,10 @@ public abstract class TokenRequestBasedAuthenticator<T extends AbstractToken, R 
 
   // The object which holds the data returned by the Token Server.
   protected T tokenData = null;
+
+  private void setTokenData(T tokenData) {
+    this.tokenData = tokenData;
+  }
 
   /**
    * Validates the configuration properties associated with the Authenticator.
@@ -203,6 +205,20 @@ public abstract class TokenRequestBasedAuthenticator<T extends AbstractToken, R 
   public abstract T requestToken();
 
   /**
+   * Calls the extending class' requestToken implementation in a synchronized way. The requestToken implementation
+   * will not be called if the stored token has been made valid since this method's initial call.
+   *
+   * @return the token object
+   */
+  private synchronized T synchronizedRequestToken() {
+    if (this.tokenData != null && this.tokenData.isTokenValid()) {
+      return this.tokenData;
+    }
+
+    return requestToken();
+  }
+
+  /**
    * This function returns the access token fetched from the Token Server.
    * If no token currently exists or the current token has expired, a new token is fetched from the Token Server.
    *
@@ -212,11 +228,20 @@ public abstract class TokenRequestBasedAuthenticator<T extends AbstractToken, R 
     String token;
 
     if (this.tokenData == null || !this.tokenData.isTokenValid()) {
-      // request new token
-      this.tokenData = requestToken();
+      setTokenData(synchronizedRequestToken());
+    } else if (this.tokenData.needsRefresh()) {
+
+      // Kick off background task to refresh token.
+      Thread updateTokenCall = new Thread(new Runnable() {
+        @Override
+        public void run() {
+          setTokenData(requestToken());
+        }
+      });
+      updateTokenCall.start();
     }
 
-    // Return the access token from our IamToken object.
+    // Return the access token from our stored tokenData object.
     token = tokenData.getAccessToken();
 
     return token;

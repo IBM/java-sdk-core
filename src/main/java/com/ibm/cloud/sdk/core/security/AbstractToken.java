@@ -18,5 +18,6 @@ package com.ibm.cloud.sdk.core.security;
  */
 public abstract class AbstractToken {
   public abstract boolean isTokenValid();
+  public abstract boolean needsRefresh();
   public abstract String getAccessToken();
 }
