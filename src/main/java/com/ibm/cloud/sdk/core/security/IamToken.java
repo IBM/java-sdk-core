@@ -65,15 +65,14 @@ public class IamToken extends AbstractToken implements ObjectModel, TokenServerR
    * This method also updates the expiration time if it determines the token needs refreshed to prevent other
    * threads from making multiple refresh calls.
    *
-   * @return true iff the current access token is invalid or past the expiration buffer
+   * @return true if token is invalid or past the refresh time, false otherwise
    */
   @Override
   public synchronized boolean needsRefresh() {
-    if (this.refreshTime == null && getExpiresIn() != null && getExpiration() != null) {
+    if (this.refreshTime == null && getExpiresIn() != null && this.expiration != null) {
       Double fractionOfTimeToLive = 0.8;
       Long timeToLive = getExpiresIn();
-      Long expirationTime = getExpiration();
-      this.refreshTime = expirationTime - (long) (timeToLive * (1.0 - fractionOfTimeToLive));
+      this.refreshTime = this.expiration - (long) (timeToLive * (1.0 - fractionOfTimeToLive));
     }
 
     if (this.refreshTime != null && Clock.getCurrentTimeInSeconds() > this.refreshTime) {
@@ -94,6 +93,6 @@ public class IamToken extends AbstractToken implements ObjectModel, TokenServerR
    */
   @Override
   public boolean isTokenValid() {
-    return Clock.getCurrentTimeInSeconds() < this.expiration;
+    return this.expiration == null || Clock.getCurrentTimeInSeconds() < this.expiration;
   }
 }
