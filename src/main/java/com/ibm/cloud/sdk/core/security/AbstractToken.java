@@ -20,4 +20,22 @@ public abstract class AbstractToken {
   public abstract boolean isTokenValid();
   public abstract boolean needsRefresh();
   public abstract String getAccessToken();
+
+  // This field will be used to indicate that the most recent interaction with the token server
+  // resulted in an error.
+  private Throwable exception;
+
+  public AbstractToken() {
+  }
+
+  public AbstractToken(Throwable t) {
+    this.exception = t;
+  }
+
+  public Throwable getException() {
+    return exception;
+  }
+  public void setException(Throwable exception) {
+    this.exception = exception;
+  }
 }

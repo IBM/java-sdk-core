@@ -19,29 +19,31 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import com.ibm.cloud.sdk.core.util.Clock;
 import org.junit.Before;
 import org.junit.Test;
-
-import com.ibm.cloud.sdk.core.http.HttpHeaders;
-import com.ibm.cloud.sdk.core.security.Authenticator;
-import com.ibm.cloud.sdk.core.security.Cp4dTokenResponse;
-import com.ibm.cloud.sdk.core.security.CloudPakForDataAuthenticator;
-import com.ibm.cloud.sdk.core.test.BaseServiceUnitTest;
-
-import okhttp3.Headers;
-import okhttp3.Request;
-import okhttp3.mockwebserver.RecordedRequest;
 import org.junit.runner.RunWith;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+
+import com.ibm.cloud.sdk.core.http.HttpHeaders;
+import com.ibm.cloud.sdk.core.security.Authenticator;
+import com.ibm.cloud.sdk.core.security.CloudPakForDataAuthenticator;
+import com.ibm.cloud.sdk.core.security.Cp4dTokenResponse;
+import com.ibm.cloud.sdk.core.service.exception.ServiceResponseException;
+import com.ibm.cloud.sdk.core.test.BaseServiceUnitTest;
+import com.ibm.cloud.sdk.core.util.Clock;
+
+import okhttp3.Headers;
+import okhttp3.Request;
+import okhttp3.mockwebserver.RecordedRequest;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ Clock.class })
@@ -265,5 +267,30 @@ public class Cp4dAuthenticatorTest extends BaseServiceUnitTest {
 
     Request newRequest = newBuilder.build();
     assertEquals("Bearer " + tokenData.getAccessToken(), newRequest.header(HttpHeaders.AUTHORIZATION));
+  }
+
+  @Test
+  public void testApiErrorBadRequest() throws Throwable {
+    server.enqueue(errorResponse(400));
+
+    // Mock current time to ensure the token is valid.
+    PowerMockito.mockStatic(Clock.class);
+    PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
+
+    CloudPakForDataAuthenticator authenticator = new CloudPakForDataAuthenticator(url, testUsername, testPassword);
+
+    Request.Builder requestBuilder = new Request.Builder().url("https://test.com");
+
+    // Calling authenticate should result in an exception.
+    try {
+      authenticator.authenticate(requestBuilder);
+      fail("Expected authenticate() to result in exception!");
+    } catch (RuntimeException excp) {
+      Throwable causedBy = excp.getCause();
+      assertNotNull(causedBy);
+      assertTrue(causedBy instanceof ServiceResponseException);
+    } catch (Throwable t) {
+      fail("Expected RuntimeException, not " + t.getClass().getSimpleName());
+    }
   }
 }

@@ -32,6 +32,14 @@ public class IamToken extends AbstractToken implements ObjectModel, TokenServerR
   private Long expiration;
   private Long refreshTime;
 
+  public IamToken() {
+    super();
+  }
+
+  public IamToken(Throwable t) {
+    super(t);
+  }
+
   @Override
   public String getAccessToken() {
     return accessToken;
@@ -69,6 +77,10 @@ public class IamToken extends AbstractToken implements ObjectModel, TokenServerR
    */
   @Override
   public synchronized boolean needsRefresh() {
+    if (this.getException() != null) {
+      return true;
+    }
+
     if (this.refreshTime == null && getExpiresIn() != null && this.expiration != null) {
       Double fractionOfTimeToLive = 0.8;
       Long timeToLive = getExpiresIn();
@@ -93,6 +105,7 @@ public class IamToken extends AbstractToken implements ObjectModel, TokenServerR
    */
   @Override
   public boolean isTokenValid() {
-    return this.expiration == null || Clock.getCurrentTimeInSeconds() < this.expiration;
+    return this.getException() == null
+        && (this.expiration == null || Clock.getCurrentTimeInSeconds() < this.expiration);
   }
 }

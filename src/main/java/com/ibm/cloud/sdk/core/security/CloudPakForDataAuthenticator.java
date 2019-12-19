@@ -157,9 +157,15 @@ public class CloudPakForDataAuthenticator extends TokenRequestBasedAuthenticator
     RequestBuilder builder = RequestBuilder.get(RequestBuilder.constructHttpUrl(requestUrl, new String[0]));
 
     // Invoke the GET request.
-    Cp4dTokenResponse response = invokeRequest(builder, Cp4dTokenResponse.class);
+    Cp4dToken token;
+    try {
+      Cp4dTokenResponse response = invokeRequest(builder, Cp4dTokenResponse.class);
+      token = new Cp4dToken(response);
+    } catch (Throwable t) {
+      token = new Cp4dToken(t);
+    }
 
     // Construct a new Cp4dToken object from the response and return it.
-    return new Cp4dToken(response);
+    return token;
   }
 }

@@ -241,6 +241,17 @@ public abstract class TokenRequestBasedAuthenticator<T extends AbstractToken, R 
       updateTokenCall.start();
     }
 
+    // Make sure we have a non-null tokenData object.
+    // This should not occur, but just in case it does... :)
+    if (this.tokenData == null) {
+      throw new RuntimeException(ERRORMSG_REQ_FAILED + " illegal state: token object not available");
+    }
+
+    // Check to see if an exception occurred during our last interaction with the token server.
+    if (this.tokenData.getException() != null) {
+      throw new RuntimeException(ERRORMSG_REQ_FAILED, tokenData.getException());
+    }
+
     // Return the access token from our stored tokenData object.
     token = tokenData.getAccessToken();
 
@@ -255,9 +266,11 @@ public abstract class TokenRequestBasedAuthenticator<T extends AbstractToken, R 
    * @param responseClass
    *          a Class object which represents the token server response structure
    * @return an instance of the response class R
+   * @throws Throwable an error occurred when invoking a token request
    */
   @SuppressWarnings("unchecked")
-  protected R invokeRequest(final RequestBuilder requestBuilder, final Class<? extends R> responseClass) {
+  protected R invokeRequest(final RequestBuilder requestBuilder, final Class<? extends R> responseClass)
+      throws Throwable {
 
     // Finish building the request to be sent out.
 
@@ -298,9 +311,12 @@ public abstract class TokenRequestBasedAuthenticator<T extends AbstractToken, R 
             throw new ServiceResponseException(response.code(), response);
           }
 
+          // Store the API response so that we can pass it back to the main thread.
           responseObj[0] = converter.convert(response);
         } catch (Throwable t) {
-          throw new RuntimeException(ERRORMSG_REQ_FAILED, t);
+
+          // Store the exception so that we can pass it back to the main thread.
+          responseObj[0] = t;
         }
       }
     });
@@ -309,8 +325,14 @@ public abstract class TokenRequestBasedAuthenticator<T extends AbstractToken, R 
     try {
       restCall.join();
     } catch (Throwable t) {
-      throw new RuntimeException(ERRORMSG_REQ_FAILED, t);
+      responseObj[0] = t;
     }
+
+    // Check to see if we need to throw an exception now that we're back on the main thread.
+    if (responseObj[0] instanceof Throwable) {
+      throw (Throwable) responseObj[0];
+    }
+
     return (R) responseObj[0];
   }
 }
