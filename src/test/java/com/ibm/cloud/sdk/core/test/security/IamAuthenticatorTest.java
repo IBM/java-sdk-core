@@ -19,6 +19,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -33,6 +34,7 @@ import com.ibm.cloud.sdk.core.security.Authenticator;
 import com.ibm.cloud.sdk.core.security.AuthenticatorBase;
 import com.ibm.cloud.sdk.core.security.IamAuthenticator;
 import com.ibm.cloud.sdk.core.security.IamToken;
+import com.ibm.cloud.sdk.core.service.exception.ServiceResponseException;
 import com.ibm.cloud.sdk.core.test.BaseServiceUnitTest;
 
 import okhttp3.Headers;
@@ -325,5 +327,30 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
 
     Request newRequest = newBuilder.build();
     assertEquals("Bearer " + tokenData.getAccessToken(), newRequest.header(HttpHeaders.AUTHORIZATION));
+  }
+
+  @Test
+  public void testApiErrorBadRequest() throws Throwable {
+    server.enqueue(errorResponse(400));
+
+    // Mock current time to ensure the token is valid.
+    PowerMockito.mockStatic(Clock.class);
+    PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
+
+    IamAuthenticator authenticator = new IamAuthenticator(API_KEY);
+
+    Request.Builder requestBuilder = new Request.Builder().url("https://test.com");
+
+    // Calling authenticate should result in an exception.
+    try {
+      authenticator.authenticate(requestBuilder);
+      fail("Expected authenticate() to result in exception!");
+    } catch (RuntimeException excp) {
+      Throwable causedBy = excp.getCause();
+      assertNotNull(causedBy);
+      assertTrue(causedBy instanceof ServiceResponseException);
+    } catch (Throwable t) {
+      fail("Expected RuntimeException, not " + t.getClass().getSimpleName());
+    }
   }
 }

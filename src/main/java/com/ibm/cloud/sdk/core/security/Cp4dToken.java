@@ -24,14 +24,28 @@ public class Cp4dToken extends AbstractToken {
   private long expirationTime;
   private long refreshTime;
 
+  public Cp4dToken() {
+    super();
+  }
+
   /**
    * This ctor is used to store a user-managed access token which will never expire.
    * @param accessToken the user-managed access token
    */
   public Cp4dToken(String accessToken) {
+    super();
     this.accessToken = accessToken;
     this.expirationTime = -1;
     this.refreshTime = -1;
+  }
+
+  /**
+   * This ctor is used to store an exception which indicates an error with the most recent
+   * token server interaction.
+   * @param t the exception to store in this object
+   */
+  public Cp4dToken(Throwable t) {
+    super(t);
   }
 
   /**
@@ -41,6 +55,7 @@ public class Cp4dToken extends AbstractToken {
    * @param response the Cp4dTokenResponse instance
    */
   public Cp4dToken(Cp4dTokenResponse response) {
+    super();
     this.accessToken = response.getAccessToken();
 
     // To compute the expiration time, we'll need to crack open the accessToken value
@@ -69,10 +84,12 @@ public class Cp4dToken extends AbstractToken {
    */
   @Override
   public synchronized boolean needsRefresh() {
-    if (
-        StringUtils.isEmpty(this.accessToken)
-            || (this.refreshTime >= 0 && Clock.getCurrentTimeInSeconds() > this.refreshTime)
-        ) {
+    if (this.getException() != null) {
+      return true;
+    }
+
+    if (StringUtils.isEmpty(this.accessToken)
+        || (this.refreshTime >= 0 && Clock.getCurrentTimeInSeconds() > this.refreshTime)) {
       // Advance refresh time by one minute.
       this.refreshTime += 60;
 
@@ -90,7 +107,8 @@ public class Cp4dToken extends AbstractToken {
    */
   @Override
   public boolean isTokenValid() {
-    return (this.expirationTime >= 0) && (Clock.getCurrentTimeInSeconds() < this.expirationTime);
+    return (this.getException() == null)
+        && (this.expirationTime >= 0) && (Clock.getCurrentTimeInSeconds() < this.expirationTime);
   }
 
   /**

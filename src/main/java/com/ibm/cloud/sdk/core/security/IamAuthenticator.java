@@ -212,7 +212,12 @@ public class IamAuthenticator extends TokenRequestBasedAuthenticator<IamToken, I
         .build();
     builder.body(formBody);
 
-    IamToken token = invokeRequest(builder, IamToken.class);
+    IamToken token;
+    try {
+      token = invokeRequest(builder, IamToken.class);
+    } catch (Throwable t) {
+      token = new IamToken(t);
+    }
     return token;
   }
 }

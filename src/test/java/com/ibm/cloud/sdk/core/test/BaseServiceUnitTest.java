@@ -69,4 +69,14 @@ public class BaseServiceUnitTest {
   protected static MockResponse jsonResponse(Object body) {
     return new MockResponse().addHeader(CONTENT_TYPE, HttpMediaType.APPLICATION_JSON).setBody(GSON.toJson(body));
   }
+
+  /**
+   * Create a MockResponse with JSON content type and the object serialized to JSON as body.
+   *
+   * @param body the body
+   * @return the mock response
+   */
+  protected static MockResponse errorResponse(int statusCode) {
+    return new MockResponse().setResponseCode(statusCode);
+  }
 }
