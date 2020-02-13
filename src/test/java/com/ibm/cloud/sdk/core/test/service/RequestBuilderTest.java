@@ -17,6 +17,11 @@ import com.google.gson.JsonObject;
 import com.ibm.cloud.sdk.core.http.HttpMediaType;
 import com.ibm.cloud.sdk.core.http.RequestBuilder;
 import com.ibm.cloud.sdk.core.test.TestUtils;
+import com.ibm.cloud.sdk.core.test.model.generated.Car;
+import com.ibm.cloud.sdk.core.test.model.generated.Truck;
+import com.ibm.cloud.sdk.core.test.model.generated.Vehicle;
+import com.ibm.cloud.sdk.core.util.GsonSingleton;
+
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.Request;
@@ -26,7 +31,10 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -194,6 +202,28 @@ public class RequestBuilderTest {
     assertEquals(body, buffer.readUtf8());
     assertEquals(HttpMediaType.TEXT, requestedBody.contentType());
 
+  }
+
+  /**
+   * Test with list of models.
+   *
+   * @throws IOException Signals that an I/O exception has occurred.
+   */
+  @Test
+  public void testBodyContentList() throws IOException {
+    // add list of actual models
+    final List<Vehicle> listOfModels = new ArrayList<>();
+    listOfModels.add(new Truck.Builder().vehicleType("Truck").make("Ford").engineType("raptor").build());
+    listOfModels.add(new Car.Builder().vehicleType("Car").make("Ford").bodyStyle("mach-e").build());
+
+    final Request request = RequestBuilder.post(HttpUrl.parse(urlWithQuery))
+        .bodyContent("application/json", listOfModels, null, (InputStream) null).build();
+    final RequestBody requestedBody = request.body();
+    final Buffer buffer = new Buffer();
+    requestedBody.writeTo(buffer);
+
+    assertEquals(GsonSingleton.getGsonWithoutPrettyPrinting().toJson(listOfModels), buffer.readUtf8());
+    assertEquals(HttpMediaType.JSON, requestedBody.contentType());
   }
 
   /**

@@ -337,11 +337,11 @@ public class RequestBuilder {
   public RequestBuilder bodyContent(String contentType, Object jsonContent, Object jsonPatchContent,
     InputStream nonJsonContent) {
     if (contentType != null) {
-      Gson requestGson = GsonSingleton.getGson().newBuilder().create();
+      Gson requestGson = GsonSingleton.getGsonWithoutPrettyPrinting().newBuilder().create();
       if (BaseService.isJsonMimeType(contentType)) {
-        this.bodyContent(requestGson.toJsonTree(jsonContent).getAsJsonObject().toString(), contentType);
+        this.bodyContent(requestGson.toJson(jsonContent), contentType);
       } else if (BaseService.isJsonPatchMimeType(contentType)) {
-        this.bodyContent(requestGson.toJsonTree(jsonPatchContent).getAsJsonObject().toString(), contentType);
+        this.bodyContent(requestGson.toJson(jsonPatchContent), contentType);
       } else {
         this.bodyContent(nonJsonContent, contentType);
       }
