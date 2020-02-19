@@ -42,6 +42,7 @@ public class DateDeserializer implements JsonDeserializer<Date> {
   private static final String DATE_WITH_SECONDS = "yyyy-MM-dd'T'HH:mm:ss";
   private static final String DATE_822 = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
   private static final String DATE_822_WITHOUT_MS = "yyyy-MM-dd'T'HH:mm:ssZ";
+  private static final String RFC3339_FULL_DATE = "yyyy-MM-dd";
 
   // SimpleDateFormat is NOT thread safe - they require private visibility and synchronized access
   private final SimpleDateFormat alchemyDateFormatter = new SimpleDateFormat(DATE_FROM_ALCHEMY);
@@ -51,10 +52,11 @@ public class DateDeserializer implements JsonDeserializer<Date> {
   private final SimpleDateFormat utcWithSecondsDateFormatter = new SimpleDateFormat(DATE_WITH_SECONDS);
   private final SimpleDateFormat rfc822DateFormatter = new SimpleDateFormat(DATE_822);
   private final SimpleDateFormat rfc822WithoutMsDateFormatter = new SimpleDateFormat(DATE_822_WITHOUT_MS);
+  private final SimpleDateFormat rfc3339FullDateFormatter = new SimpleDateFormat(RFC3339_FULL_DATE);
 
   private final List<SimpleDateFormat> dateFormatters =
       Arrays.asList(utcDateFormatter, utcWithoutSecondsDateFormatter, dialogDateFormatter,
-              alchemyDateFormatter, utcWithSecondsDateFormatter);
+              alchemyDateFormatter, utcWithSecondsDateFormatter, rfc3339FullDateFormatter);
 
   private final List<SimpleDateFormat> rfc822Formatters =
       Arrays.asList(rfc822DateFormatter, rfc822WithoutMsDateFormatter);

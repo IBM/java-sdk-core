@@ -122,5 +122,16 @@ public class DateDeserializerTest {
         } catch (Exception ex) {
             fail(ex.getMessage());
         }
+
+        // RFC3339 full-date
+        try {
+            String dateString = "2020-01-01";
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            Date dateVal = dateFormat.parse(dateString);
+            JsonElement element = parser.parse("\"" + dateString + "\"");
+            assertEquals(deserializer.deserialize(element, null, null), dateVal);
+        } catch (Exception ex) {
+            fail(ex.getMessage());
+        }
     }
 }
