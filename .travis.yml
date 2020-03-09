@@ -1,5 +1,5 @@
 language: java
-dist: trusty
+dist: xenial
 jdk:
 - openjdk7
 - oraclejdk8
@@ -21,11 +21,16 @@ cache:
   directories:
   - "$HOME/.m2"
 
+before_install:
+- sudo apt-get update
+- sudo apt-get install python
+- nvm install 12
+- npm install -g npm@6.x
+
 install: true
 
 # For a tagged build, we'll set the maven artifact version #.
 before_script:
-- env
 - echo "TRAVIS_TAG = '${TRAVIS_TAG}'"
 - '[ "${TRAVIS_TAG}" != "" ] 
   && mvn versions:set -DnewVersion=${TRAVIS_TAG} -DgenerateBackupPoms=false 
@@ -40,30 +45,43 @@ script:
 - mvn clean package
 - mvn javadoc:javadoc
 
+before_deploy:
+- pip install --user bump2version
+- npm install @semantic-release/changelog
+- npm install @semantic-release/exec
+- npm install @semantic-release/git
+- npm install @semantic-release/github
+
 deploy:
-  - provider: bintray
-    file: bintray-config.json
-    user: $BINTRAY_USER
-    key:  $BINTRAY_APIKEY
-    skip_cleanup: true
-    on:
-      tags: true
-      jdk: openjdk7
-  - provider: releases
-    api_key: $GITHUB_OAUTH_TOKEN
-    file_glob: true
-    file:
-      - target/sdk-core-*.jar
-    skip_cleanup: true
-    on:
-      tags: true
-      jdk: openjdk7
-  - provider: script
-    script: "./build/push-javadoc-to-gh-pages.sh"
-    skip_cleanup: true
-    on:
-      tags: true
-      jdk: openjdk7
+- provider: script
+  script: npx semantic-release
+  skip_cleanup: true
+  on:
+    branch: master
+    jdk: openjdk7
+- provider: bintray
+  file: bintray-config.json
+  user: $BINTRAY_USER
+  key:  $BINTRAY_APIKEY
+  skip_cleanup: true
+  on:
+    tags: true
+    jdk: openjdk7
+- provider: releases
+  api_key: $GH_TOKEN
+  file_glob: true
+  file:
+    - target/sdk-core-*.jar
+  skip_cleanup: true
+  on:
+    tags: true
+    jdk: openjdk7
+- provider: script
+  script: "./build/push-javadoc-to-gh-pages.sh"
+  skip_cleanup: true
+  on:
+    tags: true
+    jdk: openjdk7
 
 # Ask bintray to sync the just-deployed artifact to maven central
 after_script:

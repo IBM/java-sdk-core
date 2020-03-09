@@ -3,6 +3,21 @@
 If you encounter an issue with the project, you are welcome to submit a [bug report](https://github.com/IBM/java-sdk-core/issues).
 Before that, please search for similar issues. It's possible that someone has already reported the problem.
 
+# Code
+## Commit Messages
+Commit messages should follow the [Angular Commit Message Guidelines](https://github.com/angular/angular/blob/master/CONTRIBUTING.md#-commit-message-guidelines).
+This is because our release tool - [semantic-release](https://github.com/semantic-release/semantic-release) -
+uses this format for determining release versions and generating changelogs.
+Tools such as [commitizen](https://github.com/commitizen/cz-cli) or [commitlint](https://github.com/conventional-changelog/commitlint)
+can be used to help contributors and enforce commit messages.
+Here are some examples of acceptable commit messages, along with the release type that would be done based on the commit message:
+
+| Commit message                                                                                                                                                              | Release type               |
+|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------|
+| `fix(resource controller): fix integration test to use correct credentials`                                                                                                 | Patch Release              |
+| `feat(global catalog): add global-catalog service to project`                                                                                                               | ~~Minor~~ Feature Release  |
+| `feat(global search): re-gen service code with new v3 API definition`<br><br>`BREAKING CHANGE: The global-search service has been updated to reflect version 3 of the API.` | ~~Major~~ Breaking Release |
+
 # Pull Requests
 
 If you want to contribute to the repository, here's a quick guide:
@@ -14,27 +29,7 @@ If you want to contribute to the repository, here's a quick guide:
   4. Commit your changes  
   5. Push to your fork and submit a pull request to the **master** branch
 
-# Creating a release
-
-To create a release from the most recent commit in the master branch, follow these steps:
-  1. In your local copy of the repo (a clone, not a fork), checkout the master branch:
-     ```
-          git checkout master
-     ```
-  2. Add the tag (this example creates the 1.2.0 tag):
-     ```
-          git tag 1.2.0
-     ```
-     Note: specify the appropriate three-level version # (1.2.0, 1.3.1, 2.0.0, etc.)
-  3. Push the tag to remote:
-     ```
-          git push --tags
-     ```
-     This will trigger a tagged build in Travis, which will perform the deployment steps to deploy the build outputs to bintray (and maven central) and the github project's `Releases` page.
-
-
 # Developer's Certificate of Origin 1.1
-
 By making a contribution to this project, I certify that:
 
 (a) The contribution was created in whole or in part by me and I
@@ -60,7 +55,6 @@ By making a contribution to this project, I certify that:
    this project or the open source license(s) involved.
 
 ## Additional Resources
-+ [General GitHub documentation](https://help.github.com/)
-+ [GitHub pull request documentation](https://help.github.com/send-pull-requests/)
-
-[Maven]: https://maven.apache.org/guides/getting-started/maven-in-five-minutes.html
+- [General GitHub documentation](https://help.github.com/)
+- [GitHub pull request documentation](https://help.github.com/send-pull-requests/)
+- [Maven](https://maven.apache.org/guides/getting-started/maven-in-five-minutes.html)
