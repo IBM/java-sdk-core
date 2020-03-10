@@ -12,3 +12,4 @@ config
 .pre-commit-config.yaml
 .secrets.baseline
 .vscode/
+package-lock.json
