@@ -14,9 +14,9 @@ Here are some examples of acceptable commit messages, along with the release typ
 
 | Commit message                                                                                                                                                              | Release type               |
 |-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------|
-| `fix(resource controller): fix integration test to use correct credentials`                                                                                                 | Patch Release              |
-| `feat(global catalog): add global-catalog service to project`                                                                                                               | ~~Minor~~ Feature Release  |
-| `feat(global search): re-gen service code with new v3 API definition`<br><br>`BREAKING CHANGE: The global-search service has been updated to reflect version 3 of the API.` | ~~Major~~ Breaking Release |
+| `fix(IAM Authentication) propagate token request errors back to request invocation thread`                                                                                  | Patch Release              |
+| `feat(JSON Serialization): add custom deserializer for dynamic models`                                                                                                      | ~~Minor~~ Feature Release  |
+| `feat(BaseService): added baseURL as param to BaseService ctor`<br><br>`BREAKING CHANGE: The global-search service has been updated to reflect version 3 of the API.`       | ~~Major~~ Breaking Release |
 
 # Pull Requests
 
