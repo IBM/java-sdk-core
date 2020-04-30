@@ -286,6 +286,49 @@ public class RequestBuilderTest {
     assertNotEquals("https://myserver.com/testservice/api/v1/seg1/param1/seg2/param3/seg3", url);
   }
 
+  @Test
+  public void testConstructHttpUrlEmptyPath1() {
+    String[] pathSegments = { "", "discovery" };
+    HttpUrl url = RequestBuilder.constructHttpUrl("https://myserver.com/testservice/api", pathSegments);
+    assertNotNull(url);
+    assertEquals("https://myserver.com/testservice/api/discovery", url.toString());
+  }
+  
+  @Test
+  public void testConstructHttpUrlEmptyPath2() {
+    String[] pathSegments = { "" };
+    HttpUrl url = RequestBuilder.constructHttpUrl("https://myserver.com/testservice/api", pathSegments);
+    assertNotNull(url);
+    assertEquals("https://myserver.com/testservice/api", url.toString());
+  }
+
+  @Test
+  public void testConstructHttpUrlEmptyPathWParams() {
+    String[] pathSegments = { "" };
+    String[] pathParameters = { "param1", "param2" };
+    HttpUrl url = RequestBuilder.constructHttpUrl("https://myserver.com/testservice/api", pathSegments, pathParameters);
+    assertNotNull(url);
+    assertEquals("https://myserver.com/testservice/api/param1", url.toString());
+  }
+
+  @Test
+  public void testConstructHttpUrlWEmptyParams() {
+    String[] pathSegments = { "v1/seg1", "seg2", "seg3"};
+    String[] pathParameters = { "", "" };
+    HttpUrl url = RequestBuilder.constructHttpUrl("https://myserver.com/testservice/api", pathSegments, pathParameters);
+    assertNotNull(url);
+    assertEquals("https://myserver.com/testservice/api/v1/seg1/seg2/seg3", url.toString());
+  }
+
+  @Test
+  public void testConstructHttpUrlEmptyPathAndParams() {
+    String[] pathSegments = { "" };
+    String[] pathParameters = { "" };
+    HttpUrl url = RequestBuilder.constructHttpUrl("https://myserver.com/testservice/api", pathSegments, pathParameters);
+    assertNotNull(url);
+    assertEquals("https://myserver.com/testservice/api", url.toString());
+  }
+
   @Test(expected = IllegalArgumentException.class)
   public void testConstructHttpUrlEmpty() {
     String[] pathSegments = { "v1/seg1", "seg2", "seg3"};
