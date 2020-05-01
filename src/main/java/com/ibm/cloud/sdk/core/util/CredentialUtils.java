@@ -286,8 +286,8 @@ public final class CredentialUtils {
       Map<String, String> props = new HashMap<>();
       serviceName = serviceName.toUpperCase().replaceAll("-", "_") + "_";
       for (Map.Entry<String, String> entry : env.entrySet()) {
-        String key = entry.getKey();
-        String value = entry.getValue();
+        String key = entry.getKey().trim();
+        String value = entry.getValue().trim();
 
         if (key.startsWith(serviceName)) {
           String credentialName = key.substring(serviceName.length());
@@ -340,6 +340,7 @@ public final class CredentialUtils {
    */
   private static void addToMap(Map<String, String> map, String key, String value) {
     if (StringUtils.isNotEmpty(value)) {
+      value = value.trim();
       map.put(key, value);
     }
   }
@@ -371,8 +372,8 @@ public final class CredentialUtils {
         continue;
       }
 
-      String key = lineTokens[0];
-      String value = lineTokens[1];
+      String key = lineTokens[0].trim();
+      String value = lineTokens[1].trim();
 
       if (key.startsWith(serviceName)) {
         String credentialName = key.substring(serviceName.length());

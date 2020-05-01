@@ -75,6 +75,8 @@ public class CredentialUtilsTest {
     env.put("SERVICE4_AUTH_TYPE", Authenticator.AUTHTYPE_NOAUTH);
     env.put("SERVICE5_AUTH_TYPE", Authenticator.AUTHTYPE_BEARER_TOKEN);
     env.put("SERVICE5_BEARER_TOKEN", "my-bearer-token");
+    env.put("  SERVICE6_URL", "  https://service6/api  ");
+    env.put("  SERVICE6_BEARER_TOKEN", "  my-bearer-token  ");
 
     return env;
   }
@@ -190,6 +192,16 @@ public class CredentialUtilsTest {
   }
 
   @Test
+  public void testFileCredentialsMapService6() {
+    PowerMockito.spy(EnvironmentUtils.class);
+    PowerMockito.when(EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
+    assertEquals(ALTERNATE_CRED_FILENAME, EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE"));
+
+    Map<String, String> props = CredentialUtils.getFileCredentialsAsMap("service6");
+    verifyMapService6(props);
+  }
+
+  @Test
   public void testEnvCredentialsMapEmpty() {
     PowerMockito.spy(EnvironmentUtils.class);
     PowerMockito.when(EnvironmentUtils.getenv()).thenReturn(new HashMap<String, String>());
@@ -240,6 +252,15 @@ public class CredentialUtilsTest {
 
     Map<String, String> props = CredentialUtils.getEnvCredentialsAsMap("service5");
     verifyMapService5(props);
+  }
+
+  @Test
+  public void testEnvCredentialsMapService6() {
+    PowerMockito.spy(EnvironmentUtils.class);
+    PowerMockito.when(EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
+
+    Map<String, String> props = CredentialUtils.getEnvCredentialsAsMap("service6");
+    verifyMapService6(props);
   }
 
   @Test
@@ -374,6 +395,16 @@ public class CredentialUtilsTest {
     assertEquals("https://gateway.watsonplatform.net/language-translator/api", props.get("URL"));
   }
 
+  @Test
+  public void testVcapCredentialsWhitespace() {
+    setupVCAP();
+
+    Map<String, String> props = CredentialUtils.getVcapCredentialsAsMap("whitespace");
+    assertNotNull(props);
+    assertFalse(props.isEmpty());
+    assertEquals("https://johnsnow/url/api/", props.get("URL"));
+  }
+
   private void verifyMapService1(Map<String, String> props) {
     assertNotNull(props);
     assertFalse(props.isEmpty());
@@ -413,6 +444,13 @@ public class CredentialUtilsTest {
     assertNotNull(props);
     assertFalse(props.isEmpty());
     assertEquals(Authenticator.AUTHTYPE_BEARER_TOKEN, props.get(Authenticator.PROPNAME_AUTH_TYPE));
+    assertEquals("my-bearer-token", props.get(Authenticator.PROPNAME_BEARER_TOKEN));
+  }
+
+  private void verifyMapService6(Map<String, String> props) {
+    assertNotNull(props);
+    assertFalse(props.isEmpty());
+    assertEquals("https://service6/api", props.get("URL"));
     assertEquals("my-bearer-token", props.get(Authenticator.PROPNAME_BEARER_TOKEN));
   }
 }

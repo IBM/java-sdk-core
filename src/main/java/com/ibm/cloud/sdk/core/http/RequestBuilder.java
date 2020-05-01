@@ -116,7 +116,9 @@ public class RequestBuilder {
     Validator.notEmpty(serviceUrl, "The serviceUrl cannot be null");
     HttpUrl.Builder httpUrlBuilder = HttpUrl.parse(serviceUrl).newBuilder();
     for (String segment : pathSegments) {
-      httpUrlBuilder.addPathSegments(segment);
+      if (!segment.isEmpty()) {
+        httpUrlBuilder.addPathSegments(segment);
+      }
     }
     return httpUrlBuilder.build();
   }
@@ -133,8 +135,10 @@ public class RequestBuilder {
     Validator.notEmpty(serviceUrl, "The serviceUrl cannot be null");
     HttpUrl.Builder httpUrlBuilder = HttpUrl.parse(serviceUrl).newBuilder();
     for (int i = 0; i < pathSegments.length; i++) {
-      httpUrlBuilder.addPathSegments(pathSegments[i]);
-      if (i < pathParameters.length) {
+      if (!pathSegments[i].isEmpty()) {
+        httpUrlBuilder.addPathSegments(pathSegments[i]);
+      }
+      if (i < pathParameters.length && !pathParameters[i].isEmpty()) {
         httpUrlBuilder.addPathSegment(pathParameters[i]);
       }
     }

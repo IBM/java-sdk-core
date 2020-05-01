@@ -310,5 +310,17 @@
       "label": "devops-insights",
       "plan": "elite"
      }
-  ]
+  ],
+  "whitespace": [
+     {
+        "name": "whitespace",
+        "label": "devops-insights",
+        "plan": "elite",
+        "credentials": {
+           "url": " https://johnsnow/url/api/ ",
+           "username": "not-a-username-2",
+           "password": "not-a-password-2"
+         }
+      }
+   ]
 }
