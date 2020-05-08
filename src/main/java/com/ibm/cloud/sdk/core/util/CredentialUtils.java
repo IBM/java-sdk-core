@@ -367,8 +367,8 @@ public final class CredentialUtils {
         continue;
       }
 
-      String[] lineTokens = line.split("=");
-      if (lineTokens.length != 2) {
+      String[] lineTokens = line.split("=", 2);
+      if (lineTokens.length != 2 || lineTokens.length == 0) {
         continue;
       }
 
