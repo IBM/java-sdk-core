@@ -1,3 +1,10 @@
+## [8.1.5](https://github.com/IBM/java-sdk-core/compare/8.1.4...8.1.5) (2020-05-08)
+
+
+### Bug Fixes
+
+* allow '=' character in environment config values ([afadad5](https://github.com/IBM/java-sdk-core/commit/afadad55fd2ec35419669929e6e2334580cdc7d8))
+
 ## [8.1.4](https://github.com/IBM/java-sdk-core/compare/8.1.3...8.1.4) (2020-05-01)
 
 
