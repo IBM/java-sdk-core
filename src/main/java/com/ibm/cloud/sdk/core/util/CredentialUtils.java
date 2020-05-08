@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -57,6 +58,7 @@ public final class CredentialUtils {
    * 1) Credential file
    * 2) Environment variables
    * 3) VCAP_SERVICES
+   * 4) System properties
    * The properties are returned in a Map.
    *
    * @param serviceName the name of the service. When searching for service-related properties in the
@@ -74,6 +76,9 @@ public final class CredentialUtils {
     }
     if (props.isEmpty()) {
       props = getVcapCredentialsAsMap(serviceName);
+    }
+    if (props.isEmpty()) {
+      props = getSystemPropsCredentialsAsMap(serviceName);
     }
     return props;
   }
@@ -195,6 +200,7 @@ public final class CredentialUtils {
   /**
    * Creates a list of files to check for credentials. The file locations are:
    * * Location provided by user-specified IBM_CREDENTIALS_FILE environment variable
+   * * Location provided by user-specified IBM_CREDENTIALS_FILE system property
    * * Current working directory this code is being called in
    * * System home directory (Unix)
    * * System home directory (Windows)
@@ -205,6 +211,7 @@ public final class CredentialUtils {
     List<File> files = new ArrayList<>();
 
     String userSpecifiedPath = EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE");
+    String userSpecifiedSystemProp = System.getProperty("IBM_CREDENTIALS_FILE");
     String currentWorkingDirectory = System.getProperty("user.dir");
     String unixHomeDirectory = EnvironmentUtils.getenv("HOME");
     String windowsFirstHomeDirectory = EnvironmentUtils.getenv("HOMEDRIVE") + EnvironmentUtils.getenv("HOMEPATH");
@@ -212,6 +219,10 @@ public final class CredentialUtils {
 
     if (StringUtils.isNotEmpty(userSpecifiedPath)) {
       files.add(new File(userSpecifiedPath));
+    }
+
+    if (StringUtils.isNotEmpty(userSpecifiedSystemProp)) {
+      files.add(new File(userSpecifiedSystemProp));
     }
 
     if (StringUtils.isNotEmpty(currentWorkingDirectory)) {
@@ -290,6 +301,45 @@ public final class CredentialUtils {
         String value = entry.getValue().trim();
 
         if (key.startsWith(serviceName)) {
+          String credentialName = key.substring(serviceName.length());
+          if (StringUtils.isNotEmpty(credentialName) && StringUtils.isNotEmpty(value)) {
+            props.put(credentialName, value);
+          }
+        }
+      }
+      return props;
+    }
+
+    return Collections.emptyMap();
+  }
+
+  /**
+   * Returns a Map containing properties found within the process' system properties
+   * that are associated with the specified cloud service.
+   *
+   * @param serviceName the name of the cloud service whose properties should be
+   *                    retrieved
+   * @return a Map containing the properties
+   */
+  static Map<String, String> getSystemPropsCredentialsAsMap(String serviceName) {
+    // Retrieve the Map of environment variables from the current process.
+    Properties systemProperties = System.getProperties();
+
+    // Extract the properties related to the specified service and populate the
+    // result Map.
+    if (systemProperties != null) {
+      Map<String, String> props = new HashMap<>();
+      serviceName = serviceName.toUpperCase().replaceAll("-", "_") + "_";
+
+      for (Map.Entry<Object, Object> entry : systemProperties.entrySet()) {
+        if (entry.getKey() == null || entry.getValue() == null) {
+          continue;
+        }
+
+        String key = String.valueOf(entry.getKey()).trim();
+        String value = String.valueOf(entry.getValue()).trim();
+
+        if (StringUtils.isNotEmpty(key) && key.startsWith(serviceName)) {
           String credentialName = key.substring(serviceName.length());
           if (StringUtils.isNotEmpty(credentialName) && StringUtils.isNotEmpty(value)) {
             props.put(credentialName, value);

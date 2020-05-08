@@ -182,6 +182,17 @@ public class ConfigBasedAuthenticatorFactoryTest {
   }
 
   @Test
+  public void testFileCredentialsSystemPropService1() {
+    System.setProperty("IBM_CREDENTIALS_FILE", ALTERNATE_CRED_FILENAME);
+    assertEquals(ALTERNATE_CRED_FILENAME, System.getProperty("IBM_CREDENTIALS_FILE"));
+
+    Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service-1");
+    assertNotNull(auth);
+    assertEquals(Authenticator.AUTHTYPE_IAM, auth.authenticationType());
+    System.clearProperty("IBM_CREDENTIALS_FILE");
+  }
+
+  @Test
   public void testEnvCredentialsService1() {
     PowerMockito.spy(EnvironmentUtils.class);
     PowerMockito.when(EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
