@@ -1,3 +1,10 @@
+# [8.2.0](https://github.com/IBM/java-sdk-core/compare/8.1.5...8.2.0) (2020-05-11)
+
+
+### Features
+
+* support service config via system properties ([#79](https://github.com/IBM/java-sdk-core/issues/79)) ([d5e7a27](https://github.com/IBM/java-sdk-core/commit/d5e7a27cc2b9a52f630ebd95fc0e082dd0382a43))
+
 ## [8.1.5](https://github.com/IBM/java-sdk-core/compare/8.1.4...8.1.5) (2020-05-08)
 
 
