@@ -87,6 +87,15 @@ public class ConfigureServiceTest {
   }
 
   @Test
+  public void testConfigureServiceOnInitiationSystemPropFile() {
+    System.setProperty("IBM_CREDENTIALS_FILE", ALTERNATE_CRED_FILENAME);
+    BasicAuthenticator auth = new BasicAuthenticator(BASIC_USERNAME, "password1");
+    TestServiceConfigured svc = new TestServiceConfigured("SERVICE_1", auth);
+    assertEquals("https://service1/api", svc.getServiceUrl());
+    System.clearProperty("IBM_CREDENTIALS_FILE");
+  }
+
+  @Test
   public void testUnConfigureServiceOnInitiationVcap() {
     setupVCAP();
     BasicAuthenticator auth = new BasicAuthenticator(BASIC_USERNAME, "password1");

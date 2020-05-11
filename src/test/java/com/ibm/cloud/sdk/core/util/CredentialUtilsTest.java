@@ -86,6 +86,80 @@ public class CredentialUtilsTest {
     return env;
   }
 
+  private void setTestSystemProps() {
+    System.setProperty("SERVICE_1_URL", "https://service1/api");
+    System.setProperty("SERVICE_1_DISABLE_SSL", "true");
+    System.setProperty("SERVICE2_URL", "https://service2/api");
+    System.setProperty("SERVICE2_DISABLE_SSL", "false");
+    System.setProperty("SERVICE3_URL", "https://service3/api");
+    System.setProperty("SERVICE3_DISABLE_SSL", "false");
+    System.setProperty("SERVICE4_URL", "https://service4/api");
+    System.setProperty("SERVICE4_DISABLE_SSL", "false");
+    System.setProperty("SERVICE5_URL", "https://service5/api");
+    System.setProperty("SERVICE5_DISABLE_SSL", "true");
+    System.setProperty("SERVICE_1_AUTH_TYPE", Authenticator.AUTHTYPE_IAM);
+    System.setProperty("SERVICE_1_APIKEY", "my-api-key");
+    System.setProperty("SERVICE_1_CLIENT_ID", "my-client-id");
+    System.setProperty("SERVICE_1_CLIENT_SECRET", "my-client-secret");
+    System.setProperty("SERVICE_1_AUTH_URL", "https://iamhost/iam/api");
+    System.setProperty("SERVICE_1_AUTH_DISABLE_SSL", "true");
+    System.setProperty("SERVICE2_AUTH_TYPE", Authenticator.AUTHTYPE_BASIC);
+    System.setProperty("SERVICE2_USERNAME", "my-user");
+    System.setProperty("SERVICE2_PASSWORD", "my-password");
+    System.setProperty("SERVICE3_AUTH_TYPE", "Cp4D");
+    System.setProperty("SERVICE3_AUTH_URL", "https://cp4dhost/cp4d/api");
+    System.setProperty("SERVICE3_USERNAME", "my-cp4d-user");
+    System.setProperty("SERVICE3_PASSWORD", "my-cp4d-password");
+    System.setProperty("SERVICE3_AUTH_DISABLE_SSL", "false");
+    System.setProperty("SERVICE4_AUTH_TYPE", Authenticator.AUTHTYPE_NOAUTH);
+    System.setProperty("SERVICE5_AUTH_TYPE", Authenticator.AUTHTYPE_BEARER_TOKEN);
+    System.setProperty("SERVICE5_BEARER_TOKEN", "my-bearer-token");
+    System.setProperty("SERVICE6_URL", "  https://service6/api  ");
+    System.setProperty("SERVICE6_BEARER_TOKEN", "  my-bearer-token  ");
+    System.setProperty("SERVICE_7_AUTH_TYPE", Authenticator.AUTHTYPE_IAM);
+    System.setProperty("SERVICE_7_APIKEY", "V4HXmoUtMjohnsnow=KotN");
+    System.setProperty("SERVICE_7_CLIENT_ID", "somefake========id");
+    System.setProperty("SERVICE_7_CLIENT_SECRET", "==my-client-secret==");
+    System.setProperty("SERVICE_7_AUTH_URL", "https://iamhost/iam/api=");
+  }
+
+  private void clearTestSystemProps() {
+    System.clearProperty("SERVICE_1_URL");
+    System.clearProperty("SERVICE_1_DISABLE_SSL");
+    System.clearProperty("SERVICE2_URL");
+    System.clearProperty("SERVICE2_DISABLE_SSL");
+    System.clearProperty("SERVICE3_URL");
+    System.clearProperty("SERVICE3_DISABLE_SSL");
+    System.clearProperty("SERVICE4_URL");
+    System.clearProperty("SERVICE4_DISABLE_SSL");
+    System.clearProperty("SERVICE5_URL");
+    System.clearProperty("SERVICE5_DISABLE_SSL");
+    System.clearProperty("SERVICE_1_AUTH_TYPE");
+    System.clearProperty("SERVICE_1_APIKEY");
+    System.clearProperty("SERVICE_1_CLIENT_ID");
+    System.clearProperty("SERVICE_1_CLIENT_SECRET");
+    System.clearProperty("SERVICE_1_AUTH_URL");
+    System.clearProperty("SERVICE_1_AUTH_DISABLE_SSL");
+    System.clearProperty("SERVICE2_AUTH_TYPE");
+    System.clearProperty("SERVICE2_USERNAME");
+    System.clearProperty("SERVICE2_PASSWORD");
+    System.clearProperty("SERVICE3_AUTH_TYPE");
+    System.clearProperty("SERVICE3_AUTH_URL");
+    System.clearProperty("SERVICE3_USERNAME");
+    System.clearProperty("SERVICE3_PASSWORD");
+    System.clearProperty("SERVICE3_AUTH_DISABLE_SSL");
+    System.clearProperty("SERVICE4_AUTH_TYPE");
+    System.clearProperty("SERVICE5_AUTH_TYPE");
+    System.clearProperty("SERVICE5_BEARER_TOKEN");
+    System.clearProperty("SERVICE6_URL");
+    System.clearProperty("SERVICE6_BEARER_TOKEN");
+    System.clearProperty("SERVICE_7_AUTH_TYPE");
+    System.clearProperty("SERVICE_7_APIKEY");
+    System.clearProperty("SERVICE_7_CLIENT_ID");
+    System.clearProperty("SERVICE_7_CLIENT_SECRET");
+    System.clearProperty("SERVICE_7_AUTH_URL");
+  }
+
   /**
    * Setup.
    */
@@ -217,6 +291,92 @@ public class CredentialUtilsTest {
   }
 
   @Test
+  public void testFileCredentialsSystemPropEmpty() {
+    System.setProperty("IBM_CREDENTIALS_FILE", "");
+    Map<String, String> props = CredentialUtils.getFileCredentialsAsMap("service-1");
+    assertTrue(props.isEmpty());
+    System.clearProperty("IBM_CREDENTIALS_FILE");
+    assertNull(System.getProperty("IBM_CREDENTIALS_FILE"));
+  }
+
+  @Test
+  public void testFileCredentialsSystemPropService1() {
+    System.setProperty("IBM_CREDENTIALS_FILE", ALTERNATE_CRED_FILENAME);
+    assertEquals(ALTERNATE_CRED_FILENAME, System.getProperty("IBM_CREDENTIALS_FILE"));
+
+    Map<String, String> props = CredentialUtils.getFileCredentialsAsMap("service-1");
+    verifyMapService1(props);
+    System.clearProperty("IBM_CREDENTIALS_FILE");
+    assertNull(System.getProperty("IBM_CREDENTIALS_FILE"));
+  }
+
+  @Test
+  public void testFileCredentialsSystemPropService2() {
+    System.setProperty("IBM_CREDENTIALS_FILE", ALTERNATE_CRED_FILENAME);
+    assertEquals(ALTERNATE_CRED_FILENAME, System.getProperty("IBM_CREDENTIALS_FILE"));
+
+    Map<String, String> props = CredentialUtils.getFileCredentialsAsMap("service2");
+    verifyMapService2(props);
+    System.clearProperty("IBM_CREDENTIALS_FILE");
+    assertNull(System.getProperty("IBM_CREDENTIALS_FILE"));
+  }
+
+  @Test
+  public void testFileCredentialsSystemPropService3() {
+    System.setProperty("IBM_CREDENTIALS_FILE", ALTERNATE_CRED_FILENAME);
+    assertEquals(ALTERNATE_CRED_FILENAME, System.getProperty("IBM_CREDENTIALS_FILE"));
+
+    Map<String, String> props = CredentialUtils.getFileCredentialsAsMap("service3");
+    verifyMapService3(props);
+    System.clearProperty("IBM_CREDENTIALS_FILE");
+    assertNull(System.getProperty("IBM_CREDENTIALS_FILE"));
+  }
+
+  @Test
+  public void testFileCredentialsSystemPropService4() {
+    System.setProperty("IBM_CREDENTIALS_FILE", ALTERNATE_CRED_FILENAME);
+    assertEquals(ALTERNATE_CRED_FILENAME, System.getProperty("IBM_CREDENTIALS_FILE"));
+
+    Map<String, String> props = CredentialUtils.getFileCredentialsAsMap("service4");
+    verifyMapService4(props);
+    System.clearProperty("IBM_CREDENTIALS_FILE");
+    assertNull(System.getProperty("IBM_CREDENTIALS_FILE"));
+  }
+
+  @Test
+  public void testFileCredentialsSystemPropService5() {
+    System.setProperty("IBM_CREDENTIALS_FILE", ALTERNATE_CRED_FILENAME);
+    assertEquals(ALTERNATE_CRED_FILENAME, System.getProperty("IBM_CREDENTIALS_FILE"));
+
+    Map<String, String> props = CredentialUtils.getFileCredentialsAsMap("service5");
+    verifyMapService5(props);
+    System.clearProperty("IBM_CREDENTIALS_FILE");
+    assertNull(System.getProperty("IBM_CREDENTIALS_FILE"));
+  }
+
+  @Test
+  public void testFileCredentialsSystemPropService6() {
+    System.setProperty("IBM_CREDENTIALS_FILE", ALTERNATE_CRED_FILENAME);
+    assertEquals(ALTERNATE_CRED_FILENAME, System.getProperty("IBM_CREDENTIALS_FILE"));
+
+    Map<String, String> props = CredentialUtils.getFileCredentialsAsMap("service6");
+    verifyMapService6(props);
+    System.clearProperty("IBM_CREDENTIALS_FILE");
+    assertNull(System.getProperty("IBM_CREDENTIALS_FILE"));
+  }
+
+  @Test
+  public void testFileCredentialsSystemPropService7() {
+    System.setProperty("IBM_CREDENTIALS_FILE", ALTERNATE_CRED_FILENAME);
+    assertEquals(ALTERNATE_CRED_FILENAME, System.getProperty("IBM_CREDENTIALS_FILE"));
+
+    Map<String, String> props = CredentialUtils.getFileCredentialsAsMap("service-7");
+    verifyMapService7(props);
+    System.clearProperty("IBM_CREDENTIALS_FILE");
+    assertNull(System.getProperty("IBM_CREDENTIALS_FILE"));
+  }
+
+  @Test
   public void testEnvCredentialsMapEmpty() {
     PowerMockito.spy(EnvironmentUtils.class);
     PowerMockito.when(EnvironmentUtils.getenv()).thenReturn(new HashMap<String, String>());
@@ -285,6 +445,81 @@ public class CredentialUtilsTest {
 
     Map<String, String> props = CredentialUtils.getEnvCredentialsAsMap("service-7");
     verifyMapService7(props);
+  }
+
+  @Test
+  public void testSystemPropsCredentialsEmpty() {
+    Map<String, String> props = CredentialUtils.getSystemPropsCredentialsAsMap("service-1");
+    assertTrue(props.isEmpty());
+
+    // Setting Only environment variables should still result in empty props
+    PowerMockito.spy(EnvironmentUtils.class);
+    PowerMockito.when(EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
+    props = CredentialUtils.getSystemPropsCredentialsAsMap("service-1");
+    assertTrue(props.isEmpty());
+  }
+
+  @Test
+  public void testSystemPropsCredentialsService1() {
+    setTestSystemProps();
+
+    Map<String, String> props = CredentialUtils.getSystemPropsCredentialsAsMap("service-1");
+    verifyMapService1(props);
+    clearTestSystemProps();
+  }
+
+  @Test
+  public void testSystemPropsCredentialsService2() {
+    setTestSystemProps();
+
+    Map<String, String> props = CredentialUtils.getSystemPropsCredentialsAsMap("service2");
+    verifyMapService2(props);
+    clearTestSystemProps();
+  }
+
+  @Test
+  public void testSystemPropsCredentialsService3() {
+    setTestSystemProps();
+
+    Map<String, String> props = CredentialUtils.getSystemPropsCredentialsAsMap("service3");
+    verifyMapService3(props);
+    clearTestSystemProps();
+  }
+
+  @Test
+  public void testSystemPropsCredentialsService4() {
+    setTestSystemProps();
+
+    Map<String, String> props = CredentialUtils.getSystemPropsCredentialsAsMap("service4");
+    verifyMapService4(props);
+    clearTestSystemProps();
+  }
+
+  @Test
+  public void testSystemPropsCredentialsService5() {
+    setTestSystemProps();
+
+    Map<String, String> props = CredentialUtils.getSystemPropsCredentialsAsMap("service5");
+    verifyMapService5(props);
+    clearTestSystemProps();
+  }
+
+  @Test
+  public void testSystemPropsCredentialsService6() {
+    setTestSystemProps();
+
+    Map<String, String> props = CredentialUtils.getSystemPropsCredentialsAsMap("service6");
+    verifyMapService6(props);
+    clearTestSystemProps();
+  }
+
+  @Test
+  public void testSystemPropsCredentialsService7() {
+    setTestSystemProps();
+
+    Map<String, String> props = CredentialUtils.getSystemPropsCredentialsAsMap("service-7");
+    verifyMapService7(props);
+    clearTestSystemProps();
   }
 
   @Test
