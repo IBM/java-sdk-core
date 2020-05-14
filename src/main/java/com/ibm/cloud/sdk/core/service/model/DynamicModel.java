@@ -79,6 +79,16 @@ public abstract class DynamicModel<T> implements ObjectModel {
   }
 
   /**
+   * Sets the map containing the arbitrary properties set on this object.
+   *
+   * @param properties
+   *         a map containing arbitrary properties to set on this object
+   */
+  public void setProperties(Map<String, T> properties) {
+    this.dynamicProperties = new HashMap<String, T>(properties);
+  }
+
+  /**
    * Returns a map containing the arbitrary properties set on this object.
    *
    * @return a copy of the map containing arbitrary properties set on this object

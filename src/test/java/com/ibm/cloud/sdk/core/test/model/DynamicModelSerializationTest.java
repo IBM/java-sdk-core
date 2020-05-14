@@ -29,6 +29,7 @@ import com.ibm.cloud.sdk.core.test.model.generated.ModelAPString;
 import com.ibm.cloud.sdk.core.util.GsonSingleton;
 import org.testng.annotations.Test;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
@@ -313,6 +314,13 @@ public class DynamicModelSerializationTest {
 
     ModelAPFoo newModel = deserialize(serialize(model), ModelAPFoo.class);
     assertEquals(newModel, model);
+
+    Map<String, Foo> newProps = new HashMap<>();
+    newProps.put("soccer", newFoo);
+    model.setProperties(newProps);
+    assertEquals(model.getPropertyNames(), Sets.newHashSet("soccer"));
+    newProps.remove("soccer");
+    assertEquals(model.getPropertyNames(), Sets.newHashSet("soccer"));
 
     assertTrue(model.equals(model));
     assertFalse(model.equals(null));
