@@ -1,3 +1,10 @@
+# [8.3.0](https://github.com/IBM/java-sdk-core/compare/8.2.0...8.3.0) (2020-05-15)
+
+
+### Features
+
+* Add setter for properties of DynamicModel ([51e50af](https://github.com/IBM/java-sdk-core/commit/51e50afc088880da3d24083aed12a1da0c0335a9))
+
 # [8.2.0](https://github.com/IBM/java-sdk-core/compare/8.1.5...8.2.0) (2020-05-11)
 
 
