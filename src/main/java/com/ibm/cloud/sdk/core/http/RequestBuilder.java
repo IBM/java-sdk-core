@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2019.
+ * (C) Copyright IBM Corp. 2015, 2020.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -13,21 +13,21 @@
 
 package com.ibm.cloud.sdk.core.http;
 
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import com.ibm.cloud.sdk.core.service.BaseService;
 import com.ibm.cloud.sdk.core.util.GsonSingleton;
 import com.ibm.cloud.sdk.core.util.StringHelper;
 import com.ibm.cloud.sdk.core.util.Validator;
+
 import okhttp3.FormBody;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
-
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Convenience class for constructing HTTP/HTTPS requests.
@@ -325,26 +325,33 @@ public class RequestBuilder {
     return body(InputStreamRequestBody.create(MediaType.parse(contentType), stream));
   }
 
+
   /**
-   * Sets the request body content from one of three different sources, based on the content type.
+   * Sets the request body content from one of three different sources.
+   * The three input sources are used in this precedence order:
+   * <ol>
+   * <li>If 'jsonContent' is not null, then use that.</li>
+   * <li>If 'jsonPatchContent' is not null, then use that.</li>
+   * <li>Else use 'nonJsonContent'.
+   * </ol>
    *
    * @param contentType
-   *      the value of the "Content-Type" header associated with the outgoing request
+   *      the value of the "Content-Type" header associated with the request body
    * @param jsonContent
-   *      the body content to be used if the content type indicates JSON
+   *      a model instance to be serialized and used for the request body
    * @param jsonPatchContent
-   *      the body content to be used if the content type indicates JsonPatch
+   *      a collection of JsonPatchOperation instances to be serialized and used for the request body
    * @param nonJsonContent
-   *      the body content to be used if the content type indicates non-JSON content
+   *      an InputStream whose contents should be used directly as the request body
    * @return this
    */
   public RequestBuilder bodyContent(String contentType, Object jsonContent, Object jsonPatchContent,
     InputStream nonJsonContent) {
     if (contentType != null) {
       Gson requestGson = GsonSingleton.getGsonWithoutPrettyPrinting().newBuilder().create();
-      if (BaseService.isJsonMimeType(contentType)) {
+      if (jsonContent != null) {
         this.bodyContent(requestGson.toJson(jsonContent), contentType);
-      } else if (BaseService.isJsonPatchMimeType(contentType)) {
+      } else if (jsonPatchContent != null) {
         this.bodyContent(requestGson.toJson(jsonPatchContent), contentType);
       } else {
         this.bodyContent(nonJsonContent, contentType);
@@ -354,16 +361,22 @@ public class RequestBuilder {
   }
 
   /**
-   * Sets the request body content from one of three different sources, based on the content type.
+   * Sets the request body content from one of three different sources.
+   * The three input sources are used in this precedence order:
+   * <ol>
+   * <li>If 'jsonContent' is not null, then use that.</li>
+   * <li>If 'jsonPatchContent' is not null, then use that.</li>
+   * <li>Else use 'nonJsonContent'.
+   * </ol>
    *
    * @param contentType
-   *      the value of the "Content-Type" header associated with the outgoing request
+   *      the value of the "Content-Type" header associated with the request body
    * @param jsonContent
-   *      the body content to be used if the content type indicates JSON
+   *      a model instance to be serialized and used for the request body
    * @param jsonPatchContent
-   *      the body content to be used if the content type indicates JsonPatch
+   *      a collection of JsonPatchOperation instances to be serialized and used for the request body
    * @param nonJsonContent
-   *      the body content to be used if the content type indicates non-JSON content
+   *      a string to be used directly as the request body
    * @return this
    */
   public RequestBuilder bodyContent(String contentType, Object jsonContent, Object jsonPatchContent,
