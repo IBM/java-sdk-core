@@ -1,3 +1,10 @@
+# [8.4.0](https://github.com/IBM/java-sdk-core/compare/8.3.0...8.4.0) (2020-06-14)
+
+
+### Features
+
+* RequestBuilder changes to support JSON streaming feature ([e349979](https://github.com/IBM/java-sdk-core/commit/e34997962a7da54d3554a37bce336db221a57fb4)), closes [arf/planning-sdk-squad#901](https://github.com/arf/planning-sdk-squad/issues/901)
+
 # [8.3.0](https://github.com/IBM/java-sdk-core/compare/8.2.0...8.3.0) (2020-05-15)
 
 
