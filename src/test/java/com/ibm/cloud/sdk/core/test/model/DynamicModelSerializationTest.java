@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2019.
+ * (C) Copyright IBM Corp. 2015, 2020.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -54,15 +54,18 @@ public class DynamicModelSerializationTest {
     return GsonSingleton.getGson().fromJson(json, clazz);
   }
 
+  private void display(String msg) {
+    if (displayOutput) {
+      System.out.println(msg);
+    }
+  }
+
   private <T> void testSerDeser(DynamicModel<?> model, Class<T> clazz) {
     String jsonString = serialize(model);
-    if (displayOutput) {
-      System.out.println("serialized " + model.getClass().getSimpleName() + ": " + jsonString);
-    }
+
+    display("serialized " + model.getClass().getSimpleName() + ": " + jsonString);
     T newModel = deserialize(jsonString, clazz);
-    if (displayOutput) {
-      System.out.println("de-serialized " + model.getClass().getSimpleName() + ": " + newModel.toString());
-    }
+    display("de-serialized " + model.getClass().getSimpleName() + ": " + newModel.toString());
     assertEquals(newModel, model);
   }
 
@@ -203,8 +206,20 @@ public class DynamicModelSerializationTest {
   public void testNullValues() {
     ModelAPFoo model = createModelAPFoo();
     model.setProp1(null);
-    // model.put("basketball", "foo");
     testSerDeser(model, ModelAPFoo.class);
+  }
+
+  @Test
+  public void testAddlPropsNull() {
+    ModelAPString model = createModelAPString();
+    model.put("basketball", null);
+
+    String json = serialize(model);
+    display("Serialized: " + json);
+    assertTrue(json.contains("\"basketball\": null"));
+
+    ModelAPString newModel = deserialize(json, ModelAPString.class);
+    assertEquals(newModel, model);
   }
 
   @Test(expectedExceptions = {JsonSyntaxException.class})
@@ -213,9 +228,9 @@ public class DynamicModelSerializationTest {
     // Obtain the json string and then render it incorrect to trigger a deserialization error.
     ModelAPFoo model = createModelAPFoo();
     String goodJson = serialize(model);
-    if (displayOutput) System.out.println("Serialized ModelAPFoo: " + goodJson);
+    display("Serialized ModelAPFoo: " + goodJson);
     String badJson = goodJson.replaceAll("foo", "FOO").replaceAll("prop2", "var2");
-    if (displayOutput) System.out.println("Incorrect JSON: " + badJson);
+    display("Incorrect JSON: " + badJson);
 
     // We just need to try to deserialize the bad JSON string to trigger the exception.
     deserialize(badJson, ModelAPFoo.class);
