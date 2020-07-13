@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2019.
+ * (C) Copyright IBM Corp. 2019, 2020.
  * Copyright (C) 2011 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
@@ -67,6 +67,9 @@ import com.ibm.cloud.sdk.core.service.model.DynamicModel;
  *
  * <p>This class includes code that was adapted from the internal <code>ReflectiveTypeAdapterFactory</code> and
  * <code>MapTypeAdapterFactory</code> classes from Gson.
+ *
+ * <p>This class will explicitly serialize null values found within dynamic (additional) properties, regardless of
+ * the global "serialize nulls" setting in Gson.
  */
 public class DynamicModelTypeAdapterFactory implements TypeAdapterFactory {
   private static final Logger LOGGER = Logger.getLogger(DynamicModelTypeAdapterFactory.class.getName());
@@ -331,9 +334,17 @@ public class DynamicModelTypeAdapterFactory implements TypeAdapterFactory {
         }
 
         // Next, serialize each of the map entries.
-        for (String key : ((DynamicModel<?>) value).getPropertyNames()) {
-          out.name(String.valueOf(key));
-          mapValueTypeAdapter.write(out, ((DynamicModel<?>) value).get(key));
+        // When serializing the map entries (i.e. additional/dynamic properties) we want
+        // to explicitly serialize null values regardless of the global Gson "serialize nulls" setting.
+        boolean serializeNulls = out.getSerializeNulls();
+        out.setSerializeNulls(true);
+        try {
+          for (String key : ((DynamicModel<?>) value).getPropertyNames()) {
+            out.name(String.valueOf(key));
+            mapValueTypeAdapter.write(out, ((DynamicModel<?>) value).get(key));
+          }
+        } finally {
+          out.setSerializeNulls(serializeNulls);
         }
       } catch (IllegalAccessException e) {
         throw new AssertionError(e);
