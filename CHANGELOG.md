@@ -1,3 +1,10 @@
+## [8.4.1](https://github.com/IBM/java-sdk-core/compare/8.4.0...8.4.1) (2020-07-13)
+
+
+### Bug Fixes
+
+* explicitly serialize null values found in dynamic properties ([4c6598e](https://github.com/IBM/java-sdk-core/commit/4c6598e388e6b4fd56c89d7081782cab7208b6b5))
+
 # [8.4.0](https://github.com/IBM/java-sdk-core/compare/8.3.0...8.4.0) (2020-06-14)
 
 
