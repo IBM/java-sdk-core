@@ -39,13 +39,16 @@ public final class GsonSingleton {
    * @param prettyPrint if true the JSON will be pretty printed
    * @return the {@link Gson}
    */
-  private static Gson createGson(Boolean prettyPrint) {
+  private static Gson createGson(boolean prettyPrint, boolean serializeNulls) {
     GsonBuilder builder = new GsonBuilder();
 
     registerTypeAdapters(builder);
 
     if (prettyPrint) {
       builder.setPrettyPrinting();
+    }
+    if (serializeNulls) {
+      builder.serializeNulls();
     }
     builder.disableHtmlEscaping();
     return builder.create();
@@ -76,7 +79,7 @@ public final class GsonSingleton {
    */
   public static synchronized Gson getGson() {
     if (gson == null) {
-      gson = createGson(true);
+      gson = createGson(true, false);
     }
     return gson;
   }
@@ -88,8 +91,16 @@ public final class GsonSingleton {
    */
   public static synchronized Gson getGsonWithoutPrettyPrinting() {
     if (gsonWithoutPrinting == null) {
-      gsonWithoutPrinting = createGson(false);
+      gsonWithoutPrinting = createGson(false, false);
     }
     return gsonWithoutPrinting;
+  }
+
+  /**
+   * Returns an instance of Gson with the "serialize nulls" config option enabled.
+   * @return
+   */
+  public static Gson getGsonWithSerializeNulls() {
+    return createGson(false, true);
   }
 }

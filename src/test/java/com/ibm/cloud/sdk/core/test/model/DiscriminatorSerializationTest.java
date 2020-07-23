@@ -17,6 +17,11 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.testng.annotations.Test;
 
 import com.google.gson.JsonSyntaxException;
@@ -41,6 +46,12 @@ import com.ibm.cloud.sdk.core.util.GsonSingleton;
 public class DiscriminatorSerializationTest {
   private boolean displayOutput = false;
 
+  private void log(String msg) {
+    if (displayOutput) {
+      System.out.println(msg);
+    }
+  }
+
   private String serialize(Object obj) {
     return GsonSingleton.getGson().toJson(obj);
   }
@@ -51,13 +62,11 @@ public class DiscriminatorSerializationTest {
 
   private <T> void testSerDeser(Object model, Class<T> baseClass, Class<? extends T> subClass) {
     String jsonString = serialize(model);
-    if (displayOutput) {
-      System.out.println("serialized " + model.getClass().getSimpleName() + ": " + jsonString);
-    }
+    log("serialized " + model.getClass().getSimpleName() + ": " + jsonString);
+
     T newModel = deserialize(jsonString, baseClass);
-    if (displayOutput) {
-      System.out.println("de-serialized " + model.getClass().getSimpleName() + ": " + newModel.toString());
-    }
+    log("de-serialized " + model.getClass().getSimpleName() + ": " + newModel.toString());
+
     assertEquals(newModel.toString(), model.toString());
     assertEquals(newModel.getClass().getName(), subClass.getName());
   }
@@ -106,6 +115,131 @@ public class DiscriminatorSerializationTest {
   public void testTruck() {
     Truck model = createTruck("truck");
     testSerDeser(model, Vehicle.class, Truck.class);
+  }
+
+  // These classes simulate generated model classes that contain a list/map of discriminated oneOf parents.
+  public class VehicleHolder {
+    int size;
+    List<Vehicle> vehicles;
+
+    public VehicleHolder(List<Vehicle> vehicles) {
+      this.vehicles = vehicles;
+      this.size = vehicles != null ? vehicles.size() : 0;
+    }
+  }
+
+  public class AnimalHolder {
+    int size;
+    Map<String, Animal> animals;
+
+    public AnimalHolder(Map<String, Animal> animals) {
+      this.animals = animals;
+      this.size = animals != null ? animals.size() : 0;
+    }
+  }
+
+  @Test
+  public void testVehicleList() {
+
+    // Create an instance of VehicleHolder that contains a list of Vehicle instances.
+    List<Vehicle> vehicleList = new ArrayList<>();
+    vehicleList.add(createTruck("truck"));
+    vehicleList.add(createCar("Car"));
+    VehicleHolder expected = new VehicleHolder(vehicleList);
+
+    // Make sure we can serialize the model instance containing the list of oneOf parents.
+    String json = serialize(expected);
+    assertNotNull(json);
+    log("Vehicle holder (json): " + json);
+
+    VehicleHolder actual = GsonSingleton.getGson().fromJson(json, VehicleHolder.class);
+    assertNotNull(actual);
+    assertEquals(actual.size, expected.size);
+    assertEquals(actual.vehicles, expected.vehicles);
+  }
+
+  @Test
+  public void testVehiclesNullList() {
+    VehicleHolder expected = new VehicleHolder(null);
+
+    String json = serialize(expected);
+    assertNotNull(json);
+    log("Vehicle holder (json): " + json);
+
+    VehicleHolder actual = GsonSingleton.getGson().fromJson(json, VehicleHolder.class);
+    assertNotNull(actual);
+    assertEquals(actual.size, expected.size);
+    assertEquals(actual.vehicles, expected.vehicles);
+  }
+
+  @Test
+  public void testVehiclesNullElement() {
+    List<Vehicle> vehicles = new ArrayList<>();
+    vehicles.add(null);
+
+    VehicleHolder expected = new VehicleHolder(vehicles);
+
+    String json = serialize(expected);
+    assertNotNull(json);
+    log("Vehicle holder (json): " + json);
+
+    VehicleHolder actual = GsonSingleton.getGson().fromJson(json, VehicleHolder.class);
+    assertNotNull(actual);
+    assertEquals(actual.size, expected.size);
+    assertEquals(actual.vehicles, expected.vehicles);
+  }
+
+  @Test
+  public void testAnimals() {
+
+    // Create an instance of AnimalHolder that contains a map of Animal instances.
+    Map<String, Animal> animals = new HashMap<>();
+    animals.put("Fred", createCat("feline"));
+    animals.put("Elvis", createDog("dog"));
+    animals.put("Tito", createDog("canine"));
+    animals.put("Alfred", createIguana("Iguana"));
+    AnimalHolder expected = new AnimalHolder(animals);
+
+    String json = serialize(expected);
+    assertNotNull(json);
+    log("Animal holder (json): " + json);
+
+    AnimalHolder actual = GsonSingleton.getGson().fromJson(json, AnimalHolder.class);
+    assertNotNull(actual);
+    assertEquals(actual.size, expected.size);
+    assertEquals(actual.animals, expected.animals);
+  }
+
+  @Test
+  public void testAnimalsNullMap() {
+    AnimalHolder expected = new AnimalHolder(null);
+
+    String json = serialize(expected);
+    assertNotNull(json);
+    log("Animal holder (json): " + json);
+
+    AnimalHolder actual = GsonSingleton.getGson().fromJson(json, AnimalHolder.class);
+    assertNotNull(actual);
+    assertEquals(actual.size, expected.size);
+    assertEquals(actual.animals, expected.animals);
+  }
+
+  @Test
+  public void testAnimalsNullElement() {
+    Map<String, Animal> animals = new HashMap<>();
+    animals.put("missing_dog", null);
+    AnimalHolder expected = new AnimalHolder(animals);
+
+    // We have to enable "serialize nulls" because Gson's handling of maps seems to be inconsistent with their
+    // support of lists.
+    String json = GsonSingleton.getGsonWithSerializeNulls().toJson(expected);
+    assertNotNull(json);
+    log("Animal holder (json): " + json);
+
+    AnimalHolder actual = GsonSingleton.getGson().fromJson(json, AnimalHolder.class);
+    assertNotNull(actual);
+    assertEquals(actual.size, expected.size);
+    assertEquals(actual.animals, expected.animals);
   }
 
   @Test(expectedExceptions = {JsonSyntaxException.class})
