@@ -1,3 +1,10 @@
+## [8.4.2](https://github.com/IBM/java-sdk-core/compare/8.4.1...8.4.2) (2020-07-23)
+
+
+### Bug Fixes
+
+* support serialization of models w/lists of discriminated subclasses ([467d635](https://github.com/IBM/java-sdk-core/commit/467d63572c64a57e9eb8c5a2ecddb90aea731484)), closes [arf/planning-sdk-squad#2011](https://github.com/arf/planning-sdk-squad/issues/2011)
+
 ## [8.4.1](https://github.com/IBM/java-sdk-core/compare/8.4.0...8.4.1) (2020-07-13)
 
 
