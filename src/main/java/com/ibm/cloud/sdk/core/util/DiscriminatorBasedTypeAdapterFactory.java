@@ -177,15 +177,39 @@ public class DiscriminatorBasedTypeAdapterFactory implements TypeAdapterFactory 
     }
 
     /**
-     * We don't actually need to support the serialization of a class that contains the discriminator metadata
-     * because we should encounter only instances of its subclasses, as opposed to instances of the base class
-     * itself.
+     * We wouldn't normally expect Gson to call our write() method because we should never actually have
+     * instances of a "oneOf" base class (they are implemented as abstract base classes).
+     * However, in some serialization scenarios, Gson will use the DECLARED type (rather than an object's
+     * actual RUNTIME type) when trying to find a suitable TypeAdapter.  One scenario where this occurs
+     * is where a class contains a field of type List of X, where X is a oneOf base class with a discriminator.
+     *
+     * So in those cases where we're asked to serialize something, we'll just delegate to a TypeAdapter
+     * that's associated with the object's specific runtime type (i.e. the subclass).
+     *
      */
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public void write(JsonWriter out, T value) throws IOException {
-      // We should never be asked to serialize a generated class that contains
-      // the discriminator metadata, but just in case, just throw an exception.
-      throw new IOException("Serialization of discriminator base classes is not supported");
+
+      if (value == null) {
+        out.nullValue();
+        return;
+      }
+
+      // Ask Gson for a TypeAdapter for value's runtime type.
+      TypeAdapter adapter = gson.getAdapter(value.getClass());
+
+      // Check to make sure Gson didn't just hand us back "this" as the adapter.
+      // This shouldn't happen, but some bullet-proofing never hurts.
+      if (adapter == null || this.getClass().equals(adapter.getClass())) {
+        // We should never be asked to serialize a generated class that contains
+        // the discriminator metadata, but just in case, just throw an exception.
+        throw new IOException(String.format("Serialization of discriminator base class %s is not supported",
+            value.getClass().getName()));
+      }
+
+      // Delegate to the runtime type's adapter.
+      adapter.write(out, value);
     }
 
     /**
