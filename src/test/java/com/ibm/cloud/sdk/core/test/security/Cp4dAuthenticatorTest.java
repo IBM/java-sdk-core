@@ -285,10 +285,33 @@ public class Cp4dAuthenticatorTest extends BaseServiceUnitTest {
     try {
       authenticator.authenticate(requestBuilder);
       fail("Expected authenticate() to result in exception!");
+    } catch (ServiceResponseException excp) {
+      assertTrue(excp instanceof ServiceResponseException);
+    } catch (Throwable t) {
+      fail("Expected ServiceResponseException, not " + t.getClass().getSimpleName());
+    }
+  }
+
+  @Test
+  public void testApiErrorResponse() throws Throwable {
+    server.enqueue(jsonResponse("{'}"));
+
+    // Mock current time to ensure the token is valid.
+    PowerMockito.mockStatic(Clock.class);
+    PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
+
+    CloudPakForDataAuthenticator authenticator = new CloudPakForDataAuthenticator(url, testUsername, testPassword);
+
+    Request.Builder requestBuilder = new Request.Builder().url("https://test.com");
+
+    // Calling authenticate should result in an exception.
+    try {
+      authenticator.authenticate(requestBuilder);
+      fail("Expected authenticate() to result in exception!");
     } catch (RuntimeException excp) {
       Throwable causedBy = excp.getCause();
       assertNotNull(causedBy);
-      assertTrue(causedBy instanceof ServiceResponseException);
+      assertTrue(causedBy instanceof IllegalStateException);
     } catch (Throwable t) {
       fail("Expected RuntimeException, not " + t.getClass().getSimpleName());
     }
