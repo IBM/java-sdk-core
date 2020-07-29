@@ -1,3 +1,10 @@
+## [8.4.3](https://github.com/IBM/java-sdk-core/compare/8.4.2...8.4.3) (2020-07-29)
+
+
+### Bug Fixes
+
+* surface ServiceResponseError outside of RuntimeError ([#83](https://github.com/IBM/java-sdk-core/issues/83)) ([349ca1a](https://github.com/IBM/java-sdk-core/commit/349ca1ad5bb8b59dfb3fbccf309be90e93740663))
+
 ## [8.4.2](https://github.com/IBM/java-sdk-core/compare/8.4.1...8.4.2) (2020-07-23)
 
 
