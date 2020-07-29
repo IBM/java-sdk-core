@@ -249,8 +249,13 @@ public abstract class TokenRequestBasedAuthenticator<T extends AbstractToken, R 
 
     // Check to see if an exception occurred during our last interaction with the token server.
     if (this.tokenData.getException() != null) {
-      throw new RuntimeException(ERRORMSG_REQ_FAILED, tokenData.getException());
-    }
+        Throwable t = tokenData.getException();
+        if (t instanceof RuntimeException) {
+          throw (RuntimeException) t;
+        } else {
+          throw new RuntimeException(ERRORMSG_REQ_FAILED, tokenData.getException());
+        }
+      }
 
     // Return the access token from our stored tokenData object.
     token = tokenData.getAccessToken();
