@@ -1,3 +1,23 @@
+# [9.0.0](https://github.com/IBM/java-sdk-core/compare/8.4.3...9.0.0) (2020-07-31)
+
+
+### Features
+
+* upgrade okhttp3 dependency to 3.14.9 ([71f2bbe](https://github.com/IBM/java-sdk-core/commit/71f2bbee563df9e811006c59ca595127bf2fc7b5))
+
+
+### Reverts
+
+* Revert previous commit to amend commit message ([ee86f76](https://github.com/IBM/java-sdk-core/commit/ee86f76254e0324fc63b054ef7b2c8b4b52a5a8b))
+
+
+### BREAKING CHANGES
+
+* With this change, we're removing support for Java 7.
+
+Note: this commit is a re-introduction of commit
+f4c97b09cdfdcc2cd0273d6041a23e61579892ca with a new commit message
+
 ## [8.4.3](https://github.com/IBM/java-sdk-core/compare/8.4.2...8.4.3) (2020-07-29)
 
 
