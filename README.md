@@ -28,7 +28,7 @@ You can use this project by defining it as a dependency within your Java SDK pro
 ```
 
 ## Prerequisites
-- Java SE version 8 or newer is required
+- Java SE version 7 or newer is required
 
 ## Javadoc
 You can find the Javadoc for this project here: https://ibm.github.io/java-sdk-core/
