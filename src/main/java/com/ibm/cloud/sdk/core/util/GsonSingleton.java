@@ -98,7 +98,7 @@ public final class GsonSingleton {
 
   /**
    * Returns an instance of Gson with the "serialize nulls" config option enabled.
-   * @return
+   * @return a Gson instance configured to serialize nulls
    */
   public static Gson getGsonWithSerializeNulls() {
     return createGson(false, true);
