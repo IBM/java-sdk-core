@@ -85,7 +85,10 @@ public abstract class DynamicModel<T> implements ObjectModel {
    *         a map containing arbitrary properties to set on this object
    */
   public void setProperties(Map<String, T> properties) {
-    this.dynamicProperties = new HashMap<String, T>(properties);
+    this.dynamicProperties = new HashMap<String, T>();
+    if (properties != null) {
+      this.dynamicProperties.putAll(properties);
+    }
   }
 
   /**
