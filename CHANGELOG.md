@@ -1,3 +1,10 @@
+## [9.0.1](https://github.com/IBM/java-sdk-core/compare/9.0.0...9.0.1) (2020-08-07)
+
+
+### Bug Fixes
+
+* avoid NPE when constructing dynamic model ([3241b9b](https://github.com/IBM/java-sdk-core/commit/3241b9ba4cd954eb95ccf22430c9abe0af5c2ffd))
+
 # [9.0.0](https://github.com/IBM/java-sdk-core/compare/8.4.3...9.0.0) (2020-07-31)
 
 
