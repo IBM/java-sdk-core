@@ -13,6 +13,7 @@
 
 package com.ibm.cloud.sdk.core.http;
 
+import com.ibm.cloud.sdk.core.http.ratelimit.RateLimitConstants;
 import okhttp3.Authenticator;
 
 import java.net.Proxy;
@@ -37,6 +38,11 @@ public class HttpConfigOptions {
   private Authenticator proxyAuthenticator;
   private LoggingLevel loggingLevel;
 
+  // Ratelimiting properties
+  private com.ibm.cloud.sdk.core.security.Authenticator authenticator;
+  private int defaultInterval = 0;
+  private int maxRetries = 0;
+
   public boolean shouldDisableSslVerification() {
     return this.disableSslVerification;
   }
@@ -53,11 +59,28 @@ public class HttpConfigOptions {
     return this.loggingLevel;
   }
 
+  public com.ibm.cloud.sdk.core.security.Authenticator getAuthenticator() {
+    return authenticator;
+  }
+
+  public int getDefaultRetryInterval() {
+    return defaultInterval;
+  }
+
+  public int getMaxRetries() {
+    return maxRetries;
+  }
+
   public static class Builder {
     private boolean disableSslVerification;
     private Proxy proxy;
     private Authenticator proxyAuthenticator;
     private LoggingLevel loggingLevel;
+
+    // Ratelimiting properties
+    private com.ibm.cloud.sdk.core.security.Authenticator authenticator;
+    private int defaultInterval = 0;
+    private int maxRetries = 0;
 
     public HttpConfigOptions build() {
       return new HttpConfigOptions(this);
@@ -72,6 +95,22 @@ public class HttpConfigOptions {
      */
     public Builder disableSslVerification(boolean disableSslVerification) {
       this.disableSslVerification = disableSslVerification;
+      return this;
+    }
+
+    /**
+     * Sets retry on rate limiting policy (429). See  {@link RateLimitConstants} for defaults to use
+     *
+     * @param authenticator to use for retries, the {@link Authenticator} used by the client
+     * @param defaultInterval if not specified in the response, how long to wait until the next attempt
+     * @param maxRetries the maximum amount of retries for an request
+     * @return the builder
+     */
+    public Builder enableRateLimitRetry(com.ibm.cloud.sdk.core.security.Authenticator authenticator
+            , int defaultInterval, int maxRetries) {
+      this.authenticator = authenticator;
+      this.defaultInterval = defaultInterval;
+      this.maxRetries = maxRetries;
       return this;
     }
 
@@ -114,5 +153,9 @@ public class HttpConfigOptions {
     this.proxy = builder.proxy;
     this.proxyAuthenticator = builder.proxyAuthenticator;
     this.loggingLevel = builder.loggingLevel;
+    // rate limiting related
+    this.authenticator = builder.authenticator;
+    this.defaultInterval = builder.defaultInterval;
+    this.maxRetries = builder.maxRetries;
   }
 }

@@ -1,6 +1,7 @@
 package com.ibm.cloud.sdk.core.test.http.ratelimit;
 
 import com.ibm.cloud.sdk.core.http.HttpClientSingleton;
+import com.ibm.cloud.sdk.core.http.HttpConfigOptions;
 import com.ibm.cloud.sdk.core.http.HttpMediaType;
 import com.ibm.cloud.sdk.core.http.RequestBuilder;
 import com.ibm.cloud.sdk.core.http.Response;
@@ -46,13 +47,6 @@ public class RateLimitTest extends BaseServiceUnitTest {
             RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getServiceUrl() + "/v1/test"));
             return createServiceCall(builder.build(), ResponseConverterUtils.getObject(TestModel.class));
         }
-
-        @Override
-        protected OkHttpClient configureHttpClient() {
-            return HttpClientSingleton.getInstance().createHttpClient().newBuilder()
-                    .addInterceptor(new RateLimitInterceptor(this.authenticator, 1, 3))
-                    .build();
-        }
     }
 
     private RateLimitTest.TestService service;
@@ -67,6 +61,10 @@ public class RateLimitTest extends BaseServiceUnitTest {
     public void setUp() throws Exception {
         super.setUp();
         service = new RateLimitTest.TestService(new NoAuthAuthenticator());
+
+        HttpConfigOptions.Builder builder = new HttpConfigOptions.Builder();
+        builder.enableRateLimitRetry(new NoAuthAuthenticator(),1,3);
+        service.configureClient(builder.build());
         service.setServiceUrl(getMockWebServerUrl());
     }
 

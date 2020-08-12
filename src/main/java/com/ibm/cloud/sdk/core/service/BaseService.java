@@ -69,7 +69,7 @@ public abstract class BaseService {
 
   private String serviceUrl;
   private final String name;
-  protected Authenticator authenticator;
+  private Authenticator authenticator;
 
   private OkHttpClient client;
 
