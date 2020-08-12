@@ -14,6 +14,7 @@
 package com.ibm.cloud.sdk.core.http;
 
 import com.ibm.cloud.sdk.core.http.HttpConfigOptions.LoggingLevel;
+import com.ibm.cloud.sdk.core.http.ratelimit.RateLimitInterceptor;
 import com.ibm.cloud.sdk.core.service.BaseService;
 import com.ibm.cloud.sdk.core.service.security.DelegatingSSLSocketFactory;
 import okhttp3.Authenticator;
@@ -307,6 +308,14 @@ public class HttpClientSingleton {
       }
       if (options.getLoggingLevel() != null) {
         client = setLoggingLevel(client, options.getLoggingLevel());
+      }
+      if (options.getDefaultRetryInterval() > 0) {
+        client = client.newBuilder()
+                .addInterceptor(new RateLimitInterceptor(
+                        options.getAuthenticator()
+                        , options.getDefaultRetryInterval()
+                        , options.getMaxRetries()))
+                .build();
       }
     }
     return client;

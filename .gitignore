@@ -1,4 +1,5 @@
 .DS_Store
+
 /.idea
 /target/
 .classpath
@@ -8,7 +9,7 @@ venv
 .factorypath
 /test-output/
 config
-.iml
+*.iml
 .pre-commit-config.yaml
 .secrets.baseline
 .vscode/
