@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import com.google.gson.Gson;
@@ -290,12 +291,14 @@ public class DynamicModelTypeAdapterFactory implements TypeAdapterFactory {
     private Map<String, BoundField> boundFields;
     private Gson gson;
     private TypeAdapter<?> mapValueObjectTypeAdapter;
+    private Set<String> boundFieldNames;
 
     Adapter(Gson gson, Constructor<?> ctor, Map<String, BoundField> boundFields) {
       this.gson = gson;
       this.ctor = ctor;
       this.boundFields = boundFields;
       this.mapValueObjectTypeAdapter = new MapValueObjectTypeAdapter(gson);
+      this.boundFieldNames = boundFields.keySet();
     }
 
     /*
@@ -336,12 +339,27 @@ public class DynamicModelTypeAdapterFactory implements TypeAdapterFactory {
         // Next, serialize each of the map entries.
         // When serializing the map entries (i.e. additional/dynamic properties) we want
         // to explicitly serialize null values regardless of the global Gson "serialize nulls" setting.
+        // In order to ensure that the "serialize nulls" behavior is not inadvertently pushed down into
+        // recursive serialization steps (i.e. "mapValue" is a model instance), we'll only set the
+        // "serialize nulls" option if the dynamic property's value is null AND the dynamic property's name
+        // is not one of the explicitly-defined properties.
         boolean serializeNulls = out.getSerializeNulls();
-        out.setSerializeNulls(true);
         try {
           for (String key : ((DynamicModel<?>) value).getPropertyNames()) {
-            out.name(String.valueOf(key));
-            mapValueTypeAdapter.write(out, ((DynamicModel<?>) value).get(key));
+            Object mapValue = ((DynamicModel<?>) value).get(key);
+
+            // If this dynamic property is NOT an explicitly-defined property AND the value is null,
+            // then temporarily enable the "serializeNulls" Gson option.
+            if (!boundFieldNames.contains(key) && mapValue == null) {
+              out.setSerializeNulls(true);
+            }
+
+            // Now serialize the key and value.
+            out.name(key);
+            mapValueTypeAdapter.write(out, mapValue);
+
+            // Restore the original "serializeNulls" option value.
+            out.setSerializeNulls(serializeNulls);
           }
         } finally {
           out.setSerializeNulls(serializeNulls);

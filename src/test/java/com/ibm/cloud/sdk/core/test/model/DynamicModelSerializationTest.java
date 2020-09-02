@@ -60,6 +60,10 @@ public class DynamicModelSerializationTest {
     }
   }
 
+  private String trimWhitespace(String s) {
+    return s.replaceAll("\\s+", "");
+  }
+
   private <T> void testSerDeser(DynamicModel<?> model, Class<T> clazz) {
     String jsonString = serialize(model);
 
@@ -204,9 +208,49 @@ public class DynamicModelSerializationTest {
 
   @Test
   public void testNullValues() {
-    ModelAPFoo model = createModelAPFoo();
+    ModelAPFoo model;
+    Foo foo;
+    String json;
+
+    // A simple empty model instance (all props null, no additional properties)
+    // should produce "{}"
+    model = new ModelAPFoo();
+    json = serialize(model);
+    assertEquals(trimWhitespace(json), "{}");
+
+    // Explicitly setting a property to null should also produce "{}"
+    model = new ModelAPFoo();
     model.setProp1(null);
-    testSerDeser(model, ModelAPFoo.class);
+    json = serialize(model);
+    assertEquals(trimWhitespace(json), "{}");
+
+    // Explicitly setting an additional property to null should
+    // cause that property to be serialized as a null.
+    model = new ModelAPFoo();
+    model.put("foo", null);
+    json = serialize(model);
+    assertEquals(trimWhitespace(json), "{\"foo\":null}");
+
+    // Setting a normal property as an additional property should
+    // NOT produce a "null" value in the JSON.
+    model = new ModelAPFoo();
+    model.put("prop1", null);
+    json = serialize(model);
+    assertEquals(trimWhitespace(json), "{}");
+
+    // Setting three additional properties - foo1, foo2, foo3
+    // foo1 is a model instance with a null property (should NOT be serialized as null)
+    // foo2 is null and should be serialized as null
+    // foo3 is a model instance with both properties null (should be serialized as "{}"
+    model = new ModelAPFoo();
+    model.setProp1("value1");
+    foo = new Foo();
+    foo.setBar(38);
+    model.put("foo1", foo);
+    model.put("foo2", null);
+    model.put("foo3", new Foo());
+    json = serialize(model);
+    assertEquals(trimWhitespace(json), "{\"prop1\":\"value1\",\"foo1\":{\"bar\":38},\"foo2\":null,\"foo3\":{}}");
   }
 
   @Test
