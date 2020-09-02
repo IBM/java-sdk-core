@@ -1,3 +1,10 @@
+## [9.1.1](https://github.com/IBM/java-sdk-core/compare/9.1.0...9.1.1) (2020-09-02)
+
+
+### Bug Fixes
+
+* improve serialize-nulls in additional properties ([7ac15ea](https://github.com/IBM/java-sdk-core/commit/7ac15ea9104c4100adcdaa27be451a4fea9113f5))
+
 # [9.1.0](https://github.com/IBM/java-sdk-core/compare/9.0.1...9.1.0) (2020-08-12)
 
 
