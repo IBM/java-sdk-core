@@ -91,7 +91,7 @@ public class Cp4dToken extends AbstractToken {
     if (StringUtils.isEmpty(this.accessToken)
         || (this.refreshTime >= 0 && Clock.getCurrentTimeInSeconds() > this.refreshTime)) {
       // Advance refresh time by one minute.
-      this.refreshTime += 60;
+      this.refreshTime = Clock.getCurrentTimeInSeconds() + 60;
 
       return true;
     }
