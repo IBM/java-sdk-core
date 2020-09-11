@@ -13,6 +13,20 @@
 
 package com.ibm.cloud.sdk.core.test.service;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.junit.Test;
+
 import com.google.gson.JsonObject;
 import com.ibm.cloud.sdk.core.http.HttpMediaType;
 import com.ibm.cloud.sdk.core.http.RequestBuilder;
@@ -27,22 +41,11 @@ import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okio.Buffer;
-import org.junit.Test;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotEquals;
 
 /**
  * The Class RequestBuilderTest.
  */
+@SuppressWarnings("serial")
 public class RequestBuilderTest {
 
   private static final String X_TOKEN = "x-token";
@@ -283,7 +286,7 @@ public class RequestBuilderTest {
     String[] pathParameters = { "param1", "param2" };
     HttpUrl url = RequestBuilder.constructHttpUrl("https://myserver.com/testservice/api", pathSegments, pathParameters);
     assertNotNull(url);
-    assertNotEquals("https://myserver.com/testservice/api/v1/seg1/param1/seg2/param3/seg3", url);
+    assertEquals("https://myserver.com/testservice/api/v1/seg1/param1/seg2/param2/seg3", url.toString());
   }
 
   @Test
@@ -341,6 +344,132 @@ public class RequestBuilderTest {
     String[] pathSegments = { "v1/seg1", "seg2", "seg3"};
     String[] pathParameters = { "param1", "param2" };
     RequestBuilder.constructHttpUrl(null, pathSegments, pathParameters);
+  }
+
+  @Test
+  public void testResolveRequestUrlGood1() {
+    Map<String, String> pathParameters = new HashMap<String, String>() {{
+      put("param_1", "param1");
+      put("param_2", "param2");
+    }};
+
+    HttpUrl url = RequestBuilder.resolveRequestUrl(
+        "https://myserver.com",
+        "/v1/seg1/{param_1}/seg2/{param_2}/seg3",
+        pathParameters);
+    assertNotNull(url);
+    assertEquals("https://myserver.com/v1/seg1/param1/seg2/param2/seg3", url.toString());
+  }
+
+  @Test
+  public void testResolveRequestUrlGood2() {
+    Map<String, String> pathParameters = new HashMap<String, String>() {{
+      put("param_1", "param1");
+      put("param_2", "param2");
+    }};
+
+    HttpUrl url = RequestBuilder.resolveRequestUrl(
+        "https://myserver.com",
+        "v1/seg1/{param_1}/seg2/{param_2}/seg3",
+        pathParameters);
+    assertNotNull(url);
+    assertEquals("https://myserver.com/v1/seg1/param1/seg2/param2/seg3", url.toString());
+  }
+
+  @Test
+  public void testResolveRequestUrlGood3() {
+    Map<String, String> pathParameters = new HashMap<String, String>() {{
+      put("param_1", "param1");
+      put("param_2", "param2");
+    }};
+
+    HttpUrl url = RequestBuilder.resolveRequestUrl(
+        "https://myserver.com/testservice/api",
+        "/v1/seg1/{param_1}/seg2/{param_2}/seg3",
+        pathParameters);
+    assertNotNull(url);
+    assertEquals("https://myserver.com/testservice/api/v1/seg1/param1/seg2/param2/seg3", url.toString());
+  }
+
+  @Test
+  public void testResolveRequestUrlGood4() {
+    Map<String, String> pathParameters = new HashMap<String, String>() {{
+      put("param_1", "param1");
+      put("param_2", "param2");
+    }};
+
+    HttpUrl url = RequestBuilder.resolveRequestUrl(
+        "https://myserver.com/testservice/api",
+        "v1/seg1/{param_1}/seg2/{param_2}/seg3",
+        pathParameters);
+    assertNotNull(url);
+    assertEquals("https://myserver.com/testservice/api/v1/seg1/param1/seg2/param2/seg3", url.toString());
+  }
+
+  @Test
+  public void testResolveRequestUrlEmptyPath1() {
+    HttpUrl url = RequestBuilder.resolveRequestUrl("https://myserver.com/testservice/api", "");
+    assertNotNull(url);
+    assertEquals("https://myserver.com/testservice/api", url.toString());
+  }
+
+  @Test
+  public void testResolveRequestUrlEmptyPath2() {
+    HttpUrl url = RequestBuilder.resolveRequestUrl("https://myserver.com/testservice/api", null);
+    assertNotNull(url);
+    assertEquals("https://myserver.com/testservice/api", url.toString());
+  }
+
+  @Test
+  public void testResolveRequestUrlPathSlash1() {
+    HttpUrl url = RequestBuilder.resolveRequestUrl("https://myserver.com/testservice/api", "/");
+    assertNotNull(url);
+    assertEquals("https://myserver.com/testservice/api/", url.toString());
+  }
+
+  @Test
+  public void testResolveRequestUrlPathSlash2() {
+    HttpUrl url = RequestBuilder.resolveRequestUrl("https://myserver.com", "/");
+    assertNotNull(url);
+    assertEquals("https://myserver.com/", url.toString());
+  }
+
+  @Test
+  public void testResolveRequestUrlEncodedPathParams() {
+    Map<String, String> pathParameters = new HashMap<String, String>() {{
+      put("param_1", "param/1");
+      put("param_2", "param 2");
+    }};
+
+    HttpUrl url = RequestBuilder.resolveRequestUrl(
+        "https://myserver.com",
+        "/v1/seg1/{param_1}/seg2/{param_2}",
+        pathParameters);
+    assertNotNull(url);
+    assertEquals("https://myserver.com/v1/seg1/param%2F1/seg2/param%202", url.toString());
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testResolveRequestUrlEmptyPathParam() {
+    Map<String, String> pathParameters = new HashMap<String, String>() {{
+      put("param_1", "");
+      put("param_2", "param2");
+    }};
+
+    HttpUrl url = RequestBuilder.resolveRequestUrl(
+        "https://myserver.com/testservice/api",
+        "v1/seg1/{param_1}/seg2/{param_2}/seg3",
+        pathParameters);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testResolveRequestUrlEmpty() {
+    RequestBuilder.resolveRequestUrl("", "/");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testResolveRequestUrlNull() {
+    RequestBuilder.resolveRequestUrl(null, "/");
   }
 
   /**

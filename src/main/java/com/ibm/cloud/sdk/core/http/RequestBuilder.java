@@ -16,7 +16,13 @@ package com.ibm.cloud.sdk.core.http;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
+import org.apache.commons.lang3.StringUtils;
+
+import com.google.common.escape.Escaper;
+import com.google.common.net.UrlEscapers;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.ibm.cloud.sdk.core.util.GsonSingleton;
@@ -33,6 +39,8 @@ import okhttp3.RequestBody;
  * Convenience class for constructing HTTP/HTTPS requests.
  */
 public class RequestBuilder {
+
+  private static Escaper pathEscaper = UrlEscapers.urlPathSegmentEscaper();
 
   private enum HTTPMethod {
     DELETE, GET, POST, PUT, PATCH, HEAD
@@ -143,6 +151,64 @@ public class RequestBuilder {
       }
     }
     return httpUrlBuilder.build();
+  }
+
+  /**
+   * Resolves a request URL by first resolving path parameter references within "path",
+   * then it combines the serviceUrl portion with the resolved path string.
+   * @param serviceUrl the base URL associated with a service instance
+   * @param path the unresolved path
+   * @param pathParams a map containing path parameters, keyed by the parameter name
+   * @return an HttpUrl instance that holds the request URL
+   */
+  public static HttpUrl resolveRequestUrl(String serviceUrl, String path, Map<String, String> pathParams) {
+    Validator.notEmpty(serviceUrl, "The serviceUrl cannot be null");
+
+    // Create a builder based on the service's base URL.
+    // Note: in case of an error, the "get" method will throw an exception.
+    HttpUrl.Builder builder = HttpUrl.get(serviceUrl).newBuilder();
+
+    if (StringUtils.isNotEmpty(path)) {
+
+      // If path parameter values were passed in, then for each one, replace any references to it
+      // within "path" with the path parameter's encoded value.
+      if (pathParams != null) {
+        for (Entry<String, String> paramEntry : pathParams.entrySet()) {
+          if (StringUtils.isEmpty(paramEntry.getValue())) {
+            throw new IllegalArgumentException(
+                String.format("Path parameter '%s' is empty", paramEntry.getKey()));
+          }
+
+          // Encode the individual path param value as a path segment, then replace its reference(s)
+          // within the path string with the encoded value.
+          String encodedValue = pathEscaper.escape(paramEntry.getValue());
+          String ref = String.format("{%s}", paramEntry.getKey());
+          path = path.replace(ref, encodedValue);
+        }
+      }
+
+      // Strip off any leading slash from the path string.
+      if (path.startsWith("/")) {
+        path = path.substring(1);
+      }
+
+      // Set the path on the builder object.
+      builder.addEncodedPathSegments(path);
+    }
+
+    // Return the final HttpUrl object.
+    return builder.build();
+  }
+
+  /**
+   * Similar to the three-arg version of resolveRequestUrl, but supports
+   * a "path" parameter with no path param references.
+   * @param serviceUrl the base URL associated with a service instance
+   * @param path the path string
+   * @return an HttpUrl instance that holds the request URL
+   */
+  public static HttpUrl resolveRequestUrl(String serviceUrl, String path) {
+    return resolveRequestUrl(serviceUrl, path, null);
   }
 
   private RequestBody body;
