@@ -1,3 +1,10 @@
+# [9.2.0](https://github.com/IBM/java-sdk-core/compare/9.1.1...9.2.0) (2020-09-11)
+
+
+### Features
+
+* add method RequestBuilder.resolveRequestUrl ([fdbd861](https://github.com/IBM/java-sdk-core/commit/fdbd8615f1f9edb94a05a8746bfb58345d80974f))
+
 ## [9.1.1](https://github.com/IBM/java-sdk-core/compare/9.1.0...9.1.1) (2020-09-02)
 
 
