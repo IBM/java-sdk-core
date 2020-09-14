@@ -89,7 +89,7 @@ public class IamToken extends AbstractToken implements ObjectModel, TokenServerR
 
     if (this.refreshTime != null && Clock.getCurrentTimeInSeconds() > this.refreshTime) {
       // Advance refresh time by one minute.
-      this.refreshTime += 60;
+      this.refreshTime = Clock.getCurrentTimeInSeconds() + 60;
 
       return true;
     }
