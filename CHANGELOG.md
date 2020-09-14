@@ -1,3 +1,10 @@
+## [9.2.1](https://github.com/IBM/java-sdk-core/compare/9.2.0...9.2.1) (2020-09-14)
+
+
+### Bug Fixes
+
+* iam/cp4d token refresh logic ([#91](https://github.com/IBM/java-sdk-core/issues/91)) ([f0484a5](https://github.com/IBM/java-sdk-core/commit/f0484a59e86b2931a29b4369c296d1ecdcf5db24))
+
 # [9.2.0](https://github.com/IBM/java-sdk-core/compare/9.1.1...9.2.0) (2020-09-11)
 
 
