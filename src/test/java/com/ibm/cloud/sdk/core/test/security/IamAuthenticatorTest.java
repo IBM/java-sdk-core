@@ -177,6 +177,13 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
   }
 
   @Test
+  public void testSetScopeThroughCtor() {
+    String scope = "scope1 scope2 scope3";
+    IamAuthenticator auth = new IamAuthenticator(API_KEY, url, null, null, false, null, scope);
+    assertEquals(scope, auth.getScope());
+  }
+
+  @Test
   public void testAuthenticateNewAndStoredToken() throws Throwable {
     server.enqueue(jsonResponse(tokenData));
 

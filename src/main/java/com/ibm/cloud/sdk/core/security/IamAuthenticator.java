@@ -79,6 +79,30 @@ public class IamAuthenticator extends TokenRequestBasedAuthenticator<IamToken, I
   }
 
   /**
+   * Constructs an IamAuthenticator with all properties.
+   *
+   * @param apikey
+   *          the apikey to be used when retrieving the access token
+   * @param url
+   *          the URL representing the token server endpoint
+   * @param clientId
+   *          the clientId to be used in token server interactions
+   * @param clientSecret
+   *          the clientSecret to be used in token server interactions
+   * @param disableSSLVerification
+   *          a flag indicating whether SSL hostname verification should be disabled
+   * @param headers
+   *          a set of user-supplied headers to be included in token server interactions
+   * @param scope
+   *          the "scope" to use when fetching the bearer token from the IAM token server.
+   *          This can be used to obtain an access token with a specific scope.
+   */
+  public IamAuthenticator(String apikey, String url, String clientId, String clientSecret,
+    boolean disableSSLVerification, Map<String, String> headers, String scope) {
+    init(apikey, url, clientId, clientSecret, disableSSLVerification, headers, scope);
+  }
+
+  /**
    * Construct an IamAuthenticator instance using properties retrieved from the specified Map.
    * @param config a map containing the configuration properties
    */
