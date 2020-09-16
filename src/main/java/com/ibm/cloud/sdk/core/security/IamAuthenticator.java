@@ -33,6 +33,7 @@ import okhttp3.FormBody;
 public class IamAuthenticator extends TokenRequestBasedAuthenticator<IamToken, IamToken> implements Authenticator {
   private String apikey;
   private String url;
+  private String scope;
 
   private static final String DEFAULT_IAM_URL = "https://iam.cloud.ibm.com/identity/token";
   private static final String GRANT_TYPE = "grant_type";
@@ -40,6 +41,7 @@ public class IamAuthenticator extends TokenRequestBasedAuthenticator<IamToken, I
   private static final String API_KEY = "apikey";
   private static final String RESPONSE_TYPE = "response_type";
   private static final String CLOUD_IAM = "cloud_iam";
+  private static final String SCOPE = "scope";
 
   // The default ctor is hidden to force the use of the non-default ctors.
   protected IamAuthenticator() {
@@ -52,7 +54,7 @@ public class IamAuthenticator extends TokenRequestBasedAuthenticator<IamToken, I
    *          the apikey to be used when retrieving the access token
    */
   public IamAuthenticator(String apikey) {
-    init(apikey, null, null, null, false, null);
+    init(apikey, null, null, null, false, null, null);
   }
 
   /**
@@ -73,7 +75,7 @@ public class IamAuthenticator extends TokenRequestBasedAuthenticator<IamToken, I
    */
   public IamAuthenticator(String apikey, String url, String clientId, String clientSecret,
     boolean disableSSLVerification, Map<String, String> headers) {
-    init(apikey, url, clientId, clientSecret, disableSSLVerification, headers);
+    init(apikey, url, clientId, clientSecret, disableSSLVerification, headers, null);
   }
 
   /**
@@ -87,7 +89,7 @@ public class IamAuthenticator extends TokenRequestBasedAuthenticator<IamToken, I
     }
     init(apikey, config.get(PROPNAME_URL),
       config.get(PROPNAME_CLIENT_ID), config.get(PROPNAME_CLIENT_SECRET),
-      Boolean.valueOf(config.get(PROPNAME_DISABLE_SSL)).booleanValue(), null);
+      Boolean.valueOf(config.get(PROPNAME_DISABLE_SSL)).booleanValue(), null, config.get(PROPNAME_SCOPE));
   }
 
   /**
@@ -105,9 +107,12 @@ public class IamAuthenticator extends TokenRequestBasedAuthenticator<IamToken, I
    *          a flag indicating whether SSL hostname verification should be disabled
    * @param headers
    *          a set of user-supplied headers to be included in token server interactions
+   * @param scope
+   *          the "scope" to use when fetching the bearer token from the IAM token server.
+   *          This can be used to obtain an access token with a specific scope.
    */
   protected void init(String apikey, String url, String clientId, String clientSecret,
-    boolean disableSSLVerification, Map<String, String> headers) {
+    boolean disableSSLVerification, Map<String, String> headers, String scope) {
     this.apikey = apikey;
     if (StringUtils.isEmpty(url)) {
       url = DEFAULT_IAM_URL;
@@ -116,6 +121,7 @@ public class IamAuthenticator extends TokenRequestBasedAuthenticator<IamToken, I
     setDisableSSLVerification(disableSSLVerification);
     setHeaders(headers);
     setClientIdAndSecret(clientId, clientSecret);
+    setScope(scope);
   }
 
   @Override
@@ -195,6 +201,21 @@ public class IamAuthenticator extends TokenRequestBasedAuthenticator<IamToken, I
   }
 
   /**
+   * @return the scope parameter
+   */
+  public String getScope() {
+    return this.scope;
+  }
+
+  /**
+   * Sets the "scope" parameter to use when fetching the bearer token from the IAM token server.
+   * @param value a space seperated string that makes up the scope parameter.
+   */
+  public void setScope(String value) {
+    this.scope = value;
+  }
+
+  /**
    * Fetches an IAM access token for the apikey using the configured URL.
    *
    * @return an IamToken instance that contains the access token
@@ -205,11 +226,17 @@ public class IamAuthenticator extends TokenRequestBasedAuthenticator<IamToken, I
 
     // Now add the Content-Type and (optionally) the Authorization header to the token server request.
     builder.header(HttpHeaders.CONTENT_TYPE, HttpMediaType.APPLICATION_FORM_URLENCODED);
-    FormBody formBody = new FormBody.Builder()
+
+    FormBody formBody;
+    final FormBody.Builder formBodyBuilder = new FormBody.Builder()
         .add(GRANT_TYPE, REQUEST_GRANT_TYPE)
         .add(API_KEY, apikey)
-        .add(RESPONSE_TYPE, CLOUD_IAM)
-        .build();
+        .add(RESPONSE_TYPE, CLOUD_IAM);
+    // Add the scope param if it's not empty
+    if (!StringUtils.isEmpty(getScope())) {
+      formBodyBuilder.add(SCOPE, getScope());
+    }
+    formBody = formBodyBuilder.build();
     builder.body(formBody);
 
     IamToken token;

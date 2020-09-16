@@ -118,6 +118,7 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
     assertEquals("clientSecret", authenticator.getClientSecret());
     assertEquals(API_KEY, authenticator.getApiKey());
     assertEquals("url", authenticator.getURL());
+    assertNull(authenticator.getScope());
   }
 
   @Test
@@ -128,6 +129,7 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
     props.put(Authenticator.PROPNAME_CLIENT_ID, "clientId");
     props.put(Authenticator.PROPNAME_CLIENT_SECRET, "clientSecret");
     props.put(Authenticator.PROPNAME_DISABLE_SSL, "true");
+    props.put(Authenticator.PROPNAME_SCOPE, "scope1 scope2");
 
     IamAuthenticator authenticator = new IamAuthenticator(props);
     assertEquals(Authenticator.AUTHTYPE_IAM, authenticator.authenticationType());
@@ -136,6 +138,7 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
     assertEquals("clientSecret", authenticator.getClientSecret());
     assertEquals(API_KEY, authenticator.getApiKey());
     assertEquals("url", authenticator.getURL());
+    assertEquals("scope1 scope2", authenticator.getScope());
   }
 
   @Test
@@ -147,6 +150,7 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
     assertEquals(Authenticator.AUTHTYPE_IAM, authenticator.authenticationType());
     assertFalse(authenticator.getDisableSSLVerification());
     assertEquals(API_KEY, authenticator.getApiKey());
+    assertNull(authenticator.getScope());
   }
 
   @Test
@@ -160,6 +164,16 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
     // Test using the full ctor.
     auth = new IamAuthenticator(API_KEY, "url", null, null, true, null);
     assertTrue(auth.getDisableSSLVerification());
+  }
+
+  @Test
+  public void testSetScope() {
+    // Test using the 1-arg ctor and setter.
+    IamAuthenticator auth = new IamAuthenticator(API_KEY);
+    assertNull(auth.getScope());
+    String scope = "scope1 scope2 scope3";
+    auth.setScope(scope);
+    assertEquals(scope, auth.getScope());
   }
 
   @Test
@@ -327,6 +341,60 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
 
     Request newRequest = newBuilder.build();
     assertEquals("Bearer " + tokenData.getAccessToken(), newRequest.header(HttpHeaders.AUTHORIZATION));
+  }
+
+  @Test
+  public void testFormBodyParams() throws Throwable {
+    server.enqueue(jsonResponse(tokenData));
+
+    // Mock current time to ensure the token is valid.
+    PowerMockito.mockStatic(Clock.class);
+    PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
+
+    IamAuthenticator authenticator = new IamAuthenticator(API_KEY, url, null, null, false, null);
+    Request.Builder requestBuilder = new Request.Builder().url("https://test.com");
+
+    // Authenticator should request new, valid token.
+    authenticator.authenticate(requestBuilder);
+
+    Request request = requestBuilder.build();
+    assertEquals("Bearer " + tokenData.getAccessToken(), request.header(HttpHeaders.AUTHORIZATION));
+
+    // Now do some validation on the mock request sent to the token server.
+    RecordedRequest tokenServerRequest = server.takeRequest();
+    assertNotNull(tokenServerRequest);
+    String body = tokenServerRequest.getBody().readUtf8();
+    String expectedBody = "grant_type=urn%3Aibm%3Aparams%3Aoauth%3Agrant-type%3Aapikey&apikey=123456789&response_type=cloud_iam";
+    assertEquals(expectedBody, body);
+    assertNull(authenticator.getScope());
+  }
+
+  @Test
+  public void testFormBodyParamsWScope() throws Throwable {
+    server.enqueue(jsonResponse(tokenData));
+
+    // Mock current time to ensure the token is valid.
+    PowerMockito.mockStatic(Clock.class);
+    PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
+
+    IamAuthenticator authenticator = new IamAuthenticator(API_KEY, url, null, null, false, null);
+    Request.Builder requestBuilder = new Request.Builder().url("https://test.com");
+
+    // Authenticator should request new, valid token.
+    String scope = "scope1 scope2 scope3";
+    authenticator.setScope(scope);
+    authenticator.authenticate(requestBuilder);
+
+    Request request = requestBuilder.build();
+    assertEquals("Bearer " + tokenData.getAccessToken(), request.header(HttpHeaders.AUTHORIZATION));
+
+    // Now do some validation on the mock request sent to the token server.
+    RecordedRequest tokenServerRequest = server.takeRequest();
+    assertNotNull(tokenServerRequest);
+    String body = tokenServerRequest.getBody().readUtf8();
+    String expectedBody = "grant_type=urn%3Aibm%3Aparams%3Aoauth%3Agrant-type%3Aapikey&apikey=123456789&response_type=cloud_iam&scope=scope1%20scope2%20scope3";
+    assertEquals(expectedBody, body);
+    assertEquals(scope, authenticator.getScope());
   }
 
   @Test

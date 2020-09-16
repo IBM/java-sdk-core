@@ -82,6 +82,9 @@ public class CredentialUtilsTest {
     env.put("SERVICE_7_CLIENT_ID", "somefake========id");
     env.put("SERVICE_7_CLIENT_SECRET", "==my-client-secret==");
     env.put("SERVICE_7_AUTH_URL", "https://iamhost/iam/api=");
+    env.put("SERVICE_8_AUTH_TYPE", Authenticator.AUTHTYPE_IAM);
+    env.put("SERVICE_8_APIKEY", "V4HXmoUtMjohnsnow=KotN");
+    env.put("SERVICE_8_SCOPE", "A B C D");
 
     return env;
   }
@@ -121,6 +124,9 @@ public class CredentialUtilsTest {
     System.setProperty("SERVICE_7_CLIENT_ID", "somefake========id");
     System.setProperty("SERVICE_7_CLIENT_SECRET", "==my-client-secret==");
     System.setProperty("SERVICE_7_AUTH_URL", "https://iamhost/iam/api=");
+    System.setProperty("SERVICE_8_AUTH_TYPE", Authenticator.AUTHTYPE_IAM);
+    System.setProperty("SERVICE_8_APIKEY", "V4HXmoUtMjohnsnow=KotN");
+    System.setProperty("SERVICE_8_SCOPE", "A B C D");
   }
 
   private void clearTestSystemProps() {
@@ -158,6 +164,9 @@ public class CredentialUtilsTest {
     System.clearProperty("SERVICE_7_CLIENT_ID");
     System.clearProperty("SERVICE_7_CLIENT_SECRET");
     System.clearProperty("SERVICE_7_AUTH_URL");
+    System.clearProperty("SERVICE_8_AUTH_TYPE");
+    System.clearProperty("SERVICE_8_APIKEY");
+    System.clearProperty("SERVICE_8_SCOPE");
   }
 
   /**
@@ -291,6 +300,16 @@ public class CredentialUtilsTest {
   }
 
   @Test
+  public void testFileCredentialsMapService8() {
+    PowerMockito.spy(EnvironmentUtils.class);
+    PowerMockito.when(EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
+    assertEquals(ALTERNATE_CRED_FILENAME, EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE"));
+
+    Map<String, String> props = CredentialUtils.getFileCredentialsAsMap("service-8");
+    verifyMapService8(props);
+  }
+
+  @Test
   public void testFileCredentialsSystemPropEmpty() {
     System.setProperty("IBM_CREDENTIALS_FILE", "");
     Map<String, String> props = CredentialUtils.getFileCredentialsAsMap("service-1");
@@ -377,6 +396,17 @@ public class CredentialUtilsTest {
   }
 
   @Test
+  public void testFileCredentialsSystemPropService8() {
+    System.setProperty("IBM_CREDENTIALS_FILE", ALTERNATE_CRED_FILENAME);
+    assertEquals(ALTERNATE_CRED_FILENAME, System.getProperty("IBM_CREDENTIALS_FILE"));
+
+    Map<String, String> props = CredentialUtils.getFileCredentialsAsMap("service-8");
+    verifyMapService8(props);
+    System.clearProperty("IBM_CREDENTIALS_FILE");
+    assertNull(System.getProperty("IBM_CREDENTIALS_FILE"));
+  }
+
+  @Test
   public void testEnvCredentialsMapEmpty() {
     PowerMockito.spy(EnvironmentUtils.class);
     PowerMockito.when(EnvironmentUtils.getenv()).thenReturn(new HashMap<String, String>());
@@ -445,6 +475,15 @@ public class CredentialUtilsTest {
 
     Map<String, String> props = CredentialUtils.getEnvCredentialsAsMap("service-7");
     verifyMapService7(props);
+  }
+
+  @Test
+  public void testEnvCredentialsMapService8() {
+    PowerMockito.spy(EnvironmentUtils.class);
+    PowerMockito.when(EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
+
+    Map<String, String> props = CredentialUtils.getEnvCredentialsAsMap("service-8");
+    verifyMapService8(props);
   }
 
   @Test
@@ -519,6 +558,15 @@ public class CredentialUtilsTest {
 
     Map<String, String> props = CredentialUtils.getSystemPropsCredentialsAsMap("service-7");
     verifyMapService7(props);
+    clearTestSystemProps();
+  }
+
+  @Test
+  public void testSystemPropsCredentialsService8() {
+    setTestSystemProps();
+
+    Map<String, String> props = CredentialUtils.getSystemPropsCredentialsAsMap("service-8");
+    verifyMapService8(props);
     clearTestSystemProps();
   }
 
@@ -686,6 +734,7 @@ public class CredentialUtilsTest {
     assertEquals("my-client-id", props.get(Authenticator.PROPNAME_CLIENT_ID));
     assertEquals("https://iamhost/iam/api", props.get(Authenticator.PROPNAME_URL));
     assertEquals("true", props.get(Authenticator.PROPNAME_DISABLE_SSL));
+    assertNull(props.get(Authenticator.PROPNAME_SCOPE));
   }
 
   private void verifyMapService2(Map<String, String> props) {
@@ -694,6 +743,7 @@ public class CredentialUtilsTest {
     assertEquals(Authenticator.AUTHTYPE_BASIC, props.get(Authenticator.PROPNAME_AUTH_TYPE));
     assertEquals("my-user", props.get(Authenticator.PROPNAME_USERNAME));
     assertEquals("my-password", props.get(Authenticator.PROPNAME_PASSWORD));
+    assertNull(props.get(Authenticator.PROPNAME_SCOPE));
   }
 
   private void verifyMapService3(Map<String, String> props) {
@@ -704,12 +754,14 @@ public class CredentialUtilsTest {
     assertEquals("my-cp4d-password", props.get(CloudPakForDataAuthenticator.PROPNAME_PASSWORD));
     assertEquals("https://cp4dhost/cp4d/api", props.get(CloudPakForDataAuthenticator.PROPNAME_URL));
     assertEquals("false", props.get(CloudPakForDataAuthenticator.PROPNAME_DISABLE_SSL));
+    assertNull(props.get(Authenticator.PROPNAME_SCOPE));
   }
 
   private void verifyMapService4(Map<String, String> props) {
     assertNotNull(props);
     assertFalse(props.isEmpty());
     assertEquals(Authenticator.AUTHTYPE_NOAUTH, props.get(Authenticator.PROPNAME_AUTH_TYPE));
+    assertNull(props.get(Authenticator.PROPNAME_SCOPE));
   }
 
   private void verifyMapService5(Map<String, String> props) {
@@ -717,6 +769,7 @@ public class CredentialUtilsTest {
     assertFalse(props.isEmpty());
     assertEquals(Authenticator.AUTHTYPE_BEARER_TOKEN, props.get(Authenticator.PROPNAME_AUTH_TYPE));
     assertEquals("my-bearer-token", props.get(Authenticator.PROPNAME_BEARER_TOKEN));
+    assertNull(props.get(Authenticator.PROPNAME_SCOPE));
   }
 
   private void verifyMapService6(Map<String, String> props) {
@@ -724,6 +777,7 @@ public class CredentialUtilsTest {
     assertFalse(props.isEmpty());
     assertEquals("https://service6/api", props.get("URL"));
     assertEquals("my-bearer-token", props.get(Authenticator.PROPNAME_BEARER_TOKEN));
+    assertNull(props.get(Authenticator.PROPNAME_SCOPE));
   }
 
   private void verifyMapService7(Map<String, String> props) {
@@ -734,6 +788,16 @@ public class CredentialUtilsTest {
     assertEquals("==my-client-secret==", props.get(Authenticator.PROPNAME_CLIENT_SECRET));
     assertEquals("somefake========id", props.get(Authenticator.PROPNAME_CLIENT_ID));
     assertEquals("https://iamhost/iam/api=", props.get(Authenticator.PROPNAME_URL));
+    assertNull(props.get(Authenticator.PROPNAME_DISABLE_SSL));
+    assertNull(props.get(Authenticator.PROPNAME_SCOPE));
+  }
+
+  private void verifyMapService8(Map<String, String> props) {
+    assertNotNull(props);
+    assertFalse(props.isEmpty());
+    assertEquals(Authenticator.AUTHTYPE_IAM, props.get(Authenticator.PROPNAME_AUTH_TYPE));
+    assertEquals("V4HXmoUtMjohnsnow=KotN", props.get(Authenticator.PROPNAME_APIKEY));
+    assertEquals("A B C D", props.get(Authenticator.PROPNAME_SCOPE));
     assertNull(props.get(Authenticator.PROPNAME_DISABLE_SSL));
   }
 }

@@ -41,6 +41,7 @@ public interface Authenticator {
   String PROPNAME_APIKEY = "APIKEY";
   String PROPNAME_CLIENT_ID = "CLIENT_ID";
   String PROPNAME_CLIENT_SECRET = "CLIENT_SECRET";
+  String PROPNAME_SCOPE = "SCOPE";
 
   /**
    * Validates the current set of configuration information in the Authenticator.
