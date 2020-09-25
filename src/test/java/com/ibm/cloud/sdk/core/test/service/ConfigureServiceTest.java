@@ -22,6 +22,10 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
+
+import com.ibm.cloud.sdk.core.http.gzip.GzipRequestInterceptor;
 import com.ibm.cloud.sdk.core.security.Authenticator;
 import com.ibm.cloud.sdk.core.security.BasicAuthenticator;
 import com.ibm.cloud.sdk.core.service.BaseService;
@@ -29,6 +33,7 @@ import com.ibm.cloud.sdk.core.util.EnvironmentUtils;
 import static com.ibm.cloud.sdk.core.test.TestUtils.getStringFromInputStream;
 
 import java.io.InputStream;
+import java.util.List;
 
 /**
  * Unit tests associated with the BaseService core class.
@@ -84,6 +89,37 @@ public class ConfigureServiceTest {
     BasicAuthenticator auth = new BasicAuthenticator(BASIC_USERNAME, "password1");
     TestServiceConfigured svc = new TestServiceConfigured("SERVICE_1", auth);
     assertEquals("https://service1/api", svc.getServiceUrl());
+
+    OkHttpClient client = svc.getClient();
+    assertNotNull(client);
+    List<Interceptor> interceptors = client.interceptors();
+    assertTrue(interceptors.size() == 0);
+  }
+
+  @Test
+  public void testConfigureServiceOnInitiationCredsGzipEnabled() {
+    PowerMockito.spy(EnvironmentUtils.class);
+    PowerMockito.when(EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
+    BasicAuthenticator auth = new BasicAuthenticator(BASIC_USERNAME, "password1");
+    TestServiceConfigured svc = new TestServiceConfigured("SERVICE_9", auth);
+    assertNull(svc.getServiceUrl());
+
+    // Confirm gzip was enabled in the client
+    OkHttpClient client = svc.getClient();
+    assertNotNull(client);
+    List<Interceptor> interceptors = client.interceptors();
+    assertTrue(interceptors.size() > 0);
+
+    boolean containsGzipInterceptor = false;
+    GzipRequestInterceptor gzip = new GzipRequestInterceptor();
+  
+    for (Interceptor is: interceptors) {
+      if (is.getClass().equals(gzip.getClass())) {
+        containsGzipInterceptor = true;
+       }
+    }
+    assertTrue(containsGzipInterceptor);
+    
   }
 
   @Test

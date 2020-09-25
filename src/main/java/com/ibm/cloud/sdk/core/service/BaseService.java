@@ -60,6 +60,7 @@ import javax.net.ssl.SSLHandshakeException;
 public abstract class BaseService {
   public static final String PROPNAME_URL = "URL";
   public static final String PROPNAME_DISABLE_SSL = "DISABLE_SSL";
+  public static final String PROPNAME_ENABLE_GZIP = "ENABLE_GZIP";
 
   private static final Logger LOG = Logger.getLogger(BaseService.class.getName());
 
@@ -124,7 +125,25 @@ public abstract class BaseService {
           .build();
       this.configureClient(options);
     }
+    // Check to see if "enable gzip" was set in the service properties.
+    Boolean enableGzipCompression = Boolean.valueOf(props.get(PROPNAME_ENABLE_GZIP));
+    if (enableGzipCompression) {
+      enableGzipCompression(true);
+    }
   }
+
+  /**
+   * Enables gzip compression of requests bodies for the current client. If shouldEnableCompression
+   * is true, then a new client is configured with the GzipRequestInterceptor.
+   *
+   * @param shouldEnableCompression the value used to set the enableGzipCompression HttpConfigOption
+   */
+  public void enableGzipCompression(boolean shouldEnableCompression) {
+    HttpConfigOptions options = new HttpConfigOptions.Builder()
+        .enableGzipCompression(shouldEnableCompression)
+        .build();
+    this.configureClient(options);
+}
 
   /**
    * Returns the currently-configured {@link OkHttpClient} instance.

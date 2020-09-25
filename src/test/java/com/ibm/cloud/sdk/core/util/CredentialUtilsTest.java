@@ -32,6 +32,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import com.ibm.cloud.sdk.core.security.Authenticator;
 import com.ibm.cloud.sdk.core.security.CloudPakForDataAuthenticator;
+import com.ibm.cloud.sdk.core.service.BaseService;
 import com.ibm.cloud.sdk.core.util.CredentialUtils;
 import com.ibm.cloud.sdk.core.util.EnvironmentUtils;
 
@@ -85,6 +86,12 @@ public class CredentialUtilsTest {
     env.put("SERVICE_8_AUTH_TYPE", Authenticator.AUTHTYPE_IAM);
     env.put("SERVICE_8_APIKEY", "V4HXmoUtMjohnsnow=KotN");
     env.put("SERVICE_8_SCOPE", "A B C D");
+    env.put("SERVICE_9_AUTH_TYPE", Authenticator.AUTHTYPE_IAM);
+    env.put("SERVICE_9_APIKEY", "my-api-key");
+    env.put("SERVICE_9_CLIENT_ID", "my-client-id");
+    env.put("SERVICE_9_CLIENT_SECRET", "my-client-secret");
+    env.put("SERVICE_9_AUTH_URL", "https://iamhost/iam/api");
+    env.put("SERVICE_9_ENABLE_GZIP", "true");
 
     return env;
   }
@@ -127,6 +134,12 @@ public class CredentialUtilsTest {
     System.setProperty("SERVICE_8_AUTH_TYPE", Authenticator.AUTHTYPE_IAM);
     System.setProperty("SERVICE_8_APIKEY", "V4HXmoUtMjohnsnow=KotN");
     System.setProperty("SERVICE_8_SCOPE", "A B C D");
+    System.setProperty("SERVICE_9_AUTH_TYPE", Authenticator.AUTHTYPE_IAM);
+    System.setProperty("SERVICE_9_APIKEY", "my-api-key");
+    System.setProperty("SERVICE_9_CLIENT_ID", "my-client-id");
+    System.setProperty("SERVICE_9_CLIENT_SECRET", "my-client-secret");
+    System.setProperty("SERVICE_9_AUTH_URL", "https://iamhost/iam/api");
+    System.setProperty("SERVICE_9_ENABLE_GZIP", "true");
   }
 
   private void clearTestSystemProps() {
@@ -167,6 +180,12 @@ public class CredentialUtilsTest {
     System.clearProperty("SERVICE_8_AUTH_TYPE");
     System.clearProperty("SERVICE_8_APIKEY");
     System.clearProperty("SERVICE_8_SCOPE");
+    System.clearProperty("SERVICE_9_AUTH_TYPE");
+    System.clearProperty("SERVICE_9_APIKEY");
+    System.clearProperty("SERVICE_9_CLIENT_ID");
+    System.clearProperty("SERVICE_9_CLIENT_SECRET");
+    System.clearProperty("SERVICE_9_AUTH_URL");
+    System.clearProperty("SERVICE_9_ENABLE_GZIP");
   }
 
   /**
@@ -310,6 +329,16 @@ public class CredentialUtilsTest {
   }
 
   @Test
+  public void testFileCredentialsMapService9() {
+    PowerMockito.spy(EnvironmentUtils.class);
+    PowerMockito.when(EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
+    assertEquals(ALTERNATE_CRED_FILENAME, EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE"));
+
+    Map<String, String> props = CredentialUtils.getFileCredentialsAsMap("service-9");
+    verifyMapService9(props);
+  }
+
+  @Test
   public void testFileCredentialsSystemPropEmpty() {
     System.setProperty("IBM_CREDENTIALS_FILE", "");
     Map<String, String> props = CredentialUtils.getFileCredentialsAsMap("service-1");
@@ -407,6 +436,17 @@ public class CredentialUtilsTest {
   }
 
   @Test
+  public void testFileCredentialsSystemPropService9() {
+    System.setProperty("IBM_CREDENTIALS_FILE", ALTERNATE_CRED_FILENAME);
+    assertEquals(ALTERNATE_CRED_FILENAME, System.getProperty("IBM_CREDENTIALS_FILE"));
+
+    Map<String, String> props = CredentialUtils.getFileCredentialsAsMap("service-9");
+    verifyMapService9(props);
+    System.clearProperty("IBM_CREDENTIALS_FILE");
+    assertNull(System.getProperty("IBM_CREDENTIALS_FILE"));
+  }
+
+  @Test
   public void testEnvCredentialsMapEmpty() {
     PowerMockito.spy(EnvironmentUtils.class);
     PowerMockito.when(EnvironmentUtils.getenv()).thenReturn(new HashMap<String, String>());
@@ -484,6 +524,15 @@ public class CredentialUtilsTest {
 
     Map<String, String> props = CredentialUtils.getEnvCredentialsAsMap("service-8");
     verifyMapService8(props);
+  }
+
+  @Test
+  public void testEnvCredentialsMapService9() {
+    PowerMockito.spy(EnvironmentUtils.class);
+    PowerMockito.when(EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
+
+    Map<String, String> props = CredentialUtils.getEnvCredentialsAsMap("service-9");
+    verifyMapService9(props);
   }
 
   @Test
@@ -567,6 +616,15 @@ public class CredentialUtilsTest {
 
     Map<String, String> props = CredentialUtils.getSystemPropsCredentialsAsMap("service-8");
     verifyMapService8(props);
+    clearTestSystemProps();
+  }
+
+  @Test
+  public void testSystemPropsCredentialsService9() {
+    setTestSystemProps();
+
+    Map<String, String> props = CredentialUtils.getSystemPropsCredentialsAsMap("service-9");
+    verifyMapService9(props);
     clearTestSystemProps();
   }
 
@@ -799,5 +857,17 @@ public class CredentialUtilsTest {
     assertEquals("V4HXmoUtMjohnsnow=KotN", props.get(Authenticator.PROPNAME_APIKEY));
     assertEquals("A B C D", props.get(Authenticator.PROPNAME_SCOPE));
     assertNull(props.get(Authenticator.PROPNAME_DISABLE_SSL));
+  }
+
+  private void verifyMapService9(Map<String, String> props) {
+    assertNotNull(props);
+    assertFalse(props.isEmpty());
+    assertEquals(Authenticator.AUTHTYPE_IAM, props.get(Authenticator.PROPNAME_AUTH_TYPE));
+    assertEquals("my-api-key", props.get(Authenticator.PROPNAME_APIKEY));
+    assertEquals("my-client-secret", props.get(Authenticator.PROPNAME_CLIENT_SECRET));
+    assertEquals("my-client-id", props.get(Authenticator.PROPNAME_CLIENT_ID));
+    assertEquals("https://iamhost/iam/api", props.get(Authenticator.PROPNAME_URL));
+    assertNull(props.get(Authenticator.PROPNAME_SCOPE));
+    assertEquals("true", props.get(BaseService.PROPNAME_ENABLE_GZIP));
   }
 }

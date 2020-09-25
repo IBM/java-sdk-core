@@ -15,6 +15,7 @@ package com.ibm.cloud.sdk.core.http;
 
 import com.ibm.cloud.sdk.core.http.HttpConfigOptions.LoggingLevel;
 import com.ibm.cloud.sdk.core.http.ratelimit.RateLimitInterceptor;
+import com.ibm.cloud.sdk.core.http.gzip.GzipRequestInterceptor;
 import com.ibm.cloud.sdk.core.service.BaseService;
 import com.ibm.cloud.sdk.core.service.security.DelegatingSSLSocketFactory;
 import okhttp3.Authenticator;
@@ -315,6 +316,11 @@ public class HttpClientSingleton {
                         options.getAuthenticator()
                         , options.getDefaultRetryInterval()
                         , options.getMaxRetries()))
+                .build();
+      }
+      if (options.shouldEnableGzipCompression()) {
+        client = client.newBuilder()
+                .addInterceptor(new GzipRequestInterceptor())
                 .build();
       }
     }

@@ -17,12 +17,17 @@ import com.ibm.cloud.sdk.core.util.ResponseConverterUtils;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.RecordedRequest;
+
 import org.junit.Before;
 import org.junit.Test;
 
 import static com.ibm.cloud.sdk.core.http.HttpHeaders.CONTENT_TYPE;
+import static com.ibm.cloud.sdk.core.http.HttpHeaders.CONTENT_ENCODING;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
 
 public class RateLimitTest extends BaseServiceUnitTest {
 
@@ -96,7 +101,7 @@ public class RateLimitTest extends BaseServiceUnitTest {
      * Test that we retry on 429
      */
     @Test
-    public void testRetrySuccess() {
+    public void testRetrySuccess() throws Throwable {
 
         String message = "The request failed because the moon is full.";
 
@@ -116,6 +121,9 @@ public class RateLimitTest extends BaseServiceUnitTest {
         assertEquals("awesome", r.getResult().getSuccess());
         assertEquals(2, server.getRequestCount());
 
+        RecordedRequest request = server.takeRequest();
+        assertNotNull(request);
+        assertNull(request.getHeader(CONTENT_ENCODING));
     }
 
     /**
