@@ -119,6 +119,20 @@ public class ConfigureServiceTest {
        }
     }
     assertTrue(containsGzipInterceptor);
+
+    // Disable gzip and validate it was removed from the client
+    containsGzipInterceptor = false;
+    svc.enableGzipCompression(false);
+    client = svc.getClient();
+    assertNotNull(client);
+    interceptors = client.interceptors();
+  
+    for (Interceptor is: interceptors) {
+      if (is.getClass().equals(gzip.getClass())) {
+        containsGzipInterceptor = true;
+       }
+    }
+    assertFalse(containsGzipInterceptor);
     
   }
 

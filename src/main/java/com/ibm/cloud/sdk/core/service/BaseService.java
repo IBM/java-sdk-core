@@ -128,7 +128,7 @@ public abstract class BaseService {
     // Check to see if "enable gzip" was set in the service properties.
     Boolean enableGzipCompression = Boolean.valueOf(props.get(PROPNAME_ENABLE_GZIP));
     if (enableGzipCompression) {
-      enableGzipCompression(true);
+      enableGzipCompression(enableGzipCompression);
     }
   }
 

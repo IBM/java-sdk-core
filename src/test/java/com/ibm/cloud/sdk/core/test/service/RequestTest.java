@@ -115,10 +115,64 @@ public class RequestTest extends BaseServiceUnitTest {
     assertEquals(expectedAuthBody, request.getBody().readUtf8());
     assertNull(request.getHeader(CONTENT_ENCODING));
     // Validate the next request was compressed, which should be the call to the service
-    String expectedOperationBody = "{\"city\": \"Columbus\"}";
+    String expectedOperationBody = "{\"city\":\"Columbus\"}";
     request = server.takeRequest();
     assertEquals("gzip", request.getHeader(CONTENT_ENCODING));
     assertFalse(expectedOperationBody == request.getBody().readUtf8());
     assertEquals(request.getMethod(), "POST");
+  }
+
+  @Test
+  public void testRequestIncludeAuthGzipDisabled() throws Throwable {
+    // first, setup the service & configure it with compression enabled
+    IamAuthenticator authenticator = new IamAuthenticator("API_KEY");
+    authenticator.setURL(getMockWebServerUrl());
+
+    service = new TestService(authenticator);
+    service.setServiceUrl(getMockWebServerUrl());
+    service.enableGzipCompression(true);
+
+    IamToken tokenData = null;
+    try {
+      tokenData = loadFixture("src/test/resources/iam_token.json", IamToken.class);
+    } catch (Exception e) {
+      fail(e.toString());
+    }
+    // the first response SHOULD just be the response from the call to authenticate()
+    // so queue that first
+    server.enqueue(jsonResponse(tokenData));
+    server.enqueue(new MockResponse().setBody(testResponseBody1));
+    // Validate the response
+    Response<TestModel> response = service.postTestModel().execute();
+    assertNotNull(response.getResult());
+    assertEquals(testResponseValue, response.getResult().getCity());
+    // Validate the first request wasn't compressed. This should be the call to authenticate()
+    String expectedAuthBody = "grant_type=urn%3Aibm%3Aparams%3Aoauth%3Agrant-type%3Aapikey&apikey=API_KEY&response_type=cloud_iam";
+    RecordedRequest request = server.takeRequest();
+    assertEquals(expectedAuthBody, request.getBody().readUtf8());
+    assertNull(request.getHeader(CONTENT_ENCODING));
+    // Validate the next request was compressed, which should be the call to the service
+    String expectedOperationBody = "{\"city\":\"Columbus\"}";
+    request = server.takeRequest();
+    assertEquals("gzip", request.getHeader(CONTENT_ENCODING));
+    assertFalse(expectedOperationBody == request.getBody().readUtf8());
+
+    // Now disable gzip and validate
+    service.enableGzipCompression(false);
+    server.enqueue(jsonResponse(tokenData));
+    server.enqueue(new MockResponse().setBody(testResponseBody1));
+
+    response = service.postTestModel().execute();
+    assertEquals(testResponseValue, response.getResult().getCity());
+
+    expectedAuthBody = "grant_type=urn%3Aibm%3Aparams%3Aoauth%3Agrant-type%3Aapikey&apikey=API_KEY&response_type=cloud_iam";
+    request = server.takeRequest();
+    assertEquals(expectedAuthBody, request.getBody().readUtf8());
+    assertNull(request.getHeader(CONTENT_ENCODING));
+  
+    // Validate the next request wasn't compressed
+    request = server.takeRequest();
+    assertNull(request.getHeader(CONTENT_ENCODING));
+    assertEquals(expectedOperationBody, request.getBody().readUtf8());
   }
 }

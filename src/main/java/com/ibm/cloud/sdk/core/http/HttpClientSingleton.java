@@ -265,6 +265,30 @@ public class HttpClientSingleton {
   }
 
   /**
+   * Sets a new list of interceptors for the specified {@link OkHttpClient} instance by removing the specified
+   * interceptor and returns a new instance with the interceptors configured as requested.
+   *
+   * @param client the {@link OkHttpClient} instance to set the proxy authenticator on
+   * @param interceptorToRemove the class name of the interceptor to remove
+   * @return the new {@link OkHttpClient} instance with the new list of interceptors
+   */
+  private OkHttpClient reconfigureClientInterceptors(OkHttpClient client, String interceptorToRemove) {
+    OkHttpClient.Builder builder = client.newBuilder();
+
+    if (!builder.interceptors().isEmpty()) {
+      for (int i = 0; i < builder.interceptors().size(); i++) {
+        String currentInterceptor = builder.interceptors().get(i).getClass().getSimpleName();
+        if (currentInterceptor.equals(interceptorToRemove)) {
+          LOG.log(Level.INFO, "Removing interceptor" + currentInterceptor + " from http client instance.");
+          builder.interceptors().remove(i);
+        }
+      }
+    }
+
+    return builder.build();
+  }
+
+  /**
    * Creates a new {@link OkHttpClient} instance with a new {@link ServiceCookieJar}
    * and a default configuration.
    *
@@ -318,6 +342,7 @@ public class HttpClientSingleton {
                         , options.getMaxRetries()))
                 .build();
       }
+      client = reconfigureClientInterceptors(client, "GzipRequestInterceptor");
       if (options.shouldEnableGzipCompression()) {
         client = client.newBuilder()
                 .addInterceptor(new GzipRequestInterceptor())

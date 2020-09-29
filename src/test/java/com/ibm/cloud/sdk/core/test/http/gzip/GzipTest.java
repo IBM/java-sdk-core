@@ -23,6 +23,7 @@ import okio.Okio;
 
 import org.junit.Test;
 
+import static com.ibm.cloud.sdk.core.http.HttpHeaders.ACCEPT_ENCODING;
 import static com.ibm.cloud.sdk.core.http.HttpHeaders.CONTENT_ENCODING;
 import static com.ibm.cloud.sdk.core.http.HttpHeaders.CONTENT_TYPE;
 import static org.junit.Assert.assertEquals;
@@ -152,7 +153,7 @@ public class GzipTest extends BaseServiceUnitTest {
         assertEquals(201, response.getStatusCode());
         assertEquals("awesome", responseObj.getSuccess());
     
-        // Verify the request was indeed compressed, content encoding, & content length
+        // Verify the request was not compressed, content encoding, & content length
         RecordedRequest request = server.takeRequest();
         assertNotNull(request);
         assertEquals(request.getMethod(), "POST");
@@ -160,6 +161,53 @@ public class GzipTest extends BaseServiceUnitTest {
         assertEquals(bodySize, request.getBodySize());
         // Request should not be compressed
         assertEquals(contentJson.toString(), request.getBody().readUtf8());
+    }
+
+    @Test
+    public void testReqResponseCompressionWithBodyJsonObjectPost() throws Throwable {
+        boolean enableGzip = true;
+        boolean enableRateLimit = false;
+        setUp(enableGzip, enableRateLimit);
+        // build the request
+        final TestModel model = new TestModel();
+        model.setSuccess("awesome");
+    
+        final JsonObject contentJson = new JsonObject();
+        contentJson.addProperty("success", model.getSuccess());
+    
+        final RequestBuilder builder = RequestBuilder.post(HttpUrl.parse(service.getServiceUrl() + "/v1/test"));
+        builder.header("Accept", "application/json");
+        builder.bodyJson(contentJson).build();
+
+        // queue the response to the mock server
+        Buffer mockResponseBody = gzip(contentJson.toString());
+        server.enqueue(new MockResponse()
+            .setResponseCode(201)
+            .setBody(mockResponseBody)
+            .setHeader("Content-Encoding", "gzip")
+            .setHeader("Content-type", "application/json"));
+
+        // the expected compressed request body
+        Buffer gzippedBody = gzip(contentJson.toString());
+        long bodySize = gzippedBody.size();
+
+        // validate response
+        Response<TestModel> response = service.testMethod(builder).execute();
+        assertNotNull(response);
+        TestModel responseObj = response.getResult();
+        assertNotNull(responseObj);
+        assertEquals(201, response.getStatusCode());
+        assertEquals("awesome", responseObj.getSuccess());
+    
+        // Verify the request was indeed compressed, content encoding, & content length
+        RecordedRequest request = server.takeRequest();
+        assertNotNull(request);
+        assertEquals(request.getMethod(), "POST");
+        assertEquals("gzip", request.getHeader(CONTENT_ENCODING));
+        assertEquals("gzip", request.getHeader(ACCEPT_ENCODING));
+        assertEquals(bodySize, request.getBodySize());
+        // Uncompress the request body and validate
+        assertEquals(contentJson.toString(), ungzipRequestBody(request.getBody()));
     }
 	
     @Test
@@ -202,6 +250,7 @@ public class GzipTest extends BaseServiceUnitTest {
         assertNotNull(request);
         assertEquals(request.getMethod(), "POST");
         assertEquals("gzip", request.getHeader(CONTENT_ENCODING));
+        assertEquals("gzip", request.getHeader(ACCEPT_ENCODING));
         assertEquals(bodySize, request.getBodySize());
         // Uncompress the request body and validate
         assertEquals(mockResponseBody, ungzipRequestBody(request.getBody()));
@@ -247,6 +296,7 @@ public class GzipTest extends BaseServiceUnitTest {
         assertNotNull(request);
         assertEquals(request.getMethod(), "PUT");
         assertEquals("gzip", request.getHeader(CONTENT_ENCODING));
+        assertEquals("gzip", request.getHeader(ACCEPT_ENCODING));
         assertEquals(bodySize, request.getBodySize());
         // Uncompress the request body and validate
         assertEquals(mockResponseBody, ungzipRequestBody(request.getBody()));
@@ -368,6 +418,7 @@ public class GzipTest extends BaseServiceUnitTest {
         assertNotNull(request);
         assertEquals(request.getMethod(), "PUT");
         assertEquals("gzip", request.getHeader(CONTENT_ENCODING));
+        assertEquals("gzip", request.getHeader(ACCEPT_ENCODING));
         assertTrue(request.getBodySize() > 0);
         // Uncompress the request body and validate
         assertEquals(mockPayload, ungzipRequestBody(request.getBody()));
@@ -407,6 +458,7 @@ public class GzipTest extends BaseServiceUnitTest {
         assertNotNull(request);
         assertEquals(request.getMethod(), "POST");
         assertEquals("gzip", request.getHeader(CONTENT_ENCODING));
+        assertEquals("gzip", request.getHeader(ACCEPT_ENCODING));
         assertEquals(bodySize, request.getBodySize());
         // Uncompress the request body and validate
         assertEquals(payload, ungzipRequestBody(request.getBody()));
@@ -485,6 +537,7 @@ public class GzipTest extends BaseServiceUnitTest {
         assertNotNull(request);
         assertEquals(request.getMethod(), "POST");
         assertEquals("gzip", request.getHeader(CONTENT_ENCODING));
+        assertEquals("gzip", request.getHeader(ACCEPT_ENCODING));
         assertEquals(bodySize, request.getBodySize());
         // Uncompress the request body and validate
         assertEquals(payload, ungzipRequestBody(request.getBody()));
@@ -524,6 +577,48 @@ public class GzipTest extends BaseServiceUnitTest {
         assertNotNull(request);
         assertEquals(request.getMethod(), "PUT");
         assertEquals("gzip", request.getHeader(CONTENT_ENCODING));
+        assertEquals("gzip", request.getHeader(ACCEPT_ENCODING));
+        assertEquals(bodySize, request.getBodySize());
+        // Uncompress the request body and validate
+        assertEquals(payload, ungzipRequestBody(request.getBody()));
+    }
+
+    @Test
+    public void testReqResponseCompressionWithBodyTextHtmlPut() throws Throwable {
+        boolean enableGzip = true;
+        boolean enableRateLimit = false;
+        setUp(enableGzip, enableRateLimit);
+        // build the request
+        final String payload = "This is a mock payload.";
+        final RequestBuilder builder = RequestBuilder.put(HttpUrl.parse(service.getServiceUrl() + "/v1/test"));
+        builder.bodyContent(payload, "text/html").build();
+
+        // queue the response to the mock server
+        Buffer mockResponseBody = gzip(payload);
+        server.enqueue(new MockResponse()
+            .setResponseCode(200)
+            .setBody(mockResponseBody)
+            .setHeader("Content-Encoding", "gzip")
+            .setHeader("Content-type", "text/html"));
+
+        // the expected compressed request body
+        Buffer gzippedBody = gzip(payload.toString());
+        long bodySize = gzippedBody.size();
+
+        // validate response
+        Response<Void> response = service.testMethodVoid(builder).execute();
+        assertNotNull(response);
+        Void responseObj = response.getResult();
+        assertNull(responseObj);
+        assertEquals(200, response.getStatusCode());
+
+    
+        // Verify the request
+        RecordedRequest request = server.takeRequest();
+        assertNotNull(request);
+        assertEquals(request.getMethod(), "PUT");
+        assertEquals("gzip", request.getHeader(CONTENT_ENCODING));
+        assertEquals("gzip", request.getHeader(ACCEPT_ENCODING));
         assertEquals(bodySize, request.getBodySize());
         // Uncompress the request body and validate
         assertEquals(payload, ungzipRequestBody(request.getBody()));
@@ -562,6 +657,7 @@ public class GzipTest extends BaseServiceUnitTest {
         assertNotNull(request);
         assertEquals(request.getMethod(), "POST");
         assertEquals("gzip", request.getHeader(CONTENT_ENCODING));
+        assertEquals("gzip", request.getHeader(ACCEPT_ENCODING));
     }
 
     @Test
@@ -597,6 +693,7 @@ public class GzipTest extends BaseServiceUnitTest {
         assertNotNull(request);
         assertEquals(request.getMethod(), "PUT");
         assertEquals("gzip", request.getHeader(CONTENT_ENCODING));
+        assertEquals("gzip", request.getHeader(ACCEPT_ENCODING));
     }
 
     @Test
@@ -812,13 +909,100 @@ public class GzipTest extends BaseServiceUnitTest {
         assertNotNull(request);
         assertEquals(request.getMethod(), "POST");
         assertEquals("gzip", request.getHeader(CONTENT_ENCODING));
+        assertEquals("gzip", request.getHeader(ACCEPT_ENCODING));
         assertEquals(bodySize, request.getBodySize());
         assertEquals(payload, ungzipRequestBody(request.getBody()));
         request = server.takeRequest();
         assertNotNull(request);
         assertEquals(request.getMethod(), "POST");
         assertEquals("gzip", request.getHeader(CONTENT_ENCODING));
+        assertEquals("gzip", request.getHeader(ACCEPT_ENCODING));
         assertEquals(bodySize, request.getBodySize());
         assertEquals(payload, ungzipRequestBody(request.getBody()));
+    }
+
+    @Test
+    public void testRetrySuccessWithGzipEnabledThenDisabled() throws Throwable {
+        boolean enableGzip = true;
+        boolean enableRateLimit = true;
+        setUp(enableGzip, enableRateLimit);
+        // build the request
+        final String payload = "This is a mock payload.";
+        final RequestBuilder builder = RequestBuilder.post(HttpUrl.parse(service.getServiceUrl() + "/v1/test"));
+        builder.bodyContent(payload, "text/plain").build();
+    
+        String message = "The request failed because the moon is full.";
+
+        server.enqueue(new MockResponse()
+                .setResponseCode(429)
+                .addHeader(CONTENT_TYPE, HttpMediaType.APPLICATION_JSON)
+                .setBody("{\"error\": \"" + message + "\"}"));
+        server.enqueue(new MockResponse()
+                .setResponseCode(200)
+                .addHeader(CONTENT_TYPE, HttpMediaType.APPLICATION_JSON)
+                .setBody("{\"success\": \"awesome\"}"));
+
+        // the expected compressed request body
+        Buffer gzippedBody = gzip(payload.toString());
+        long bodySize = gzippedBody.size();
+
+
+        Response<TestModel> r = service.testMethod(builder).execute();
+
+        assertEquals(200, r.getStatusCode());
+        assertEquals("awesome", r.getResult().getSuccess());
+        assertEquals(2, server.getRequestCount());
+
+        // Verify both requests were compressed
+        RecordedRequest request = server.takeRequest();
+        assertNotNull(request);
+        assertEquals(request.getMethod(), "POST");
+        assertEquals("gzip", request.getHeader(CONTENT_ENCODING));
+        assertEquals("gzip", request.getHeader(ACCEPT_ENCODING));
+        assertEquals(bodySize, request.getBodySize());
+        assertEquals(payload, ungzipRequestBody(request.getBody()));
+        request = server.takeRequest();
+        assertNotNull(request);
+        assertEquals(request.getMethod(), "POST");
+        assertEquals("gzip", request.getHeader(CONTENT_ENCODING));
+        assertEquals("gzip", request.getHeader(ACCEPT_ENCODING));
+        assertEquals(bodySize, request.getBodySize());
+        assertEquals(payload, ungzipRequestBody(request.getBody()));
+
+        // Now disable gzip, verify gzip interceptor was removed, and retry
+        // interceptor is still intact
+        enableGzip = false;
+        service.enableGzipCompression(false);
+
+        server.enqueue(new MockResponse()
+                .setResponseCode(429)
+                .addHeader(CONTENT_TYPE, HttpMediaType.APPLICATION_JSON)
+                .setBody("{\"error\": \"" + message + "\"}"));
+        server.enqueue(new MockResponse()
+                .setResponseCode(200)
+                .addHeader(CONTENT_TYPE, HttpMediaType.APPLICATION_JSON)
+                .setBody("{\"success\": \"awesome\"}"));
+        
+        r = service.testMethod(builder).execute();
+
+        assertEquals(200, r.getStatusCode());
+        assertEquals("awesome", r.getResult().getSuccess());
+        assertEquals(4, server.getRequestCount());
+
+        bodySize = payload.length();
+
+        // Verify both requests were NOT compressed
+        request = server.takeRequest();
+        assertNotNull(request);
+        assertEquals(request.getMethod(), "POST");
+        assertNull(request.getHeader(CONTENT_ENCODING));
+        assertEquals(bodySize, request.getBodySize());
+        assertEquals(payload, request.getBody().readUtf8());
+        request = server.takeRequest();
+        assertNotNull(request);
+        assertEquals(request.getMethod(), "POST");
+        assertNull(request.getHeader(CONTENT_ENCODING));
+        assertEquals(bodySize, request.getBodySize());
+        assertEquals(payload, request.getBody().readUtf8());
     }
 }
