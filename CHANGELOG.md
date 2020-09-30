@@ -1,3 +1,10 @@
+# [9.4.0](https://github.com/IBM/java-sdk-core/compare/9.3.0...9.4.0) (2020-09-30)
+
+
+### Features
+
+* add support for gzip request body compression and upgrade okhttp version ([#94](https://github.com/IBM/java-sdk-core/issues/94)) ([ac1f7fd](https://github.com/IBM/java-sdk-core/commit/ac1f7fd5f122188f891a7b7d8c343b8f52c45916))
+
 # [9.3.0](https://github.com/IBM/java-sdk-core/compare/9.2.1...9.3.0) (2020-09-18)
 
 
