@@ -20,6 +20,7 @@ import com.ibm.cloud.sdk.core.service.BaseService;
 import com.ibm.cloud.sdk.core.service.security.DelegatingSSLSocketFactory;
 import okhttp3.Authenticator;
 import okhttp3.ConnectionSpec;
+import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.OkHttpClient.Builder;
 import okhttp3.TlsVersion;
@@ -43,6 +44,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -276,11 +278,12 @@ public class HttpClientSingleton {
     OkHttpClient.Builder builder = client.newBuilder();
 
     if (!builder.interceptors().isEmpty()) {
-      for (int i = 0; i < builder.interceptors().size(); i++) {
-        String currentInterceptor = builder.interceptors().get(i).getClass().getSimpleName();
+      for (Iterator<Interceptor> iter = builder.interceptors().iterator(); iter.hasNext(); ) {
+        Interceptor element = iter.next();
+        String currentInterceptor = element.getClass().getSimpleName();
         if (currentInterceptor.equals(interceptorToRemove)) {
           LOG.log(Level.INFO, "Removing interceptor" + currentInterceptor + " from http client instance.");
-          builder.interceptors().remove(i);
+          iter.remove();
         }
       }
     }
@@ -342,14 +345,16 @@ public class HttpClientSingleton {
                         , options.getMaxRetries()))
                 .build();
       }
-      client = reconfigureClientInterceptors(client, "GzipRequestInterceptor");
-      if (options.shouldEnableGzipCompression()) {
-        client = client.newBuilder()
-                .addInterceptor(new GzipRequestInterceptor())
-                .build();
+      Boolean enableGzip = options.getGzipCompression();
+      if (enableGzip != null) {
+        client = reconfigureClientInterceptors(client, "GzipRequestInterceptor");
+        if (enableGzip.booleanValue()) {
+          client = client.newBuilder()
+                  .addInterceptor(new GzipRequestInterceptor())
+                  .build();
+        }
       }
     }
     return client;
   }
-
 }

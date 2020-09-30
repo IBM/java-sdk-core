@@ -15,15 +15,18 @@ package com.ibm.cloud.sdk.core.test.service;
 
 import static org.junit.Assert.*;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.testng.annotations.Test;
 
 import com.ibm.cloud.sdk.core.http.HttpClientSingleton;
 import com.ibm.cloud.sdk.core.http.HttpConfigOptions;
+import com.ibm.cloud.sdk.core.http.gzip.GzipRequestInterceptor;
 import com.ibm.cloud.sdk.core.security.NoAuthAuthenticator;
 import com.ibm.cloud.sdk.core.service.BaseService;
 
+import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.internal.tls.OkHostnameVerifier;
 
@@ -115,6 +118,59 @@ public class BaseServiceTest {
     assertNotEquals(origClient, client);
     assertFalse(client.hostnameVerifier() instanceof OkHostnameVerifier);
     assertEquals(origClient.connectionPool(), client.connectionPool());
+  }
+
+  @Test
+  public void testConfigureClientGzipEnabled() {
+    TestService svc = new TestService("MyService");
+    assertEquals("MyService", svc.getName());
+    OkHttpClient origClient = svc.getClient();
+    assertTrue(origClient.hostnameVerifier() instanceof OkHostnameVerifier);
+
+    // Enable gzip compression, which should result in a NEW client instance.
+    HttpConfigOptions options = new HttpConfigOptions.Builder()
+        .enableGzipCompression(true)
+        .build();
+    svc.configureClient(options);
+
+    // Verify the new client instance.
+    OkHttpClient client = svc.getClient();
+    assertNotEquals(origClient, client);;
+    List<Interceptor> interceptors = client.interceptors();
+    assertTrue(interceptors.size() > 0);
+
+    boolean containsGzipInterceptor = false;
+    GzipRequestInterceptor gzip = new GzipRequestInterceptor();
+
+    for (Interceptor is: interceptors) {
+      if (is.getClass().equals(gzip.getClass())) {
+        containsGzipInterceptor = true;
+       }
+    }
+    assertTrue(containsGzipInterceptor);
+
+    // Now disable ssl, this should result in a new client with gzip STILL enabled
+    options = new HttpConfigOptions.Builder()
+        .disableSslVerification(true)
+        .build();
+    svc.configureClient(options);
+
+    // Verify the new client instance.
+    client = svc.getClient();
+    interceptors = client.interceptors();
+    assertNotEquals(origClient, client);
+    assertFalse(client.hostnameVerifier() instanceof OkHostnameVerifier);
+    assertEquals(origClient.connectionPool(), client.connectionPool());
+    assertTrue(interceptors.size() > 0);
+
+    containsGzipInterceptor = false;
+
+    for (Interceptor is: interceptors) {
+      if (is.getClass().equals(gzip.getClass())) {
+        containsGzipInterceptor = true;
+       }
+    }
+    assertTrue(containsGzipInterceptor);
   }
 
   @Test

@@ -27,7 +27,7 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 
 /**
  * Unit tests for the HttpConfigOptions object.
@@ -54,7 +54,7 @@ public class HttpConfigTest {
 
     assertEquals(true, configOptions.shouldDisableSslVerification());
     assertEquals(authenticator, configOptions.getProxyAuthenticator());
-    assertFalse(configOptions.shouldEnableGzipCompression());
+    assertNull(configOptions.getGzipCompression());
     assertEquals(proxy, configOptions.getProxy());
     assertEquals(HttpConfigOptions.LoggingLevel.HEADERS, configOptions.getLoggingLevel());
   }

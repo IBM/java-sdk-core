@@ -120,6 +120,16 @@ public class ConfigureServiceTest {
     }
     assertTrue(containsGzipInterceptor);
 
+    // Manually call enable gzip and confirm the interceptor is still present
+    svc.enableGzipCompression(true);
+    containsGzipInterceptor = false;
+    for (Interceptor is: interceptors) {
+      if (is.getClass().equals(gzip.getClass())) {
+        containsGzipInterceptor = true;
+       }
+    }
+    assertTrue(containsGzipInterceptor);
+
     // Disable gzip and validate it was removed from the client
     containsGzipInterceptor = false;
     svc.enableGzipCompression(false);
@@ -133,7 +143,112 @@ public class ConfigureServiceTest {
        }
     }
     assertFalse(containsGzipInterceptor);
-    
+  }
+
+  @Test
+  public void testConfigureServiceOnInitiationCredsGzipDisabled() {
+    PowerMockito.spy(EnvironmentUtils.class);
+    PowerMockito.when(EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
+    BasicAuthenticator auth = new BasicAuthenticator(BASIC_USERNAME, "password1");
+    TestServiceConfigured svc = new TestServiceConfigured("SERVICE_10", auth);
+    assertNull(svc.getServiceUrl());
+
+    // Confirm gzip was not enabled in the client
+    OkHttpClient client = svc.getClient();
+    assertNotNull(client);
+    List<Interceptor> interceptors = client.interceptors();
+    assertFalse(interceptors.size() > 0);
+
+    boolean containsGzipInterceptor = false;
+    GzipRequestInterceptor gzip = new GzipRequestInterceptor();
+
+    // Manually call enable gzip and confirm the interceptor is present
+    svc.enableGzipCompression(true);
+    containsGzipInterceptor = false;
+    client = svc.getClient();
+    interceptors = client.interceptors();
+    for (Interceptor is: interceptors) {
+      if (is.getClass().equals(gzip.getClass())) {
+        containsGzipInterceptor = true;
+       }
+    }
+    assertTrue(containsGzipInterceptor);
+  }
+
+  @Test
+  public void testConfigureServiceAfterInitiationCredsGzipEnabled() {
+    PowerMockito.spy(EnvironmentUtils.class);
+    PowerMockito.when(EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
+    BasicAuthenticator auth = new BasicAuthenticator(BASIC_USERNAME, "password1");
+    TestService svc = new TestService("SERVICE_1", auth);
+    assertNull(svc.getServiceUrl());
+
+    // Enable gzip
+    svc.enableGzipCompression(true);
+    OkHttpClient client = svc.getClient();
+    assertNotNull(client);
+    List<Interceptor> interceptors = client.interceptors();
+    assertTrue(interceptors.size() > 0);
+
+    boolean containsGzipInterceptor = false;
+    GzipRequestInterceptor gzip = new GzipRequestInterceptor();
+
+    for (Interceptor is: interceptors) {
+      if (is.getClass().equals(gzip.getClass())) {
+        containsGzipInterceptor = true;
+       }
+    }
+    assertTrue(containsGzipInterceptor);
+
+    // Manually call configureSvc and confirm gzip is still enabled
+    svc.configureSvc("SERVICE_1");
+    containsGzipInterceptor = false;
+    client = svc.getClient();
+    interceptors = client.interceptors();
+    for (Interceptor is: interceptors) {
+      if (is.getClass().equals(gzip.getClass())) {
+        containsGzipInterceptor = true;
+       }
+    }
+    assertTrue(containsGzipInterceptor);
+  }
+
+  @Test
+  public void testConfigureServiceAfterInitiationCredsGzipDisabled() {
+    PowerMockito.spy(EnvironmentUtils.class);
+    PowerMockito.when(EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
+    BasicAuthenticator auth = new BasicAuthenticator(BASIC_USERNAME, "password1");
+    TestService svc = new TestService("SERVICE_10", auth);
+    assertNull(svc.getServiceUrl());
+
+    // Enable gzip
+    svc.enableGzipCompression(true);
+    OkHttpClient client = svc.getClient();
+    assertNotNull(client);
+    List<Interceptor> interceptors = client.interceptors();
+    assertTrue(interceptors.size() > 0);
+
+    boolean containsGzipInterceptor = false;
+    GzipRequestInterceptor gzip = new GzipRequestInterceptor();
+
+    for (Interceptor is: interceptors) {
+      if (is.getClass().equals(gzip.getClass())) {
+        containsGzipInterceptor = true;
+       }
+    }
+    assertTrue(containsGzipInterceptor);
+
+    // Manually call configureSvc and confirm gzip was disabled
+    svc.configureSvc("SERVICE_10");
+    containsGzipInterceptor = false;
+    client = svc.getClient();
+    interceptors = client.interceptors();
+    for (Interceptor is: interceptors) {
+      if (is.getClass().equals(gzip.getClass())) {
+        containsGzipInterceptor = true;
+       }
+    }
+    assertFalse(containsGzipInterceptor);
   }
 
   @Test

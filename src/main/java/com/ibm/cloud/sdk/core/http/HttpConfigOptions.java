@@ -34,7 +34,7 @@ public class HttpConfigOptions {
   }
 
   private boolean disableSslVerification;
-  private boolean enableGzipCompression;
+  private Boolean enableGzipCompression;
   private Proxy proxy;
   private Authenticator proxyAuthenticator;
   private LoggingLevel loggingLevel;
@@ -48,7 +48,7 @@ public class HttpConfigOptions {
     return this.disableSslVerification;
   }
 
-  public boolean shouldEnableGzipCompression() {
+  public Boolean getGzipCompression() {
     return this.enableGzipCompression;
   }
 
@@ -78,7 +78,7 @@ public class HttpConfigOptions {
 
   public static class Builder {
     private boolean disableSslVerification;
-    private boolean enableGzipCompression;
+    private Boolean enableGzipCompression;
     private Proxy proxy;
     private Authenticator proxyAuthenticator;
     private LoggingLevel loggingLevel;
@@ -111,7 +111,7 @@ public class HttpConfigOptions {
      * @param enableGzipCompression whether to disable SSL verification or not
      * @return the builder
      */
-    public Builder enableGzipCompression(boolean enableGzipCompression) {
+    public Builder enableGzipCompression(Boolean enableGzipCompression) {
       this.enableGzipCompression = enableGzipCompression;
       return this;
     }
