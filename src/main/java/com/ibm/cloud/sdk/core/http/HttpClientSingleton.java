@@ -15,10 +15,12 @@ package com.ibm.cloud.sdk.core.http;
 
 import com.ibm.cloud.sdk.core.http.HttpConfigOptions.LoggingLevel;
 import com.ibm.cloud.sdk.core.http.ratelimit.RateLimitInterceptor;
+import com.ibm.cloud.sdk.core.http.gzip.GzipRequestInterceptor;
 import com.ibm.cloud.sdk.core.service.BaseService;
 import com.ibm.cloud.sdk.core.service.security.DelegatingSSLSocketFactory;
 import okhttp3.Authenticator;
 import okhttp3.ConnectionSpec;
+import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.OkHttpClient.Builder;
 import okhttp3.TlsVersion;
@@ -42,6 +44,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -264,6 +267,31 @@ public class HttpClientSingleton {
   }
 
   /**
+   * Sets a new list of interceptors for the specified {@link OkHttpClient} instance by removing the specified
+   * interceptor and returns a new instance with the interceptors configured as requested.
+   *
+   * @param client the {@link OkHttpClient} instance to set the proxy authenticator on
+   * @param interceptorToRemove the class name of the interceptor to remove
+   * @return the new {@link OkHttpClient} instance with the new list of interceptors
+   */
+  private OkHttpClient reconfigureClientInterceptors(OkHttpClient client, String interceptorToRemove) {
+    OkHttpClient.Builder builder = client.newBuilder();
+
+    if (!builder.interceptors().isEmpty()) {
+      for (Iterator<Interceptor> iter = builder.interceptors().iterator(); iter.hasNext(); ) {
+        Interceptor element = iter.next();
+        String currentInterceptor = element.getClass().getSimpleName();
+        if (currentInterceptor.equals(interceptorToRemove)) {
+          LOG.log(Level.INFO, "Removing interceptor" + currentInterceptor + " from http client instance.");
+          iter.remove();
+        }
+      }
+    }
+
+    return builder.build();
+  }
+
+  /**
    * Creates a new {@link OkHttpClient} instance with a new {@link ServiceCookieJar}
    * and a default configuration.
    *
@@ -317,8 +345,16 @@ public class HttpClientSingleton {
                         , options.getMaxRetries()))
                 .build();
       }
+      Boolean enableGzip = options.getGzipCompression();
+      if (enableGzip != null) {
+        client = reconfigureClientInterceptors(client, "GzipRequestInterceptor");
+        if (enableGzip.booleanValue()) {
+          client = client.newBuilder()
+                  .addInterceptor(new GzipRequestInterceptor())
+                  .build();
+        }
+      }
     }
     return client;
   }
-
 }
