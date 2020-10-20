@@ -1,3 +1,10 @@
+## [9.4.1](https://github.com/IBM/java-sdk-core/compare/9.4.0...9.4.1) (2020-10-20)
+
+
+### Bug Fixes
+
+* set correct default message in ConflictException ([2625e62](https://github.com/IBM/java-sdk-core/commit/2625e62356b33dd613ce32c2e94bed80f8efcfe2))
+
 # [9.4.0](https://github.com/IBM/java-sdk-core/compare/9.3.0...9.4.0) (2020-09-30)
 
 
