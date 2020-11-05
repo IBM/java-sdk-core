@@ -19,8 +19,6 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -60,8 +58,6 @@ public class DateDeserializer implements JsonDeserializer<Date> {
 
   private final List<SimpleDateFormat> rfc822Formatters =
       Arrays.asList(rfc822DateFormatter, rfc822WithoutMsDateFormatter);
-
-  private static final Logger LOG = Logger.getLogger(DateDeserializer.class.getName());
 
   /*
    * (non-Javadoc)
@@ -113,8 +109,6 @@ public class DateDeserializer implements JsonDeserializer<Date> {
       return new Date(timeAsLong);
     }
 
-    LOG.log(Level.SEVERE, "Error parsing: " + dateAsString, e);
-    return null;
+    throw new JsonParseException("Error while de-serializing date: " + dateAsString, e);
   }
-
 }
