@@ -1,3 +1,10 @@
+# [9.5.0](https://github.com/IBM/java-sdk-core/compare/9.4.1...9.5.0) (2020-11-05)
+
+
+### Features
+
+* add new DateUtils utility class ([f3e8e93](https://github.com/IBM/java-sdk-core/commit/f3e8e93f089e0754abe832a0c5d2b6a135a8a3cc)), closes [arf/planning-sdk-squad#2289](https://github.com/arf/planning-sdk-squad/issues/2289)
+
 ## [9.4.1](https://github.com/IBM/java-sdk-core/compare/9.4.0...9.4.1) (2020-10-20)
 
 
