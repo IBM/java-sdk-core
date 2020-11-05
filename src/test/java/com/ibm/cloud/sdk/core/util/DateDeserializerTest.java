@@ -17,14 +17,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.junit.Test;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
-import com.ibm.cloud.sdk.core.util.DateDeserializer;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 /**
  * Test the Date deserializer.
