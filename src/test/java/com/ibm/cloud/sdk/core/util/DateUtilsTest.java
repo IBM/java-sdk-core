@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2019.
+ * (C) Copyright IBM Corp. 2020.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -14,91 +14,118 @@
 package com.ibm.cloud.sdk.core.util;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
-import java.util.ArrayList;
+import java.time.DateTimeException;
 import java.util.Date;
-import java.util.List;
 
 import org.junit.Test;
-
-import com.google.gson.JsonParseException;
-import com.google.gson.annotations.JsonAdapter;
-import com.google.gson.annotations.SerializedName;
-import com.ibm.cloud.sdk.core.service.model.GenericModel;
 
 /**
  * Tests related to the DateUtils class.
  */
-@SuppressWarnings("deprecation")
 public class DateUtilsTest {
 
-  private String serialize(Object obj) {
-    return GsonSingleton.getGson().toJson(obj);
-  }
+  private boolean verbose = false;
 
-  private <T> T deserialize(String json, Class<T> clazz) {
-    return GsonSingleton.getGson().fromJson(json, clazz);
-  }
-
-  @Test
-  public void testDate() throws Exception {
-    Date expectedDate = new Date(120, 10, 03);
-    Date d = DateUtils.parseAsDate("2020-11-03");
-    assertNotNull(d);
-    assertEquals(expectedDate, d);
-
-    String s = DateUtils.formatAsDate(d);
-    assertNotNull(s);
-    assertEquals("2020-11-03", s);
+  private void log(String s) {
+    if (verbose) {
+      System.out.println(s);
+    }
   }
 
   @Test
-  public void testDateTime() throws Exception {
-    Date expectedDate = new Date(120, 10, 03, 19, 01, 33);
-    Date d = DateUtils.parseAsDateTime("2020-11-03T19:01:33.000");
-    assertNotNull(d);
-    assertEquals(expectedDate, d);
-
-    String s = DateUtils.formatAsDateTime(d);
-    assertNotNull(s);
-    assertEquals("2020-11-03T19:01:33.000", s);
+  public void testFullDate() {
+    _testFullDate("1970-01-01");
+    _testFullDate("1963-01-01");
+    _testFullDate("2020-11-01");
   }
 
-  // Simulates a generated model with "date" and "date-time" fields.
-  // This will exercise the OpenAPIDateSerializer and OpenAPIDateTimeSerializer classes.
-  public class MyModel extends GenericModel {
-    @JsonAdapter(OpenAPIDateSerializer.class)
-    @SerializedName("date_field")
-    public Date dateField;
+  @Test(expected = DateTimeException.class)
+  public void testFullDateError1() {
+    _testFullDate("2020-01-01x");
+  }
 
-    @JsonAdapter(OpenAPIDateTimeSerializer.class)
-    @SerializedName("date_time_field")
-    public Date dateTimeField;
+  @Test(expected = DateTimeException.class)
+  public void testFullDateError2() {
+    _testFullDate("x2020-01-01");
+  }
+
+  @Test(expected = DateTimeException.class)
+  public void testFullDateError3() {
+    _testFullDate("20200101");
+  }
+
+  @Test(expected = DateTimeException.class)
+  public void testFullDateError4() {
+    _testFullDate("not-a-date");
   }
 
   @Test
-  public void testModel() {
-    MyModel myModel = new MyModel();
-    myModel.dateField = new Date(120, 10, 03);
-    myModel.dateTimeField = new Date(120, 10, 03, 19, 01, 33);
+  public void testDateTime() {
 
-    String s = serialize(myModel);
+    // RFC 3339 Full Date.
+    _testDateTime("1970-01-01", "1970-01-01T00:00:00.000Z");
 
-    MyModel newModel = deserialize(s, MyModel.class);
-    assertNotNull(newModel);
-    assertEquals(myModel, newModel);
+    // RFC 3339 with various flavors of tz-offset
+    _testDateTime("2016-06-20T04:25:16.218Z",     "2016-06-20T04:25:16.218Z");
+    _testDateTime("2016-06-20T04:25:16.218+0000", "2016-06-20T04:25:16.218Z");
+    _testDateTime("2016-06-20T04:25:16.218+00",   "2016-06-20T04:25:16.218Z");
+    _testDateTime("2016-06-20T04:25:16.218-0000", "2016-06-20T04:25:16.218Z");
+    _testDateTime("2016-06-20T04:25:16.218-00",   "2016-06-20T04:25:16.218Z");
+    _testDateTime("2016-06-20T00:25:16.218-0400", "2016-06-20T04:25:16.218Z");
+    _testDateTime("2016-06-20T00:25:16.218-04",   "2016-06-20T04:25:16.218Z");
+    _testDateTime("2016-06-20T07:25:16.218+0300", "2016-06-20T04:25:16.218Z");
+    _testDateTime("2016-06-20T07:25:16.218+03",   "2016-06-20T04:25:16.218Z");
+    _testDateTime("2016-06-20T04:25:16Z",         "2016-06-20T04:25:16.000Z");
+    _testDateTime("2016-06-20T04:25:16+0000",     "2016-06-20T04:25:16.000Z");
+    _testDateTime("2016-06-20T04:25:16-0000",     "2016-06-20T04:25:16.000Z");
+    _testDateTime("2016-06-20T01:25:16-0300",     "2016-06-20T04:25:16.000Z");
+    _testDateTime("2016-06-20T01:25:16-03:00",    "2016-06-20T04:25:16.000Z");
+    _testDateTime("2016-06-20T08:55:16+04:30",    "2016-06-20T04:25:16.000Z");
+    _testDateTime("2016-06-20T16:25:16+12:00",    "2016-06-20T04:25:16.000Z");
+
+    // UTC datetime with no TZ.
+    _testDateTime("2016-06-20T04:25:16.218",      "2016-06-20T04:25:16.218Z");
+    _testDateTime("2016-06-20T04:25:16",          "2016-06-20T04:25:16.000Z");
+
+    // Dialog datetime.
+    _testDateTime("2016-06-20 04:25:16",          "2016-06-20T04:25:16.000Z");
+
+    // Alchemy datetime.
+    _testDateTime("20160620T042516",              "2016-06-20T04:25:16.000Z");
   }
 
-  @Test(expected = JsonParseException.class)
-  public void testModelErrorDate() {
-    String badJson = "{\"date_field\": \"bad-date\", \"date_time_field\": \"2020-11-03T19:01:33.000\"}";
-    deserialize(badJson, MyModel.class);
+  @Test(expected = DateTimeException.class)
+  public void testDateTimeError1() {
+    _testDateTime("2016-06-20T04:25:16.218+000", "");
   }
 
-  @Test(expected = JsonParseException.class)
-  public void testModelErrorDateTime() {
-    String badJson = "{\"date_field\": \"2020-11-03\", \"date_time_field\": \"bad-date-time\"}";
-    deserialize(badJson, MyModel.class);
+  @Test(expected = DateTimeException.class)
+  public void testDateTimeError2() {
+    _testDateTime("20160620 042516", "");
+  }
+
+  @Test(expected = DateTimeException.class)
+  public void testDateTimeError3() {
+    _testDateTime("20160620T12:00:00", "");
+  }
+
+  @Test(expected = DateTimeException.class)
+  public void testDateTimeError4() {
+    _testDateTime("x2016-06-20T04:25:16.218+000", "");
+  }
+
+  private void _testFullDate(String s) {
+    Date d = DateUtils.parseAsDate(s);
+    String dateString = DateUtils.formatAsDate(d);
+    log(String.format("testDate: input=%s, dateString=%s, Date.time=%d", s, dateString, d.getTime()));
+    assertEquals(s, dateString);
+  }
+
+  private void _testDateTime(String s, String expectedUTC) {
+    Date d = DateUtils.parseAsDateTime(s);
+    String dateString = DateUtils.formatAsDateTime(d);
+    log(String.format("testDateTime: input=%s, dateString=%s, Date.time=%d", s, dateString, d.getTime()));
+    assertEquals(expectedUTC, dateString);
   }
 }
