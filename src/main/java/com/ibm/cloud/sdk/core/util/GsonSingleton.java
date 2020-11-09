@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2019.
+ * (C) Copyright IBM Corp. 2015, 2020.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -55,9 +55,9 @@ public final class GsonSingleton {
   }
 
   private static void registerTypeAdapters(GsonBuilder builder) {
-    // Date serializer and deserializer
-    builder.registerTypeAdapter(Date.class, new DateDeserializer());
-    builder.registerTypeAdapter(Date.class, new DateSerializer());
+    // Date serializer/deserializer.
+    // We treat Date's as date-time by default.
+    builder.registerTypeAdapter(Date.class, new DateTimeTypeAdapter());
 
     // Make sure that byte[] ser/deser includes base64 encoding/decoding.
     builder.registerTypeAdapter(byte[].class, new ByteArrayTypeAdapter());
