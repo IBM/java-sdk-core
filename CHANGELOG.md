@@ -1,3 +1,10 @@
+## [9.5.1](https://github.com/IBM/java-sdk-core/compare/9.5.0...9.5.1) (2020-11-10)
+
+
+### Bug Fixes
+
+* improve date and date-time serialization/deserialization ([c89cb03](https://github.com/IBM/java-sdk-core/commit/c89cb032c269f8f31c6f8b85c098e52c6ce93588)), closes [arf/planning-sdk-squad#2291](https://github.com/arf/planning-sdk-squad/issues/2291)
+
 # [9.5.0](https://github.com/IBM/java-sdk-core/compare/9.4.1...9.5.0) (2020-11-05)
 
 
