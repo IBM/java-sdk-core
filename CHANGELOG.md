@@ -1,3 +1,10 @@
+## [9.5.2](https://github.com/IBM/java-sdk-core/compare/9.5.1...9.5.2) (2020-11-11)
+
+
+### Bug Fixes
+
+* support up to nanosecond precision in date-time values ([b5b3b1c](https://github.com/IBM/java-sdk-core/commit/b5b3b1c6e286ed28beb75b204f82101cef12545b))
+
 ## [9.5.1](https://github.com/IBM/java-sdk-core/compare/9.5.0...9.5.1) (2020-11-10)
 
 
