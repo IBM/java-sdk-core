@@ -92,6 +92,9 @@ public class DateTimeSerializationTest {
   public void testModelsDateTime() {
     // RFC 3339 date-time with milliseconds with Z tz-offset.
     roundTripTestDateTime("{\"ws_victory\":\"1903-10-13T21:30:00.000Z\"}", "{\"ws_victory\":\"1903-10-13T21:30:00.000Z\"}");
+    roundTripTestDateTime("{\"ws_victory\":\"1903-10-13T21:30:00.00011Z\"}", "{\"ws_victory\":\"1903-10-13T21:30:00.000Z\"}");
+    roundTripTestDateTime("{\"ws_victory\":\"1903-10-13T21:30:00.0001134Z\"}", "{\"ws_victory\":\"1903-10-13T21:30:00.000Z\"}");
+    roundTripTestDateTime("{\"ws_victory\":\"1903-10-13T21:30:00.000113456Z\"}", "{\"ws_victory\":\"1903-10-13T21:30:00.000Z\"}");
 
     // RFC 3339 date-time without milliseconds with Z tz-offset.
     roundTripTestDateTime("{\"ws_victory\":\"1912-10-16T19:34:00Z\"}", "{\"ws_victory\":\"1912-10-16T19:34:00.000Z\"}");
@@ -99,10 +102,16 @@ public class DateTimeSerializationTest {
     // RFC 3339 date-time with milliseconds with non-Z tz-offset.
     roundTripTestDateTime("{\"ws_victory\":\"1915-10-13T16:15:00.000-03:00\"}", "{\"ws_victory\":\"1915-10-13T19:15:00.000Z\"}");
     roundTripTestDateTime("{\"ws_victory\":\"1915-10-13T22:15:00.000+0300\"}",  "{\"ws_victory\":\"1915-10-13T19:15:00.000Z\"}");
+    roundTripTestDateTime("{\"ws_victory\":\"1915-10-13T16:15:00.000-03\"}",    "{\"ws_victory\":\"1915-10-13T19:15:00.000Z\"}");
+    roundTripTestDateTime("{\"ws_victory\":\"1915-10-13T22:15:00.000+03\"}",    "{\"ws_victory\":\"1915-10-13T19:15:00.000Z\"}");
 
     // RFC 3339 date-time without milliseconds with non-Z tz-offset.
     roundTripTestDateTime("{\"ws_victory\":\"1916-10-12T13:43:00-05:00\"}", "{\"ws_victory\":\"1916-10-12T18:43:00.000Z\"}");
+    roundTripTestDateTime("{\"ws_victory\":\"1916-10-12T13:43:00-05\"}",    "{\"ws_victory\":\"1916-10-12T18:43:00.000Z\"}");
     roundTripTestDateTime("{\"ws_victory\":\"1916-10-12T21:13:00+0230\"}",  "{\"ws_victory\":\"1916-10-12T18:43:00.000Z\"}");
+
+    // RFC 3339 with nanoseconds for the Catalog-Managements of the world.
+    roundTripTestDateTime("{\"ws_victory\":\"1916-10-12T13:43:00.866305005-05:00\"}", "{\"ws_victory\":\"1916-10-12T18:43:00.866Z\"}");
 
     // UTC date-time with no tz.
     roundTripTestDateTime("{\"ws_victory\":\"1918-09-11T19:06:00.000\"}", "{\"ws_victory\":\"1918-09-11T19:06:00.000Z\"}");
@@ -149,6 +158,12 @@ public class DateTimeSerializationTest {
   @Test(expected = DateTimeException.class)
   public void testModelsDateTimeError6() {
     roundTripTestDateTime("{\"ws_victory\":\"03-10-13\"}", "n/a");
+  }
+
+  @Test(expected = DateTimeException.class)
+  public void testModelsDateTimeError7() {
+    // too many digits in frac-sec part.
+    roundTripTestDateTime("{\"ws_victory\":\"1916-10-12T13:43:00.8663050050-05:00\"}", "n/a");
   }
 
   @Test

@@ -84,6 +84,12 @@ public class DateUtilsTest {
     _testDateTime("2016-06-20T08:55:16+04:30",    "2016-06-20T04:25:16.000Z");
     _testDateTime("2016-06-20T16:25:16+12:00",    "2016-06-20T04:25:16.000Z");
 
+    // RFC 3339 with nanoseconds for the Catalog-Managements of the world.
+    _testDateTime("2020-03-12T10:52:12.866305005-04:00", "2020-03-12T14:52:12.866Z");
+    _testDateTime("2020-03-12T10:52:12.866305005Z",      "2020-03-12T10:52:12.866Z");
+    _testDateTime("2020-03-12T10:52:12.866305005+02:30", "2020-03-12T08:22:12.866Z");
+    _testDateTime("2020-03-12T10:52:12.866305Z",         "2020-03-12T10:52:12.866Z");
+
     // UTC datetime with no TZ.
     _testDateTime("2016-06-20T04:25:16.218",      "2016-06-20T04:25:16.218Z");
     _testDateTime("2016-06-20T04:25:16",          "2016-06-20T04:25:16.000Z");
@@ -114,6 +120,7 @@ public class DateUtilsTest {
   public void testDateTimeError4() {
     _testDateTime("x2016-06-20T04:25:16.218+000", "");
   }
+
 
   private void _testFullDate(String s) {
     Date d = DateUtils.parseAsDate(s);

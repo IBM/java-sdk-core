@@ -13,12 +13,22 @@
 
 package com.ibm.cloud.sdk.core.util;
 
+import static java.time.temporal.ChronoField.DAY_OF_MONTH;
+import static java.time.temporal.ChronoField.HOUR_OF_DAY;
+import static java.time.temporal.ChronoField.MINUTE_OF_HOUR;
+import static java.time.temporal.ChronoField.MONTH_OF_YEAR;
+import static java.time.temporal.ChronoField.NANO_OF_SECOND;
+import static java.time.temporal.ChronoField.SECOND_OF_MINUTE;
+import static java.time.temporal.ChronoField.YEAR_OF_ERA;
+
 import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.SignStyle;
 import java.time.temporal.TemporalAccessor;
 import java.util.Arrays;
 import java.util.Date;
@@ -55,61 +65,85 @@ import java.util.regex.Pattern;
  */
 public class DateUtils {
 
-  // RFC 3339 "full-date" used in formatting and parsing.
-  private static final String RFC3339_FULL_DATE                = "yyyy-MM-dd";
-
-  // RFC 3339 "date-time" used in formatting.
-  private static final String RFC3339_DATE_TIME_FMT            = "yyyy-MM-dd'T'HH:mm:ss.SSSX";
-
-  // RFC 3339 "date-time" used in parsing.
-  // This flavor accepts either "Z" or tz offset with colon (+03:00)
-  private static final String RFC3339_DATE_TIME_PARSE          = "yyyy-MM-dd'T'HH:mm:ss[.SSS]XXX";
-
-  // This flavor accepts either "Z" or tz offset without colon (+0300)
-  // Technically this isn't part of RFC 3339, but it's close enough.
-  private static final String RFC3339_DATE_TIME_PARSE_NOCOLON  = "yyyy-MM-dd'T'HH:mm:ss[.SSS]X";
-
-  // UTC date-time with no tz (date-time is assumed to be expressed in UTC time).
-  private static final String UTC_DATE_TIME_NO_TZ              = "yyyy-MM-dd'T'HH:mm:ss[.SSS]";
-
-  // Date format used by Alchemy (UTC is assumed).
-  private static final String ALCHEMY_DATE_TIME                = "yyyyMMdd'T'HHmmss";
-
-  // Date format used by ??? (UTC is assumed).
-  private static final String DIALOG_DATE_TIME                 = "yyyy-MM-dd HH:mm:ss";
-
+  //
   // These formatters are used to format (serialize) date and date-time values.
   // The use of ".withZone(UTC)" ensures that the output string will be
   // the UTC representation of the date or date-time value.
-  private static final DateTimeFormatter rfc3339FullDateFormat =
-      DateTimeFormatter.ofPattern(RFC3339_FULL_DATE).withZone(ZoneOffset.UTC);      // "yyyy-MM-dd"
-  private static final DateTimeFormatter rfc3339DateTimeFormatter =
-      DateTimeFormatter.ofPattern(RFC3339_DATE_TIME_FMT).withZone(ZoneOffset.UTC);  // "yyyy-MM-ddTHH:mm:ss.SSSZ"
+  //
 
+  // This implements the RFC3339 "full-date" format.
+  public static final DateTimeFormatter rfc3339FullDateFmt =
+      DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneOffset.UTC);
+
+  // This implements the RFC3339 "date-time" format.
+  public static final DateTimeFormatter rfc3339DateTimeFmt =
+      DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX").withZone(ZoneOffset.UTC);
 
   //
-  // These formatters are used for parsing date-time values.
+  // The following formatters are used for parsing date-time values.
   //
-  private static final DateTimeFormatter rfc3339DateTimeParse =
-      DateTimeFormatter.ofPattern(RFC3339_DATE_TIME_PARSE);
-  private static final DateTimeFormatter rfc3339DateTimeParseNoColon =
-      DateTimeFormatter.ofPattern(RFC3339_DATE_TIME_PARSE_NOCOLON);
+
+  // This is a partially-constructed formatter that will be used to construct other formatters below.
+  // It implements the RFC 3339 "full-date" + "partial-time" format.
+  // "yyyy-MM-dd'T'HH:mm:ss[.nnnnnnnnn]" (fractional part can be 0-9 digits).
+  private static final DateTimeFormatter rfc3339BaseParser = new DateTimeFormatterBuilder()
+      .appendValue(YEAR_OF_ERA, 4, 19, SignStyle.EXCEEDS_PAD)
+      .appendLiteral('-')
+      .appendValue(MONTH_OF_YEAR, 2)
+      .appendLiteral('-')
+      .appendValue(DAY_OF_MONTH, 2)
+      .appendLiteral('T')
+      .appendValue(HOUR_OF_DAY, 2)
+      .appendLiteral(":")
+      .appendValue(MINUTE_OF_HOUR, 2)
+      .appendLiteral(":")
+      .appendValue(SECOND_OF_MINUTE, 2)
+      .optionalStart()
+      .appendFraction(NANO_OF_SECOND, 0, 9, true)
+      .toFormatter();
+
+  // This implements the RFC3339 "date-time" format with either Z or +/-HH:MM (tz with colon delimiter).
+  private static final DateTimeFormatter rfc3339DateTimeParser = new DateTimeFormatterBuilder()
+      .append(rfc3339BaseParser)
+      .appendOffset("+HH:MM", "Z")
+      .toFormatter();
+
+  // This implements the RFC3339 "date-time" format except with no colon in tz-offset (e.g. +/-HHMM).
+  private static final DateTimeFormatter rfc3339DateTimeNoColonParser = new DateTimeFormatterBuilder()
+      .append(rfc3339BaseParser)
+      .appendOffset("+HHMM", "Z")
+      .toFormatter();
+
+  // This implements the RFC3339 "date-time" format except with only a 2-digit tz-offset (e.g. +/-HH).
+  private static final DateTimeFormatter rfc3339DateTime2DigitTZParser = new DateTimeFormatterBuilder()
+      .append(rfc3339BaseParser)
+      .appendOffset("+HH", "Z")
+      .toFormatter();
+
+  // This implements a date-time value with no timezone component.  Assume UTC.
   private static final DateTimeFormatter utcDateTimeWithoutTZ =
-      DateTimeFormatter.ofPattern(UTC_DATE_TIME_NO_TZ).withZone(ZoneOffset.UTC);
-  private static final DateTimeFormatter dialogDateTime =
-      DateTimeFormatter.ofPattern(DIALOG_DATE_TIME).withZone(ZoneOffset.UTC);
-  private static final DateTimeFormatter alchemyDateTime =
-      DateTimeFormatter.ofPattern(ALCHEMY_DATE_TIME).withZone(ZoneOffset.UTC);
+      DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss[.SSS]").withZone(ZoneOffset.UTC);
 
+  // This implements the "Dialog" flavor of date-time with no timezone component. Assume UTC.
+  private static final DateTimeFormatter dialogDateTimeParser =
+      DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneOffset.UTC);
+
+  // This implements the "Alchemy" flavor of date-time with no timezone component. Assume UTC.
+  private static final DateTimeFormatter alchemyDateTimeParser =
+      DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss").withZone(ZoneOffset.UTC);
+
+  // This is the ordered list of parsers that we will use when trying to parse a particular date-time string.
   private static final List<DateTimeFormatter> dateTimeParsers =
       Arrays.asList(
-          rfc3339DateTimeParse,            // "yyyy-MM-dd'T'HH:mm:ss[.SSS]X",  optional ms, tz: 'Z' or -03:00
-          rfc3339DateTimeParseNoColon,     // "yyyy-MM-dd'T'HH:mm:ss[.SSS]XXX" optional ms, tz: 'Z' or -0300
-          utcDateTimeWithoutTZ,            // "yyyy-MM-dd'T'HH:mm:ss[.SSS]"    optional ms
-          dialogDateTime,                  // "yyyy-MM-dd HH:mm:ss"
-          alchemyDateTime                  // "yyyyMMdd'T'HHmmss"
+          rfc3339DateTimeParser,         // "yyyy-MM-dd'T'HH:mm:ss[.nnnnnnnnn]X",  optional frac-sec, tz: 'Z' or -06:00
+          rfc3339DateTimeNoColonParser,  // "yyyy-MM-dd'T'HH:mm:ss[.nnnnnnnnn]XXX" optional frac-sec, tz: 'Z' or -0600
+          rfc3339DateTime2DigitTZParser, // "yyyy-MM-dd'T'HH:mm:ss[.nnnnnnnnn]XXX" optional frac-sec, tz: 'Z' or -06
+          utcDateTimeWithoutTZ,          // "yyyy-MM-dd'T'HH:mm:ss[.nnnnnnnnn]"    optional frac-sec, no tz
+          dialogDateTimeParser,          // "yyyy-MM-dd HH:mm:ss"                  no tz
+          alchemyDateTimeParser          // "yyyyMMdd'T'HHmmss"                    no tz
           );
 
+  // This regex is used to recognize a datetime expressed as # of milliseconds since epoch time.
   private static Pattern isJustNumber = Pattern.compile("^\\d+$");
 
 
@@ -127,7 +161,7 @@ public class DateUtils {
    * @throws DateTimeException if an error occurs during formatting
    */
   public static String formatAsDate(Date d) {
-    return rfc3339FullDateFormat.format(d.toInstant());
+    return rfc3339FullDateFmt.format(d.toInstant());
   }
 
   /**
@@ -141,7 +175,7 @@ public class DateUtils {
    * @throws DateTimeException if an error occurs during formatting
    */
   public static String formatAsDateTime(Date d) {
-    return rfc3339DateTimeFormatter.format(d.toInstant());
+    return rfc3339DateTimeFmt.format(d.toInstant());
   }
 
   /**
@@ -166,13 +200,16 @@ public class DateUtils {
    * Parses the specified string into a {@link Date} instance.
    * The supported formats are:
    * <ol>
-   * <li>RFC 3339 "date-time": yyyy-MM-dd'T'HH:mm:ss[.SSS]X  (optional ms, tz is 'Z' or +/-hh:mm)<br>
+   * <li>RFC 3339 "date-time": yyyy-MM-dd'T'HH:mm:ss[.nnnnnnnnn]X  (optional ms, tz is 'Z' or +/-hh:mm)<br>
    *    Examples: 2020-01-01T12:00:00.000Z, 2020-01-01T07:00:00-05:00
    * </li>
    * <li>Same as above, but with no colon in tz-offset (e.g. -0300)<br>
    *    Examples: 2020-01-01T09:00:00.000-0300, 2020-01-01T16:00:00+0400
    * </li>
-   * <li>UTC "date-time" with no tz: yyyy-MM-dd'T'HH:mm:ss[.SSS] (optional ms)<br>
+   * <li>Same as above, but with a 2-digit tz-offset (e.g. -03)<br>
+   *    Examples: 2020-01-01T09:00:00.000-03, 2020-01-01T16:00:00+04
+   * </li>
+   * <li>UTC "date-time" with no tz: yyyy-MM-dd'T'HH:mm:ss[.nnnnnnnnn] (optional fractional seconds)<br>
    *    Examples: 2020-01-01T12:00:00.000, 2020-01-01T12:00:00
    * </li>
    * <li>"Dialog" date-time: yyyy-MM-dd HH:mm:ss<br>
@@ -185,7 +222,7 @@ public class DateUtils {
    *    Examples: 2020-01-01
    * </li>
    * <li> A raw time value (# of milliseconds since epoch time in UTC) <br>
-   *    Examples: 2020-01-01
+   *    Examples: 1584024732866
    * </li>
    * </ol>
    *
@@ -195,9 +232,9 @@ public class DateUtils {
    */
   public static Date parseAsDateTime(String dateAsString) {
     // First, try to parse using one of the supported date-time formatters.
-    for (DateTimeFormatter format : dateTimeParsers) {
+    for (DateTimeFormatter formatter : dateTimeParsers) {
       try {
-        return parse(dateAsString, format);
+        return parse(dateAsString, formatter);
       } catch (Throwable e) {
         // absorb the exception
       }
