@@ -1,3 +1,10 @@
+## [9.5.3](https://github.com/IBM/java-sdk-core/compare/9.5.2...9.5.3) (2020-11-12)
+
+
+### Bug Fixes
+
+* handle null or empty strings as date/datetime values ([47aa1ac](https://github.com/IBM/java-sdk-core/commit/47aa1acdcf4182acb926e4b276cf8dcd1e570be1))
+
 ## [9.5.2](https://github.com/IBM/java-sdk-core/compare/9.5.1...9.5.2) (2020-11-11)
 
 
