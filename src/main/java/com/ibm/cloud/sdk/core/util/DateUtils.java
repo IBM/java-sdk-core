@@ -36,6 +36,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * This class contains utilities for formatting and parsing {@link Date} instances as OpenAPI
  * "date" or "date-time" values.
@@ -190,6 +192,15 @@ public class DateUtils {
    * @throws DateTimeException if an error occurs during parsing
    */
   public static Date parseAsDate(String s) {
+    if (s == null) {
+      return null;
+    }
+
+    s = s.trim();
+    if (StringUtils.isEmpty(s)) {
+      return null;
+    }
+
     LocalDate ld = LocalDate.parse(s.trim());
     Instant instant = Instant.from(ld.atStartOfDay(ZoneId.of("UTC")));
     Date d = Date.from(instant);
@@ -231,6 +242,15 @@ public class DateUtils {
    * @throws DateTimeException if an error occurs during parsing
    */
   public static Date parseAsDateTime(String dateAsString) {
+    if (dateAsString == null) {
+      return null;
+    }
+
+    dateAsString = dateAsString.trim();
+    if (StringUtils.isEmpty(dateAsString)) {
+      return null;
+    }
+
     // First, try to parse using one of the supported date-time formatters.
     for (DateTimeFormatter formatter : dateTimeParsers) {
       try {

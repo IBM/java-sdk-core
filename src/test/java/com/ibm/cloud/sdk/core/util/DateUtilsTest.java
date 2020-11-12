@@ -14,6 +14,7 @@
 package com.ibm.cloud.sdk.core.util;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.time.DateTimeException;
 import java.util.Date;
@@ -31,6 +32,14 @@ public class DateUtilsTest {
     if (verbose) {
       System.out.println(s);
     }
+  }
+
+  @Test
+  public void testNullEmpty() {
+    assertNull(DateUtils.parseAsDate(null));
+    assertNull(DateUtils.parseAsDateTime(null));
+    assertNull(DateUtils.parseAsDate(""));
+    assertNull(DateUtils.parseAsDateTime(""));
   }
 
   @Test
