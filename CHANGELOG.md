@@ -1,3 +1,24 @@
+## [9.5.3](https://github.com/IBM/java-sdk-core/compare/9.5.2...9.5.3) (2020-11-12)
+
+
+### Bug Fixes
+
+* handle null or empty strings as date/datetime values ([47aa1ac](https://github.com/IBM/java-sdk-core/commit/47aa1acdcf4182acb926e4b276cf8dcd1e570be1))
+
+## [9.5.2](https://github.com/IBM/java-sdk-core/compare/9.5.1...9.5.2) (2020-11-11)
+
+
+### Bug Fixes
+
+* support up to nanosecond precision in date-time values ([b5b3b1c](https://github.com/IBM/java-sdk-core/commit/b5b3b1c6e286ed28beb75b204f82101cef12545b))
+
+## [9.5.1](https://github.com/IBM/java-sdk-core/compare/9.5.0...9.5.1) (2020-11-10)
+
+
+### Bug Fixes
+
+* improve date and date-time serialization/deserialization ([c89cb03](https://github.com/IBM/java-sdk-core/commit/c89cb032c269f8f31c6f8b85c098e52c6ce93588)), closes [arf/planning-sdk-squad#2291](https://github.com/arf/planning-sdk-squad/issues/2291)
+
 # [9.5.0](https://github.com/IBM/java-sdk-core/compare/9.4.1...9.5.0) (2020-11-05)
 
 
