@@ -86,9 +86,8 @@ public class DateUtils {
   //
 
   // This is a partially-constructed formatter that will be used to construct other formatters below.
-  // It implements the RFC 3339 "full-date" + "partial-time" format.
-  // "yyyy-MM-dd'T'HH:mm:ss[.nnnnnnnnn]" (fractional part can be 0-9 digits).
-  private static final DateTimeFormatter rfc3339BaseParser = new DateTimeFormatterBuilder()
+  // It implements: "yyyy-MM-dd'T'HH:mm"
+  private static final DateTimeFormatter partialTimeBase = new DateTimeFormatterBuilder()
       .appendValue(YEAR_OF_ERA, 4, 19, SignStyle.EXCEEDS_PAD)
       .appendLiteral('-')
       .appendValue(MONTH_OF_YEAR, 2)
@@ -98,6 +97,13 @@ public class DateUtils {
       .appendValue(HOUR_OF_DAY, 2)
       .appendLiteral(":")
       .appendValue(MINUTE_OF_HOUR, 2)
+      .toFormatter();
+
+  // This is a partially-constructed formatter that will be used to construct other formatters below.
+  // It implements the RFC 3339 "full-date" + "partial-time" format.
+  // "yyyy-MM-dd'T'HH:mm:ss[.nnnnnnnnn]" (fractional part can be 0-9 digits).
+  private static final DateTimeFormatter rfc3339BaseParser = new DateTimeFormatterBuilder()
+      .append(partialTimeBase)
       .appendLiteral(":")
       .appendValue(SECOND_OF_MINUTE, 2)
       .optionalStart()
@@ -134,6 +140,13 @@ public class DateUtils {
   private static final DateTimeFormatter alchemyDateTimeParser =
       DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss").withZone(ZoneOffset.UTC);
 
+  // This implements the format used by IAM Identity: "yyyy-MM-dd'T'HH:mm+0000"
+  private static final DateTimeFormatter iamIdentityParser = new DateTimeFormatterBuilder()
+      .append(partialTimeBase)
+      .appendOffset("+HHMM", "Z")
+      .toFormatter();
+
+
   // This is the ordered list of parsers that we will use when trying to parse a particular date-time string.
   private static final List<DateTimeFormatter> dateTimeParsers =
       Arrays.asList(
@@ -142,7 +155,8 @@ public class DateUtils {
           rfc3339DateTime2DigitTZParser, // "yyyy-MM-dd'T'HH:mm:ss[.nnnnnnnnn]XXX" optional frac-sec, tz: 'Z' or -06
           utcDateTimeWithoutTZ,          // "yyyy-MM-dd'T'HH:mm:ss[.nnnnnnnnn]"    optional frac-sec, no tz
           dialogDateTimeParser,          // "yyyy-MM-dd HH:mm:ss"                  no tz
-          alchemyDateTimeParser          // "yyyyMMdd'T'HHmmss"                    no tz
+          alchemyDateTimeParser,         // "yyyyMMdd'T'HHmmss"                    no tz
+          iamIdentityParser              // "yyyy-MM-dd'T'HH:mmXXX"                no seconds, tz: Z or -0600)
           );
 
   // This regex is used to recognize a datetime expressed as # of milliseconds since epoch time.
