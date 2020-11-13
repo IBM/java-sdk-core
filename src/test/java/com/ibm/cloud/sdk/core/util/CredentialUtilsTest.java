@@ -647,7 +647,7 @@ public class CredentialUtilsTest {
     assertEquals(Authenticator.AUTHTYPE_BASIC, props.get(Authenticator.PROPNAME_AUTH_TYPE));
     assertEquals(NOT_A_USERNAME, props.get(Authenticator.PROPNAME_USERNAME));
     assertEquals(NOT_A_PASSWORD, props.get(Authenticator.PROPNAME_PASSWORD));
-    assertEquals("https://gateway.watsonplatform.net/discovery-experimental/api", props.get("URL"));
+    assertEquals("https://api.us-south.discovery-experimental.watson.cloud.ibm.com", props.get("URL"));
   }
   @Test
   public void testVcapCredentialsNoMatchingName() {
@@ -659,7 +659,7 @@ public class CredentialUtilsTest {
     assertEquals(Authenticator.AUTHTYPE_BASIC, props.get(Authenticator.PROPNAME_AUTH_TYPE));
     assertEquals(NOT_A_USERNAME, props.get(Authenticator.PROPNAME_USERNAME));
     assertEquals(NOT_A_PASSWORD, props.get(Authenticator.PROPNAME_PASSWORD));
-    assertEquals("https://gateway.watsonplatform.net/different-name-two/api", props.get("URL"));
+    assertEquals("https://api.us-south.different-name-two.watson.cloud.ibm.com", props.get("URL"));
   }
 
   @Test
@@ -757,7 +757,7 @@ public class CredentialUtilsTest {
     assertEquals(Authenticator.AUTHTYPE_IAM, props.get(Authenticator.PROPNAME_AUTH_TYPE));
     assertEquals("123456789", props.get(Authenticator.PROPNAME_APIKEY));
     assertEquals("https://iam.cloud.ibm.com/identity/token", props.get(Authenticator.PROPNAME_URL));
-    assertEquals("https://gateway.watsonplatform.net/language-translator/api", props.get("URL"));
+    assertEquals("https://api.us-south.language-translator.watson.cloud.ibm.com", props.get("URL"));
   }
 
   @Test
@@ -780,7 +780,7 @@ public class CredentialUtilsTest {
     assertEquals(Authenticator.AUTHTYPE_IAM, props.get(Authenticator.PROPNAME_AUTH_TYPE));
     assertEquals("V4HXmoUtMjohnsnow=KotN", props.get(Authenticator.PROPNAME_APIKEY));
     assertEquals("https://iamhost/iam/api=", props.get(Authenticator.PROPNAME_URL));
-    assertEquals("https://gateway.watsonplatform.net/testService", props.get("URL"));
+    assertEquals("https://api.us-south.testService.watson.cloud.ibm.com", props.get("URL"));
   }
 
   private void verifyMapService1(Map<String, String> props) {
