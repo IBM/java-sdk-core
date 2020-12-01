@@ -108,6 +108,11 @@ public class DateUtilsTest {
 
     // Alchemy datetime.
     _testDateTime("20160620T042516",              "2016-06-20T04:25:16.000Z");
+
+    // IAM Identity Service.
+    _testDateTime("2020-11-10T12:28+0000", "2020-11-10T12:28:00.000Z");
+    _testDateTime("2020-11-10T07:28-0500", "2020-11-10T12:28:00.000Z");
+    _testDateTime("2020-11-10T12:28Z",     "2020-11-10T12:28:00.000Z");
   }
 
   @Test(expected = DateTimeException.class)
@@ -129,7 +134,6 @@ public class DateUtilsTest {
   public void testDateTimeError4() {
     _testDateTime("x2016-06-20T04:25:16.218+000", "");
   }
-
 
   private void _testFullDate(String s) {
     Date d = DateUtils.parseAsDate(s);

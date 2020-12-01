@@ -1,3 +1,10 @@
+## [9.5.4](https://github.com/IBM/java-sdk-core/compare/9.5.3...9.5.4) (2020-11-16)
+
+
+### Bug Fixes
+
+* support additional date-time format ([771d948](https://github.com/IBM/java-sdk-core/commit/771d948b9ce11033e878b9d11f32089d691b8a2c))
+
 ## [9.5.3](https://github.com/IBM/java-sdk-core/compare/9.5.2...9.5.3) (2020-11-12)
 
 
