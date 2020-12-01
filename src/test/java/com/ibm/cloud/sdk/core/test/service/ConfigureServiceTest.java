@@ -296,7 +296,7 @@ public class ConfigureServiceTest {
 
     setupVCAP();
     svc.configureSvc("discovery");
-    assertEquals("https://gateway.watsonplatform.net/discovery-experimental/api", svc.getServiceUrl());
+    assertEquals("https://api.us-south.discovery-experimental.watson.cloud.ibm.com", svc.getServiceUrl());
   }
 
   @Test(expected = IllegalArgumentException.class)

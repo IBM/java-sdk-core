@@ -94,7 +94,7 @@ public class AuthenticationTest {
     service.configureSvc("natural_language_classifier");
     assertNotNull(service.getAuthenticator());
     assertEquals(Authenticator.AUTHTYPE_IAM, service.getAuthenticator().authenticationType());
-    assertEquals("https://gateway.watsonplatform.net/natural-language-classifier/api", service.getServiceUrl());
+    assertEquals("https://api.us-south.natural-language-classifier.watson.cloud.ibm.com", service.getServiceUrl());
     OkHttpClient client = service.getClient();
     assertNotNull(client);
     assertFalse(client.hostnameVerifier() instanceof OkHostnameVerifier);
