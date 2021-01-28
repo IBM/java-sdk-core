@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2019.
+ * (C) Copyright IBM Corp. 2015, 2021.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -33,6 +33,7 @@ import com.ibm.cloud.sdk.core.service.exception.BadRequestException;
 import com.ibm.cloud.sdk.core.service.exception.ConflictException;
 import com.ibm.cloud.sdk.core.service.exception.ForbiddenException;
 import com.ibm.cloud.sdk.core.service.exception.InternalServerErrorException;
+import com.ibm.cloud.sdk.core.service.exception.InvalidServiceResponseException;
 import com.ibm.cloud.sdk.core.service.exception.NotFoundException;
 import com.ibm.cloud.sdk.core.service.exception.RequestTooLargeException;
 import com.ibm.cloud.sdk.core.service.exception.ServiceResponseException;
@@ -254,7 +255,7 @@ public abstract class BaseService {
    */
   protected final <T> ServiceCall<T> createServiceCall(final Request request, final ResponseConverter<T> converter) {
     final Call call = createCall(request);
-    return new WatsonServiceCall<>(call, converter);
+    return new IBMCloudSDKServiceCall<>(call, converter);
   }
 
   /**
@@ -376,7 +377,11 @@ public abstract class BaseService {
    */
   protected <T> T processServiceCall(final ResponseConverter<T> converter, final Response response) {
     if (response.isSuccessful()) {
-      return converter.convert(response);
+      try {
+        return converter.convert(response);
+      } catch (Throwable t) {
+        throw new InvalidServiceResponseException(response, "Error processing the http response", t);
+      }
     }
 
     switch (response.code()) {
@@ -412,11 +417,11 @@ public abstract class BaseService {
    *
    * @param <T> the generic type
    */
-  class WatsonServiceCall<T> implements ServiceCall<T> {
+  class IBMCloudSDKServiceCall<T> implements ServiceCall<T> {
     private Call call;
     private ResponseConverter<T> converter;
 
-    WatsonServiceCall(Call call, ResponseConverter<T> converter) {
+    IBMCloudSDKServiceCall(Call call, ResponseConverter<T> converter) {
       this.call = call;
       this.converter = converter;
     }

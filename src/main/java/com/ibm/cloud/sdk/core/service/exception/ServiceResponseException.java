@@ -40,40 +40,62 @@ public class ServiceResponseException extends RuntimeException {
   private static final Type debuggingInfoType = new TypeToken<Map<String, Object>>() { }.getType();
 
   /** The status code. */
-  private final int statusCode;
+  private int statusCode;
 
   private String message;
   private Headers headers;
   private Map<String, Object> debuggingInfo;
 
   /**
-   * Instantiates a new Service Response Exception.
+   * Instantiates a new Service Response Exception for a response that resulted
+   * in a bad status code.
    *
    * @param statusCode the status code
    * @param response the HTTP response
    */
   public ServiceResponseException(int statusCode, Response response) {
     super();
-    this.statusCode = statusCode;
-    this.headers = new Headers(response.headers());
+    init(statusCode, response, response.headers());
+  }
 
-    String responseString = ResponseUtils.getString(response);
-    try {
-      final JsonObject jsonObject = ResponseUtils.getJsonObject(responseString);
-      if (jsonObject.has(ERRORS_KEY)) {
-        this.message = jsonObject.remove(ERRORS_KEY).getAsJsonArray().get(0).getAsJsonObject().remove(MESSAGE_STRING)
-            .getAsString();
-      } else if (jsonObject.has(ERROR_STRING)) {
-        this.message = jsonObject.remove(ERROR_STRING).getAsString();
-      } else if (jsonObject.has(MESSAGE_STRING)) {
-        this.message = jsonObject.remove(MESSAGE_STRING).getAsString();
-      } else if (jsonObject.has(ERROR_MESSAGE)) {
-        this.message = jsonObject.remove(ERROR_MESSAGE).getAsString();
+  /**
+   * Instantiates a new Service Response Exception when we have a specific exception to wrap.
+   *
+   * @param statusCode the status code
+   * @param response the HTTP response
+   * @param message an message to include in this exception
+   * @param cause the specific exception to wrap inside this exception
+   */
+  public ServiceResponseException(int statusCode, Response response, String message, Throwable cause) {
+    super(cause);
+    init(statusCode, null, response.headers());
+    setMessage(message);
+  }
+
+  private void init(int statusCode, Response response, okhttp3.Headers headers) {
+    this.statusCode = statusCode;
+    this.headers = new Headers(headers);
+
+    if (response != null) {
+      String responseString = ResponseUtils.getString(response);
+      try {
+        final JsonObject jsonObject = ResponseUtils.getJsonObject(responseString);
+        if (jsonObject.has(ERRORS_KEY)) {
+          this.message = jsonObject.remove(ERRORS_KEY).getAsJsonArray().get(0).getAsJsonObject().remove(MESSAGE_STRING)
+              .getAsString();
+        } else if (jsonObject.has(ERROR_STRING)) {
+          this.message = jsonObject.remove(ERROR_STRING).getAsString();
+        } else if (jsonObject.has(MESSAGE_STRING)) {
+          this.message = jsonObject.remove(MESSAGE_STRING).getAsString();
+        } else if (jsonObject.has(ERROR_MESSAGE)) {
+          this.message = jsonObject.remove(ERROR_MESSAGE).getAsString();
+        }
+        this.debuggingInfo = GsonSingleton.getGson().fromJson(jsonObject, debuggingInfoType);
+      } catch (final Exception e) {
+        // Ignore any kind of exception parsing the json and use fallback String version
+        // of response
+        this.message = responseString;
       }
-      this.debuggingInfo = GsonSingleton.getGson().fromJson(jsonObject, debuggingInfoType);
-    } catch (final Exception e) {
-      // Ignore any kind of exception parsing the json and use fallback String version of response
-      this.message = responseString;
     }
   }
 
