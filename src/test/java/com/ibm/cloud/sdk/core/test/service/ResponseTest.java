@@ -17,10 +17,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.testng.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import com.ibm.cloud.sdk.core.util.Clock;
@@ -36,6 +39,8 @@ import com.ibm.cloud.sdk.core.http.ServiceCallback;
 import com.ibm.cloud.sdk.core.security.Authenticator;
 import com.ibm.cloud.sdk.core.security.NoAuthAuthenticator;
 import com.ibm.cloud.sdk.core.service.BaseService;
+import com.ibm.cloud.sdk.core.service.exception.InvalidServiceResponseException;
+import com.ibm.cloud.sdk.core.service.exception.ServiceResponseException;
 import com.ibm.cloud.sdk.core.service.model.GenericModel;
 import com.ibm.cloud.sdk.core.test.BaseServiceUnitTest;
 import com.ibm.cloud.sdk.core.util.ResponseConverterUtils;
@@ -125,9 +130,7 @@ public class ResponseTest extends BaseServiceUnitTest {
   private String testResponseBody4 = "[{\"city\":\"Austin\"},{\"city\":\"Georgetown\"},{\"city\":\"Cedar Park\"}]";
   private String testResponseBody5 = "\"string response\"";
   private String testResponseBody6 = "443374";
-
-  // used for a specific test so we don't run into any weirdness with final, one-element, generic arrays
-  private Response<TestModel> testResponseModel = null;
+  private String testResponseBodyError1 = "{\"city\": \"Colum";
 
   /*
    * (non-Javadoc)
@@ -144,17 +147,24 @@ public class ResponseTest extends BaseServiceUnitTest {
 
   /**
    * Test that all fields are populated when calling execute().
-   *
-   * @throws InterruptedException the interrupted exception
    */
   @Test
-  public void testExecuteTestModel() throws InterruptedException {
+  public void testExecuteTestModel() {
     server.enqueue(new MockResponse().setBody(testResponseBody1));
 
     Response<TestModel> response = service.getTestModel().execute();
     assertNotNull(response.getResult());
     assertEquals(testResponseValue, response.getResult().getCity());
     assertNotNull(response.getHeaders());
+  }
+
+  /**
+   * Test that an invalid JSON response results in an InvalidServiceResponseException.
+   */
+  @Test(expected = InvalidServiceResponseException.class)
+  public void testExecuteTestModelJSONError1() {
+    server.enqueue(new MockResponse().setBody(testResponseBodyError1));
+    service.getTestModel().execute();
   }
 
   /**
@@ -166,24 +176,74 @@ public class ResponseTest extends BaseServiceUnitTest {
   public void testEnqueue() throws InterruptedException {
     server.enqueue(new MockResponse().setBody(testResponseBody1));
 
+    final Map<String, Object> results = new HashMap<>();
+
     service.getTestModel().enqueue(new ServiceCallback<TestModel>() {
       @Override
       public void onResponse(Response<TestModel> response) {
-        assertNotNull(response.getResult());
-        assertEquals(testResponseValue, response.getResult().getCity());
-        assertNotNull(response.getHeaders());
+        results.put("method", "onResponse");
+        results.put("response", response);
       }
 
       @Override
-      public void onFailure(Exception e) { }
+      public void onFailure(Exception e) {
+        results.put("method", "onFailure");
+      }
     });
 
     Thread.sleep(2000);
+
+    assertEquals("onResponse", results.get("method"));
+    Response<TestModel> response = (Response<TestModel>) results.get("response");
+    assertNotNull(response);
+    assertNotNull(response.getResult());
+    assertEquals(testResponseValue, response.getResult().getCity());
+    assertNotNull(response.getHeaders());
   }
 
+  /**
+   * Test that an invalid JSON response results in an InvalidServiceResponseException.
+   *
+   * @throws InterruptedException
+   */
+  @Test
+  public void testEnqueueJSONError() throws InterruptedException{
+    server.enqueue(new MockResponse().setBody(testResponseBodyError1));
+
+    final Map<String, Object> results = new HashMap<>();
+
+    service.getTestModel().enqueue(new ServiceCallback<TestModel>() {
+      @Override
+      public void onResponse(Response<TestModel> response) {
+        results.put("method", "onResponse");
+      }
+
+      @Override
+      public void onFailure(Exception e) {
+        results.put("method", "onFailure");
+        results.put("exception", e);
+      }
+    });
+
+    Thread.sleep(2000);
+
+    assertEquals("onFailure", results.get("method"));
+    Throwable t = (Throwable) results.get("exception");
+    assertNotNull(t);
+    assertTrue(t instanceof InvalidServiceResponseException);
+  }
+
+
+  /**
+   * Test that a reactive request completes correctly.
+   *
+   * @throws InterruptedException
+   */
   @Test
   public void testReactiveRequest() throws InterruptedException {
     server.enqueue(new MockResponse().setBody(testResponseBody1));
+
+    final Map<String, Object> results = new HashMap<>();
 
     Single<Response<TestModel>> observableRequest = service.getTestModel().reactiveRequest();
 
@@ -192,48 +252,48 @@ public class ResponseTest extends BaseServiceUnitTest {
         .subscribe(new Consumer<Response<TestModel>>() {
           @Override
           public void accept(Response<TestModel> response) throws Exception {
-            testResponseModel = response;
+            results.put("response", response);
           }
         });
 
     // asynchronous, so test that we continued without a value yet
-    assertNull(testResponseModel);
+    assertNull(results.get("response"));
+
     Thread.sleep(2000);
-    assertNotNull(testResponseModel);
-    assertEquals(testResponseValue, testResponseModel.getResult().getCity());
-    assertNotNull(testResponseModel.getHeaders());
+
+    Response<TestModel> response = (Response<TestModel>) results.get("response");
+    assertNotNull(response);
+    assertEquals(testResponseValue, response.getResult().getCity());
+    assertNotNull(response.getHeaders());
   }
 
   /**
    * Test that headers are accessible from a HEAD method call using execute().
-   *
-   * @throws InterruptedException the interrupted exception
    */
   @Test
-  public void testExecuteForHead() throws InterruptedException {
-    Headers rawHeaders = Headers.of("Content-Length", "472", "Content-Type", "application/json"
-            , "Server", "Mock");
-    com.ibm.cloud.sdk.core.http.Headers expectedHeaders =
-            new com.ibm.cloud.sdk.core.http.Headers(rawHeaders);
+  public void testExecuteForHead() {
+    Headers rawHeaders = Headers.of("Content-Length", "472", "Content-Type", "application/json", "Server", "Mock");
+    com.ibm.cloud.sdk.core.http.Headers expectedHeaders = new com.ibm.cloud.sdk.core.http.Headers(rawHeaders);
     server.enqueue(new MockResponse().setHeaders(rawHeaders));
 
     Response<Void> response = service.headMethod().execute();
     com.ibm.cloud.sdk.core.http.Headers actualHeaders = response.getHeaders();
-    System.out.print(actualHeaders.equals(expectedHeaders));
     assertNull(response.getResult());
     assertNotNull(actualHeaders);
-    // We can't just compare expectedHeaders.equals(actualHeaders) because of some underlying
-    // whitespace weirdness in okhttp's Headers class.
+
+    // We can't just compare expectedHeaders and actualHeaders) because of some
+    // underlying weirdness in okhttp's Headers class, so we'll compare the
+    // toString() output of each one instead.
+    // System.out.println("Expected headers:\n" + expectedHeaders.toString());
+    // System.out.println("Actual headers:\n" + actualHeaders.toString());
     assertEquals(expectedHeaders.toString(), actualHeaders.toString());
   }
 
   /**
    * Test that all fields are populated when calling execute().
-   *
-   * @throws InterruptedException the interrupted exception
    */
   @Test
-  public void testExecuteTestModel2() throws InterruptedException {
+  public void testExecuteTestModel2() {
     server.enqueue(new MockResponse().setBody(testResponseBody1));
 
     Response<TestModel> response = service.getTestModel2().execute();
@@ -244,8 +304,6 @@ public class ResponseTest extends BaseServiceUnitTest {
 
   /**
    * Test that a list of strings response can be deserialized correctly.
-   *
-   * @throws InterruptedException the interrupted exception
    */
   @Test
   public void testExecuteString() {
@@ -260,8 +318,6 @@ public class ResponseTest extends BaseServiceUnitTest {
 
   /**
    * Test that a list of strings response can be deserialized correctly.
-   *
-   * @throws InterruptedException the interrupted exception
    */
   @Test
   public void testExecuteListString() {
@@ -277,8 +333,6 @@ public class ResponseTest extends BaseServiceUnitTest {
 
   /**
    * Test that a list of strings response can be deserialized correctly.
-   *
-   * @throws InterruptedException the interrupted exception
    */
   @Test
   public void testExecuteLong() {
@@ -293,8 +347,6 @@ public class ResponseTest extends BaseServiceUnitTest {
 
   /**
    * Test that a list of longs response can be deserialized correctly.
-   *
-   * @throws InterruptedException the interrupted exception
    */
   @Test
   public void testExecuteListLong() {
@@ -316,8 +368,6 @@ public class ResponseTest extends BaseServiceUnitTest {
 
   /**
    * Test that list of TestModels response can be deserialized correctly.
-   *
-   * @throws InterruptedException the interrupted exception
    */
   @Test
   public void testExecuteListTestModel() {
@@ -375,13 +425,13 @@ public class ResponseTest extends BaseServiceUnitTest {
       @Override
       public void onResponse(Response<TestModel> response) {
         hasCallCompleted[0] = true;
-        System.out.println("We got a response!");
+        // System.out.println("We got a response!");
       }
 
       @Override
       public void onFailure(Exception e) {
         callWasCanceled[0] = true;
-        System.out.println("The request failed :(");
+        // System.out.println("The request failed as expected :)");
       }
     });
 
