@@ -1,3 +1,10 @@
+# [9.6.0](https://github.com/IBM/java-sdk-core/compare/9.5.4...9.6.0) (2021-01-28)
+
+
+### Features
+
+* wrap exceptions during client-side response processing ([8702482](https://github.com/IBM/java-sdk-core/commit/8702482a290429b64c8d2103d8a050b19c8926ef))
+
 ## [9.5.4](https://github.com/IBM/java-sdk-core/compare/9.5.3...9.5.4) (2020-11-16)
 
 
