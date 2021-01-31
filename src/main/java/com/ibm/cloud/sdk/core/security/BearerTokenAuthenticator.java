@@ -49,10 +49,25 @@ public class BearerTokenAuthenticator extends AuthenticatorBase implements Authe
 
   /**
    * Construct a BearerTokenAuthenticator using properties retrieved from the specified Map.
+   *
    * @param config a map containing the access token value
+   *
+   * @deprecated As of 9.7.0, use BearerTokenAuthenticator.fromConfiguration() instead.
    */
   public BearerTokenAuthenticator(Map<String, String> config) {
     setBearerToken(config.get(PROPNAME_BEARER_TOKEN));
+  }
+
+  /**
+   * Construct a BearerTokenAuthenticator instance using properties retrieved from the specified Map.
+   *
+   * @param config a map containing the configuration properties
+   *
+   * @return the BearerTokenAuthenticator instance
+   *
+   */
+  public static BearerTokenAuthenticator fromConfiguration(Map<String, String> config) {
+    return new BearerTokenAuthenticator(config.get(PROPNAME_BEARER_TOKEN));
   }
 
   @Override

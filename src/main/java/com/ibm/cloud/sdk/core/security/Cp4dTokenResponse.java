@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2019.
+ * (C) Copyright IBM Corp. 2019, 2021.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -14,68 +14,19 @@
 package com.ibm.cloud.sdk.core.security;
 
 /**
- * This class models a response received from the CP4D "get token" API.
+ * This class models a response received from the CP4D "POST /v1/authorize" operation.
  */
 public class Cp4dTokenResponse implements TokenServerResponse {
 
-  private String username;
-  private String role;
-  private String[] permissions;
-  private String sub;
-  private String iss;
-  private String aud;
-  private String uid;
-  private String accessToken;
+  private String token;
   private String _messageCode_;
   private String message;
 
-  public String getUsername() {
-    return username;
+  public String getToken() {
+    return token;
   }
-  public void setUsername(String username) {
-    this.username = username;
-  }
-  public String getRole() {
-    return role;
-  }
-  public void setRole(String role) {
-    this.role = role;
-  }
-  public String[] getPermissions() {
-    return permissions;
-  }
-  public void setPermissions(String[] permissions) {
-    this.permissions = permissions;
-  }
-  public String getSub() {
-    return sub;
-  }
-  public void setSub(String sub) {
-    this.sub = sub;
-  }
-  public String getIss() {
-    return iss;
-  }
-  public void setIss(String iss) {
-    this.iss = iss;
-  }
-  public String getAud() {
-    return aud;
-  }
-  public void setAud(String aud) {
-    this.aud = aud;
-  }
-  public String getUid() {
-    return uid;
-  }
-  public void setUid(String uid) {
-    this.uid = uid;
-  }
-  public String getAccessToken() {
-    return accessToken;
-  }
-  public void setAccessToken(String accessToken) {
-    this.accessToken = accessToken;
+  public void setToken(String token) {
+    this.token = token;
   }
   public String get_messageCode_() {
     return _messageCode_;

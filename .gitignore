@@ -14,3 +14,4 @@ config
 .secrets.baseline
 .vscode/
 package-lock.json
+*.env

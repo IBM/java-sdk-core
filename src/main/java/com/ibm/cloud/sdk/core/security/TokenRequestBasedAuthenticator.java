@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2019.
+ * (C) Copyright IBM Corp. 2019, 2021.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -24,7 +24,6 @@ import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Request.Builder;
-import org.apache.commons.lang3.StringUtils;
 
 import java.net.Proxy;
 import java.util.ArrayList;
@@ -32,38 +31,31 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * This class serves as a common base class for Authenticator implementations that interact with a Token Server
+ * This class serves as a common base class for Authenticator implementations that interact with a token service
  * via a REST interface.
  * This base class allows for the configuration of the following properties:
  * <ul>
- * <li>username/password - if specified, these values will be used to build a basic auth Authorization header
- * to be sent with requests to the Token Server.
- * <li>disableSSLVerification - a flag that indicates whether or not SSL hostname verification should be disabled.
- * <li>headers - a Map of keys/values that will be set as headers on requests sent to the Token Server.
- * <li>proxy - a java.net.Proxy instance that will be set on the Client object used to interact with the Token Server.
+ * <li>disableSSLVerification - a flag that indicates whether or not client-side SSL verification should be disabled.
+ * <li>headers - a Map of keys/values that will be set as HTTP headers on requests sent to the token service.
+ * <li>proxy - a java.net.Proxy instance that will be set on the Client object used to interact with the token service.
  * <li>proxyAuthenticator - an okhttp3.Authenticator instance to be set on the Client object used to interact wth
- * the Token Server.
+ * the token service.
  * </ul>
  */
 public abstract class TokenRequestBasedAuthenticator<T extends AbstractToken, R extends TokenServerResponse>
   extends AuthenticatorBase implements Authenticator {
 
-  // Configuration properties.
-  private String username;
-  private String password;
+  // Configuration properties that are common to all subclasses.
   private boolean disableSSLVerification;
   private Map<String, String> headers;
   private Proxy proxy;
   private okhttp3.Authenticator proxyAuthenticator;
 
   // This is the user-supplied headers cached in its internal form,
-  // ready to add to a Request to the token server.
+  // ready to add to a Request to the token service.
   private List<Object> cachedUserHeaders = null;
 
-  // This is the value of the Authorization header we'll use when interacting with the token server.
-  private String cachedAuthorizationHeader = null;
-
-  // The object which holds the data returned by the Token Server.
+  // The object which holds the data returned by the token service.
   protected T tokenData = null;
 
   private void setTokenData(T tokenData) {
@@ -84,32 +76,6 @@ public abstract class TokenRequestBasedAuthenticator<T extends AbstractToken, R 
    */
   @Override
   public abstract String authenticationType();
-  /**
-   * @return the basic auth username configured for this Authenticator
-   */
-  public String getUsername() {
-    return this.username;
-  }
-
-  /**
-   * @return the basic auth password configured for this Authenticator
-   */
-  public String getPassword() {
-    return this.password;
-  }
-
-  /**
-   * Sets the basic auth username and password values in this Authenticator.
-   * These values will be used to build a basic auth Authorization header that will be sent with
-   * each request to the Token Server.
-   * @param username the basic auth username
-   * @param password the basic auth password
-   */
-  public void setBasicAuthInfo(String username, String password) {
-    this.username = username;
-    this.password = password;
-    this.cachedAuthorizationHeader = constructBasicAuthHeader(this.username, this.password);
-  }
 
   /**
    * @return the disableSSLVerification flag
@@ -136,10 +102,10 @@ public abstract class TokenRequestBasedAuthenticator<T extends AbstractToken, R 
   }
 
   /**
-   * Sets a Map of key/value pairs which will be sent as HTTP headers in any interactions with the Token Server.
+   * Sets a Map of key/value pairs which will be sent as HTTP headers in any interactions with the token service.
    *
    * @param headers
-   *          the user-supplied headers to be included in Token Server interactions
+   *          the user-supplied headers to be included in token service interactions
    */
   public void setHeaders(Map<String, String> headers) {
     this.headers = headers;
@@ -165,7 +131,7 @@ public abstract class TokenRequestBasedAuthenticator<T extends AbstractToken, R 
 
   /**
    * Sets a Proxy object on this Authenticator.
-   * @param proxy the proxy object to be associated with the Client used to interact wth the token server.
+   * @param proxy the proxy object to be associated with the Client used to interact wth the token service.
    */
   public void setProxy(Proxy proxy) {
     this.proxy = proxy;
@@ -198,7 +164,7 @@ public abstract class TokenRequestBasedAuthenticator<T extends AbstractToken, R 
   }
 
   /**
-   * Builds and invokes the REST request to fetch a new token from the Token Server.
+   * Builds and invokes the REST request to fetch a new token from the token service.
    * Each concrete subclass must implement this method.
    * @return the token object
    */
@@ -219,8 +185,8 @@ public abstract class TokenRequestBasedAuthenticator<T extends AbstractToken, R 
   }
 
   /**
-   * This function returns the access token fetched from the Token Server.
-   * If no token currently exists or the current token has expired, a new token is fetched from the Token Server.
+   * This function returns the access token fetched from the token service.
+   * If no token currently exists or the current token has expired, a new token is fetched from the token service.
    *
    * @return the access token
    */
@@ -247,7 +213,7 @@ public abstract class TokenRequestBasedAuthenticator<T extends AbstractToken, R 
       throw new RuntimeException(ERRORMSG_REQ_FAILED + " illegal state: token object not available");
     }
 
-    // Check to see if an exception occurred during our last interaction with the token server.
+    // Check to see if an exception occurred during our last interaction with the token service.
     if (this.tokenData.getException() != null) {
         Throwable t = tokenData.getException();
         if (t instanceof RuntimeException) {
@@ -267,22 +233,15 @@ public abstract class TokenRequestBasedAuthenticator<T extends AbstractToken, R 
    * Invokes the specified request and returns the response object.
    *
    * @param requestBuilder
-   *          the partially-built request for fetching a token from the token server
+   *          the partially-built request for fetching a token from the token service
    * @param responseClass
-   *          a Class object which represents the token server response structure
+   *          a Class object which represents the token service response structure
    * @return an instance of the response class R
    * @throws Throwable an error occurred when invoking a token request
    */
   @SuppressWarnings("unchecked")
   protected R invokeRequest(final RequestBuilder requestBuilder, final Class<? extends R> responseClass)
       throws Throwable {
-
-    // Finish building the request to be sent out.
-
-    // If present, set the Authorization header to be sent to the token server.
-    if (StringUtils.isNotEmpty(this.cachedAuthorizationHeader)) {
-      requestBuilder.header(HttpHeaders.AUTHORIZATION, this.cachedAuthorizationHeader);
-    }
 
     // Now add any user-supplied headers to the request.
     if (this.cachedUserHeaders != null && !this.cachedUserHeaders.isEmpty()) {

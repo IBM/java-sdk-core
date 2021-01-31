@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2019.
+ * (C) Copyright IBM Corp. 2015, 2021.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -27,6 +27,7 @@ import static org.junit.Assert.assertEquals;
 import java.util.HashMap;
 import java.util.Map;
 
+@SuppressWarnings("deprecation")
 public class BasicAuthenticatorTest {
 
   @Test
@@ -48,20 +49,139 @@ public class BasicAuthenticatorTest {
     assertEquals("Basic " + BaseEncoding.base64().encode((username + ":" + password).getBytes()), authHeader);
   }
 
+
+  //
+  // Tests involving the Builder class and fromConfiguration() method.deprecated ctors.
+  //
+
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testMissingUsername() {
+    new BasicAuthenticator.Builder()
+    .username(null)
+    .password("good-password")
+    .build();
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testEmptyUsername() {
+    new BasicAuthenticator.Builder()
+    .username("")
+    .password("good-password")
+    .build();
+  }
+
   @Test(expected = IllegalArgumentException.class)
   public void testInvalidUsername() {
+    new BasicAuthenticator.Builder()
+    .username("{bad-username}")
+    .password("good-password")
+    .build();
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testMissingPassword() {
+    new BasicAuthenticator.Builder()
+    .username("good-username")
+    .password(null)
+    .build();
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testEmptyPassword() {
+    new BasicAuthenticator.Builder()
+    .username("good-username")
+    .password("")
+    .build();
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testInvalidPassword() {
+    new BasicAuthenticator.Builder()
+    .username("good-username")
+    .password("{bad-password}")
+    .build();
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testConfigMissingUsername() {
+    Map<String, String> props = new HashMap<>();
+    props.put(Authenticator.PROPNAME_USERNAME, null);
+    props.put(Authenticator.PROPNAME_PASSWORD, "good-password");
+    BasicAuthenticator.fromConfiguration(props);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testConfigEmptyUsername() {
+    Map<String, String> props = new HashMap<>();
+    props.put(Authenticator.PROPNAME_USERNAME, "");
+    props.put(Authenticator.PROPNAME_PASSWORD, "good-password");
+    BasicAuthenticator.fromConfiguration(props);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testConfigInvalidUsername() {
+    Map<String, String> props = new HashMap<>();
+    props.put(Authenticator.PROPNAME_USERNAME, "{bad-username}");
+    props.put(Authenticator.PROPNAME_PASSWORD, "good-password");
+    BasicAuthenticator.fromConfiguration(props);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testConfigMissingPassword() {
+    Map<String, String> props = new HashMap<>();
+    props.put(Authenticator.PROPNAME_USERNAME, "good-username");
+    props.put(Authenticator.PROPNAME_PASSWORD, null);
+    BasicAuthenticator.fromConfiguration(props);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testConfigEmptyPassword() {
+    Map<String, String> props = new HashMap<>();
+    props.put(Authenticator.PROPNAME_USERNAME, "good-username");
+    props.put(Authenticator.PROPNAME_PASSWORD, "");
+    BasicAuthenticator.fromConfiguration(props);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testConfigInvalidPassword() {
+    Map<String, String> props = new HashMap<>();
+    props.put(Authenticator.PROPNAME_USERNAME, "good-username");
+    props.put(Authenticator.PROPNAME_PASSWORD, "{bad-password}");
+    BasicAuthenticator.fromConfiguration(props);
+  }
+
+  @Test
+  public void testConfigGoodConfig() {
+    Map<String, String> props = new HashMap<>();
+    props.put(Authenticator.PROPNAME_USERNAME, "good-username");
+    props.put(Authenticator.PROPNAME_PASSWORD, "good-password");
+    BasicAuthenticator authenticator = BasicAuthenticator.fromConfiguration(props);
+    assertNotNull(authenticator);
+    assertEquals(Authenticator.AUTHTYPE_BASIC, authenticator.authenticationType());
+    assertEquals("good-username", authenticator.getUsername());
+    assertEquals("good-password", authenticator.getPassword());
+  }
+
+
+  //
+  // Tests involving the deprecated ctors.
+  //
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testCtorInvalidUsername() {
     new BasicAuthenticator("{bad-username}", "good-password");
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void testMissingUsernameMap() {
+  public void testCtorMissingUsernameMap() {
     Map<String, String> props = new HashMap<>();
     props.put(Authenticator.PROPNAME_PASSWORD, "good-password");
     new BasicAuthenticator(props);
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void testInvalidUsernameMap() {
+  public void testCtorInvalidUsernameMap() {
     Map<String, String> props = new HashMap<>();
     props.put(Authenticator.PROPNAME_USERNAME, "{bad-username}");
     props.put(Authenticator.PROPNAME_PASSWORD, "good-password");
@@ -69,32 +189,32 @@ public class BasicAuthenticatorTest {
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void testInvalidPassword() {
+  public void testCtorInvalidPassword() {
     new BasicAuthenticator("good-username", "{bad-password}");
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void testMissingUsername() {
+  public void testCtorMissingUsername() {
     new BasicAuthenticator(null, "good-password");
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void testMissingPassword() {
+  public void testCtorMissingPassword() {
     new BasicAuthenticator("good-username", null);
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void testEmptyUsername() {
+  public void testCtorEmptyUsername() {
     new BasicAuthenticator("", "good-password");
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void testEmptyPassword() {
+  public void testCtorEmptyPassword() {
     new BasicAuthenticator("good-username", "");
   }
 
   @Test
-  public void testGoodMapConfig() {
+  public void testCtorGoodConfigMap() {
     Map<String, String> props = new HashMap<>();
     props.put(Authenticator.PROPNAME_USERNAME, "good-username");
     props.put(Authenticator.PROPNAME_PASSWORD, "good-password");

@@ -20,8 +20,6 @@ import org.apache.commons.lang3.StringUtils;
 import com.ibm.cloud.sdk.core.http.HttpHeaders;
 import com.ibm.cloud.sdk.core.util.CredentialUtils;
 
-import okhttp3.Request.Builder;
-
 /**
  * This class implements support for Basic Authentication.
  * The main purpose of this authenticator is to construct the Authorization header,
@@ -34,8 +32,76 @@ public class BasicAuthenticator extends AuthenticatorBase implements Authenticat
   // The cached value of the Authorization header.
   private String authHeader;
 
+
+  /**
+   * This Builder class is used to construct BasicAuthenticator instances.
+   */
+  public static class Builder {
+    private String username;
+    private String password;
+
+    // Default ctor.
+    public Builder() { }
+
+    // Builder ctor which copies config from an existing authenticator instance.
+    private Builder(BasicAuthenticator obj) {
+      this.username = obj.username;
+      this.password = obj.password;
+    }
+
+    /**
+     * Constructs a new instance of BasicAuthenticator from the builder's configuration.
+     *
+     * @return the BasicAuthenticator instance
+     */
+    public BasicAuthenticator build() {
+      return new BasicAuthenticator(this);
+    }
+
+    /**
+     * Sets the username property.
+     * @param username the base auth username to include in the Authorization header
+     * @return the Builder
+     */
+    public Builder username(String username) {
+      this.username = username;
+      return this;
+    }
+
+    /**
+     * Sets the password property.
+     * @param password the basic auth password to include in the Authorization header
+     * @return the Builder
+     */
+    public Builder password(String password) {
+      this.password = password;
+      return this;
+    }
+  }
+
   // The default ctor is hidden to force the use of the non-default ctors.
   protected BasicAuthenticator() {
+  }
+
+  /**
+   * Constructs a BasicAuthenticator instance from the configuration
+   * contained in "builder".
+   *
+   * @param builder the Builder instance containing the configuration to be used
+   */
+  protected BasicAuthenticator(Builder builder) {
+    this.username = builder.username;
+    this.password = builder.password;
+    this.validate();
+  }
+
+  /**
+   * Returns a new Builder instance pre-loaded with the configuration from "this".
+   *
+   * @return the builder
+   */
+  public Builder newBuilder() {
+    return new Builder(this);
   }
 
   /**
@@ -45,26 +111,46 @@ public class BasicAuthenticator extends AuthenticatorBase implements Authenticat
    *
    * @param username the basic auth username
    * @param password the basic auth password
+   *
+   * @deprecated As of 9.7.0, use the Builder class instead.
+   *
    */
+  @Deprecated
   public BasicAuthenticator(String username, String password) {
     init(username, password);
   }
 
   /**
    * Construct a BasicAuthenticator using properties retrieved from the specified Map.
+   *
    * @param config a map containing the username and password values
+   *
+   * @deprecated As of 9.7.0, use BasicAuthenticator.fromConfiguration() instead.
    */
+  @Deprecated
   public BasicAuthenticator(Map<String, String> config) {
     init(config.get(PROPNAME_USERNAME), config.get(PROPNAME_PASSWORD));
+  }
+
+  /**
+   * Construct a BasicAuthenticator instance using properties retrieved from the specified Map.
+   *
+   * @param config a map containing the configuration properties
+   *
+   * @return the BasicAuthenticator instance
+   *
+   */
+  public static BasicAuthenticator fromConfiguration(Map<String, String> config) {
+    return new Builder()
+      .username(config.get(PROPNAME_USERNAME))
+      .password(config.get(PROPNAME_PASSWORD))
+      .build();
   }
 
   private void init(String username, String password) {
     this.username = username;
     this.password = password;
     this.validate();
-
-    // Cache the Authorization header value.
-    this.authHeader = constructBasicAuthHeader(this.username, this.password);
   }
 
   @Override
@@ -84,6 +170,9 @@ public class BasicAuthenticator extends AuthenticatorBase implements Authenticat
     if (CredentialUtils.hasBadStartOrEndChar(password)) {
       throw new IllegalArgumentException(String.format(ERRORMSG_PROP_INVALID, "password"));
     }
+
+    // Cache the Authorization header value.
+    this.authHeader = constructBasicAuthHeader(this.username, this.password);
   }
 
   @Override
@@ -110,7 +199,7 @@ public class BasicAuthenticator extends AuthenticatorBase implements Authenticat
    * Here, we'll just set the Authorization header to provide the necessary authentication info.
    */
   @Override
-  public void authenticate(Builder builder) {
+  public void authenticate(okhttp3.Request.Builder builder) {
     builder.addHeader(HttpHeaders.AUTHORIZATION, this.authHeader);
   }
 }

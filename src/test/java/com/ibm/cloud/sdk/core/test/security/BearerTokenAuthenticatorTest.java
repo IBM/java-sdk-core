@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2019.
+ * (C) Copyright IBM Corp. 2015, 2021.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -27,6 +27,7 @@ import com.ibm.cloud.sdk.core.security.BearerTokenAuthenticator;
 
 import okhttp3.Request;
 
+@SuppressWarnings("deprecation")
 public class BearerTokenAuthenticatorTest {
 
   @Test
@@ -69,28 +70,41 @@ public class BearerTokenAuthenticatorTest {
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void testMissingAccessTokenMap() {
+  public void testCtorMissingAccessTokenMap() {
     Map<String, String> props = new HashMap<>();
     new BearerTokenAuthenticator(props);
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void testEmptyAccessTokenMap() {
+  public void testCtorEmptyAccessTokenMap() {
     Map<String, String> props = new HashMap<>();
     props.put(Authenticator.PROPNAME_BEARER_TOKEN, "");
     new BearerTokenAuthenticator(props);
   }
 
-  public void testCorrectConfig() {
+  @Test(expected = IllegalArgumentException.class)
+  public void testConfigMissingAccessToken() {
+    Map<String, String> props = new HashMap<>();
+    BearerTokenAuthenticator.fromConfiguration(props);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testConfigEmptyAccessToken() {
+    Map<String, String> props = new HashMap<>();
+    props.put(Authenticator.PROPNAME_BEARER_TOKEN, "");
+    BearerTokenAuthenticator.fromConfiguration(props);
+  }
+
+  public void testCtorCorrectConfig() {
     BearerTokenAuthenticator authenticator = new BearerTokenAuthenticator("my-access-token");
     assertEquals(Authenticator.AUTHTYPE_BEARER_TOKEN, authenticator.authenticationType());
     assertEquals("my-access-token", authenticator.getBearerToken());
   }
 
-  public void testCorrectConfigMap() {
+  public void testConfigCorrectConfig() {
     Map<String, String> props = new HashMap<>();
     props.put(Authenticator.PROPNAME_BEARER_TOKEN, "my-access-token");
-    BearerTokenAuthenticator authenticator = new BearerTokenAuthenticator(props);
+    BearerTokenAuthenticator authenticator = BearerTokenAuthenticator.fromConfiguration(props);
     assertEquals(Authenticator.AUTHTYPE_BEARER_TOKEN, authenticator.authenticationType());
     assertEquals("my-access-token", authenticator.getBearerToken());
   }

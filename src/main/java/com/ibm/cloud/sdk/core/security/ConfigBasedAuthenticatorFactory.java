@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2019.
+ * (C) Copyright IBM Corp. 2019, 2021.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -69,13 +69,13 @@ public class ConfigBasedAuthenticatorFactory {
 
     // Create the appropriate authenticator based on the auth type.
     if (authType.equalsIgnoreCase(Authenticator.AUTHTYPE_BASIC)) {
-      authenticator = new BasicAuthenticator(props);
+      authenticator = BasicAuthenticator.fromConfiguration(props);
     } else if (authType.equalsIgnoreCase(Authenticator.AUTHTYPE_BEARER_TOKEN)) {
-      authenticator = new BearerTokenAuthenticator(props);
+      authenticator = BearerTokenAuthenticator.fromConfiguration(props);
     } else if (authType.equalsIgnoreCase(Authenticator.AUTHTYPE_CP4D)) {
-      authenticator = new CloudPakForDataAuthenticator(props);
+      authenticator = CloudPakForDataAuthenticator.fromConfiguration(props);
     } else if (authType.equalsIgnoreCase(Authenticator.AUTHTYPE_IAM)) {
-      authenticator = new IamAuthenticator(props);
+      authenticator = IamAuthenticator.fromConfiguration(props);
     } else if (authType.equalsIgnoreCase(Authenticator.AUTHTYPE_NOAUTH)) {
       authenticator = new NoAuthAuthenticator(props);
     } else {
