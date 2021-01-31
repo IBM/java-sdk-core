@@ -10,7 +10,7 @@ The SDK user configures the appropriate type of authentication for use with serv
 The authentication types that are appropriate for a particular service may vary from service to service, so it is important for the SDK user to consult with the appropriate service documentation to understand which authenticators are supported for that service.
 
 The java-sdk-core allows an authenticator to be specified in one of two ways:
-1. programmatically - the SDK user invokes the appropriate constructor to create an instance of the desired authenticator and then passes the authenticator instance when constructing an instance of the service.
+1. programmatically - the SDK user constructs an instance of the desired authenticator using the appropriate Builder class or constructor, and then passes the authenticator instance when constructing an instance of the service.
 2. configuration - the SDK user provides external configuration information (in the form of environment variables or a credentials file) to indicate the type of authenticator along with the configuration of the necessary properties for that authenticator.  The SDK user then invokes the configuration-based authenticator factory to construct an instance of the authenticator that is described in the external configuration information.
 
 The sections below will provide detailed information for each authenticator
@@ -38,7 +38,10 @@ import com.ibm.cloud.sdk.core.security.BasicAuthenticator;
 import <sdk_base_package>.ExampleService.v1.ExampleService;
 ...
 // Create the authenticator.
-BasicAuthenticator authenticator = new BasicAuthenticator("myuser", "mypassword");
+BasicAuthenticator authenticator = new BasicAuthenticator.Builder()
+    .username("myuser")
+    .password("mypassword")
+    .build();
 
 // Create the service instance.
 ExampleService service = new ExampleService(authenticator);
@@ -151,7 +154,9 @@ import com.ibm.cloud.sdk.core.security.IamAuthenticator;
 import <sdk_base_package>.ExampleService.v1.ExampleService;
 ...
 // Create the authenticator.
-IamAuthenticator authenticator = new IamAuthenticator("myapikey");
+IamAuthenticator authenticator = new IamAuthenticator.Builder()
+    .apikey("myapikey")
+    .build();
 
 // Create the service instance.
 ExampleService service = new ExampleService(authenticator);
@@ -179,7 +184,7 @@ ExampleService service = new ExampleService(authenticator);
 ```
 
 ##  Cloud Pak for Data
-The `CloudPakForDataAuthenticator` will accept user-supplied username and password values, and will 
+The `CloudPakForDataAuthenticator` will accept user-supplied values for the username and either a password or apikey, and will 
 perform the necessary interactions with the Cloud Pak for Data token service to obtain a suitable
 bearer token.  The authenticator will also obtain a new bearer token when the current token expires.
 The bearer token is then added to each outbound request in the `Authorization` header in the
@@ -189,8 +194,9 @@ form:
 ```
 ### Properties
 - username: (required) the username used to obtain a bearer token.
-- password: (required) the password used to obtain a bearer token.
-- url: (required) The URL representing the Cloud Pak for Data token service endpoint.
+- password: (required if apikey is not specified) the password used to obtain a bearer token.
+- apikey: (required if password is not specified) the apikey used to obtain a bearer token.
+- url: (required) The base URL associated with the Cloud Pak for Data token service.
 - disableSSLVerification: (optional) A flag that indicates whether verificaton of the server's SSL 
 certificate should be disabled or not. The default value is `false`.
 - headers: (optional) A set of key/value pairs that will be sent as HTTP headers in requests
@@ -201,7 +207,11 @@ import com.ibm.cloud.sdk.core.security.CloudPakForDataAuthenticator;
 import <sdk_base_package>.ExampleService.v1.ExampleService;
 ...
 // Create the authenticator.
-CloudPakForDataAuthenticator authenticator = new CloudPakForDataAuthenticator("https://mycp4dhost.com/", "myuser", "mypassword");
+CloudPakForDataAuthenticator authenticator = new CloudPakForDataAuthenticator.Builder()
+    .url("https://mycp4dhost.com/")
+    .username("myuser")
+    .password("mypassword")
+    .build();
 
 // Create the service instance.
 ExampleService service = new ExampleService(authenticator);

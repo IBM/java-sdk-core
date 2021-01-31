@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2019.
+ * (C) Copyright IBM Corp. 2015, 2021.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -49,6 +49,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ Clock.class })
 @PowerMockIgnore("javax.net.ssl.*")
+@SuppressWarnings("deprecation")
 public class IamAuthenticatorTest extends BaseServiceUnitTest {
 
   private IamToken tokenData;
@@ -66,122 +67,157 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
     refreshedTokenData = loadFixture("src/test/resources/refreshed_iam_token.json", IamToken.class);
   }
 
+
+  //
+  // Tests involving the Builder class and fromConfiguration() method.
+  //
+
   @Test(expected = IllegalArgumentException.class)
   public void testMissingApiKey() {
-    new IamAuthenticator((String) null);
+    new IamAuthenticator.Builder()
+      .apikey(null)
+      .build();
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testEmptyApiKey() {
-    new IamAuthenticator("");
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void testMissingApiKeyMap() {
-    Map<String, String> props = new HashMap<>();
-    new IamAuthenticator(props);
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void testEmptyApiKeyMap() {
-    Map<String, String> props = new HashMap<>();
-    props.put(Authenticator.PROPNAME_APIKEY, "");
-    new IamAuthenticator(props);
+    new IamAuthenticator.Builder()
+      .apikey("")
+      .build();
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testMissingClientId() {
-    new IamAuthenticator(API_KEY, "url", null, "clientSecret", false, null);
+    new IamAuthenticator.Builder()
+      .apikey(API_KEY)
+      .clientId(null)
+      .clientSecret("clientSecret")
+      .build();
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testEmptyClientId() {
-    new IamAuthenticator(API_KEY, "url", "", "clientSecret", false, null);
+    new IamAuthenticator.Builder()
+      .apikey(API_KEY)
+      .clientId("")
+      .clientSecret("clientSecret")
+      .build();
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testMissingClientSecret() {
-    new IamAuthenticator(API_KEY, "url", "clientId", null, false, null);
+    new IamAuthenticator.Builder()
+      .apikey(API_KEY)
+      .clientId("clientId")
+      .clientSecret(null)
+      .build();
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testEmptyClientSecret() {
-    new IamAuthenticator(API_KEY, "url", "clientId", "", false, null);
+    new IamAuthenticator.Builder()
+      .apikey(API_KEY)
+      .clientId("clientId")
+      .clientSecret("")
+      .build();
   }
 
   @Test
-  public void testCorrectConfig() {
-    IamAuthenticator authenticator = new IamAuthenticator(API_KEY, "url", "clientId", "clientSecret", false, null);
+  public void testBuilderCorrectConfig() {
+    Map<String, String> expectedHeaders = new HashMap<>();
+    expectedHeaders.put("header1", "value1");
+    expectedHeaders.put("header2", "value2");
+
+    IamAuthenticator authenticator = new IamAuthenticator.Builder()
+        .apikey(API_KEY)
+        .url("url")
+        .clientId("clientId")
+        .clientSecret("clientSecret")
+        .scope("scope1")
+        .disableSSLVerification(true)
+        .headers(expectedHeaders)
+        .build();
     assertEquals(Authenticator.AUTHTYPE_IAM, authenticator.authenticationType());
-    assertFalse(authenticator.getDisableSSLVerification());
-    assertEquals("clientId", authenticator.getClientId());
-    assertEquals("clientSecret", authenticator.getClientSecret());
     assertEquals(API_KEY, authenticator.getApiKey());
     assertEquals("url", authenticator.getURL());
-    assertNull(authenticator.getScope());
+    assertEquals("clientId", authenticator.getClientId());
+    assertEquals("clientSecret", authenticator.getClientSecret());
+    assertEquals("scope1", authenticator.getScope());
+    assertTrue(authenticator.getDisableSSLVerification());
+    assertEquals(expectedHeaders, authenticator.getHeaders());
   }
 
   @Test
-  public void testCorrectConfigMap() {
+  public void testConfigCorrectConfig1() {
     Map<String, String> props = new HashMap<>();
     props.put(Authenticator.PROPNAME_APIKEY, API_KEY);
     props.put(Authenticator.PROPNAME_URL, "url");
     props.put(Authenticator.PROPNAME_CLIENT_ID, "clientId");
     props.put(Authenticator.PROPNAME_CLIENT_SECRET, "clientSecret");
-    props.put(Authenticator.PROPNAME_DISABLE_SSL, "true");
     props.put(Authenticator.PROPNAME_SCOPE, "scope1 scope2");
+    props.put(Authenticator.PROPNAME_DISABLE_SSL, "true");
 
-    IamAuthenticator authenticator = new IamAuthenticator(props);
+    IamAuthenticator authenticator = IamAuthenticator.fromConfiguration(props);
     assertEquals(Authenticator.AUTHTYPE_IAM, authenticator.authenticationType());
-    assertTrue(authenticator.getDisableSSLVerification());
-    assertEquals("clientId", authenticator.getClientId());
-    assertEquals("clientSecret", authenticator.getClientSecret());
     assertEquals(API_KEY, authenticator.getApiKey());
     assertEquals("url", authenticator.getURL());
+    assertEquals("clientId", authenticator.getClientId());
+    assertEquals("clientSecret", authenticator.getClientSecret());
     assertEquals("scope1 scope2", authenticator.getScope());
+    assertTrue(authenticator.getDisableSSLVerification());
   }
 
   @Test
-  public void testCorrectConfigMap2() {
+  public void testConfigCorrectConfig2() {
     Map<String, String> props = new HashMap<>();
-    props.put("IAM_APIKEY", API_KEY);
+    props.put(Authenticator.PROPNAME_APIKEY, API_KEY);
+    props.put(Authenticator.PROPNAME_SCOPE, "scope1");
 
-    IamAuthenticator authenticator = new IamAuthenticator(props);
+    IamAuthenticator authenticator = IamAuthenticator.fromConfiguration(props);
     assertEquals(Authenticator.AUTHTYPE_IAM, authenticator.authenticationType());
-    assertFalse(authenticator.getDisableSSLVerification());
     assertEquals(API_KEY, authenticator.getApiKey());
-    assertNull(authenticator.getScope());
+    assertEquals("scope1", authenticator.getScope());
+    assertNotNull(authenticator.getURL());
+    assertNull(authenticator.getClientId());
+    assertNull(authenticator.getClientSecret());
+    assertFalse(authenticator.getDisableSSLVerification());
   }
 
   @Test
   public void testDisableSSLVerification() {
-    // Test using the 1-arg ctor and setter.
-    IamAuthenticator auth = new IamAuthenticator(API_KEY);
+    IamAuthenticator auth = new IamAuthenticator.Builder().apikey(API_KEY).build();
     assertFalse(auth.getDisableSSLVerification());
     auth.setDisableSSLVerification(true);
     assertTrue(auth.getDisableSSLVerification());
 
-    // Test using the full ctor.
-    auth = new IamAuthenticator(API_KEY, "url", null, null, true, null);
+    auth = new IamAuthenticator.Builder().apikey(API_KEY).url("url").disableSSLVerification(true).build();
     assertTrue(auth.getDisableSSLVerification());
   }
 
   @Test
   public void testSetScope() {
-    // Test using the 1-arg ctor and setter.
-    IamAuthenticator auth = new IamAuthenticator(API_KEY);
+    IamAuthenticator auth = new IamAuthenticator.Builder().apikey(API_KEY).build();
     assertNull(auth.getScope());
     String scope = "scope1 scope2 scope3";
     auth.setScope(scope);
     assertEquals(scope, auth.getScope());
+
+    auth = auth.newBuilder()
+        .apikey(API_KEY)
+        .scope(null)
+        .build();
+    assertNull(auth.getScope());
+
+    auth = auth.newBuilder()
+        .scope(scope)
+        .build();
+    assertEquals (scope, auth.getScope());
   }
 
-  @Test
-  public void testSetScopeThroughCtor() {
-    String scope = "scope1 scope2 scope3";
-    IamAuthenticator auth = new IamAuthenticator(API_KEY, url, null, null, false, null, scope);
-    assertEquals(scope, auth.getScope());
-  }
+
+  //
+  // Tests involving interactions with a mocked token service.
+  //
 
   @Test
   public void testAuthenticateNewAndStoredToken() throws Throwable {
@@ -191,15 +227,17 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
     PowerMockito.mockStatic(Clock.class);
     PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
 
-    IamAuthenticator authenticator = new IamAuthenticator(API_KEY, url, null, null, true, null);
+    IamAuthenticator authenticator = new IamAuthenticator.Builder()
+        .apikey(API_KEY)
+        .url(url)
+        .disableSSLVerification(true)
+        .build();
 
     Request.Builder requestBuilder = new Request.Builder().url("https://test.com");
 
     // Authenticator should request new, valid token.
     authenticator.authenticate(requestBuilder);
-
-    Request request = requestBuilder.build();
-    assertEquals("Bearer " + tokenData.getAccessToken(), request.header(HttpHeaders.AUTHORIZATION));
+    verifyAuthHeader(requestBuilder, "Bearer " + tokenData.getAccessToken());
 
     // Now make sure the token server request did not contain an Authorization header,
     // since we didn't set clientId/clientSecret.
@@ -210,11 +248,9 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
     assertNull(actualHeaders.get(HttpHeaders.AUTHORIZATION));
 
     // Authenticator should just return the same token this time since we have a valid one stored.
-    Request.Builder newBuilder = request.newBuilder();
-    authenticator.authenticate(newBuilder);
-
-    Request newRequest = newBuilder.build();
-    assertEquals("Bearer " + tokenData.getAccessToken(), newRequest.header(HttpHeaders.AUTHORIZATION));
+    requestBuilder = new Request.Builder().url("https://test.com");
+    authenticator.authenticate(requestBuilder);
+    verifyAuthHeader(requestBuilder, "Bearer " + tokenData.getAccessToken());
   }
 
   @Test
@@ -237,9 +273,7 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
     // Authenticator should detect the expiration and request a new access token when we call authenticate() again.
     server.enqueue(jsonResponse(refreshedTokenData));
     authenticator.authenticate(requestBuilder);
-
-    Request request = requestBuilder.build();
-    assertEquals("Bearer " + refreshedTokenData.getAccessToken(), request.header(HttpHeaders.AUTHORIZATION));
+    verifyAuthHeader(requestBuilder, "Bearer " + refreshedTokenData.getAccessToken());
   }
 
   @Test
@@ -250,7 +284,7 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
     PowerMockito.mockStatic(Clock.class);
     PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn((long) 1522788600);
 
-    IamAuthenticator authenticator = new IamAuthenticator(API_KEY);
+    IamAuthenticator authenticator = new IamAuthenticator.Builder().apikey(API_KEY).build();
     authenticator.setURL(url);
 
     Request.Builder requestBuilder = new Request.Builder().url("https://test.com");
@@ -264,19 +298,15 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
     // expired.
     server.enqueue(jsonResponse(refreshedTokenData).setBodyDelay(2, TimeUnit.SECONDS));
     authenticator.authenticate(requestBuilder);
-
-    Request request = requestBuilder.build();
-    assertEquals("Bearer " + tokenData.getAccessToken(), request.header(HttpHeaders.AUTHORIZATION));
+    verifyAuthHeader(requestBuilder, "Bearer " + tokenData.getAccessToken());
 
     // Sleep to wait out the background refresh of our access token.
     Thread.sleep(3000);
 
     // Next request should use the refreshed token.
-    Request.Builder newBuilder = request.newBuilder();
-    authenticator.authenticate(newBuilder);
-
-    Request newRequest = newBuilder.build();
-    assertEquals("Bearer " + refreshedTokenData.getAccessToken(), newRequest.header(HttpHeaders.AUTHORIZATION));
+    requestBuilder = new Request.Builder().url("https://test.com");
+    authenticator.authenticate(requestBuilder);
+    verifyAuthHeader(requestBuilder, "Bearer " + refreshedTokenData.getAccessToken());
   }
 
   @Test
@@ -296,9 +326,7 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
 
     // Authenticator should request new, valid token.
     authenticator.authenticate(requestBuilder);
-
-    Request request = requestBuilder.build();
-    assertEquals("Bearer " + tokenData.getAccessToken(), request.header(HttpHeaders.AUTHORIZATION));
+    verifyAuthHeader(requestBuilder, "Bearer " + tokenData.getAccessToken());
 
     // Now do some validation on the mock request sent to the token server.
     RecordedRequest tokenServerRequest = server.takeRequest();
@@ -309,11 +337,9 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
     assertEquals("value2", actualHeaders.get("header2"));
 
     // Authenticator should just return the same token this time since we have a valid one stored.
-    Request.Builder newBuilder = request.newBuilder();
-    authenticator.authenticate(newBuilder);
-
-    Request newRequest = newBuilder.build();
-    assertEquals("Bearer " + tokenData.getAccessToken(), newRequest.header(HttpHeaders.AUTHORIZATION));
+    requestBuilder = new Request.Builder().url("https://test.com");
+    authenticator.authenticate(requestBuilder);
+    verifyAuthHeader(requestBuilder, "Bearer " + tokenData.getAccessToken());
   }
 
   @Test
@@ -324,16 +350,19 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
     PowerMockito.mockStatic(Clock.class);
     PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
 
-    IamAuthenticator authenticator = new IamAuthenticator(API_KEY, url, "clientId", "clientSecret", false, null);
+    IamAuthenticator authenticator = new IamAuthenticator.Builder()
+        .apikey(API_KEY)
+        .url(url)
+        .clientId("clientId")
+        .clientSecret("clientSecret")
+        .build();
     String expectedIAMAuthHeader = AuthenticatorBase.constructBasicAuthHeader("clientId", "clientSecret");
 
     Request.Builder requestBuilder = new Request.Builder().url("https://test.com");
 
     // Authenticator should request new, valid token.
     authenticator.authenticate(requestBuilder);
-
-    Request request = requestBuilder.build();
-    assertEquals("Bearer " + tokenData.getAccessToken(), request.header(HttpHeaders.AUTHORIZATION));
+    verifyAuthHeader(requestBuilder, "Bearer " + tokenData.getAccessToken());
 
     // Now make sure the token server request contained the correct Authorization header.
     RecordedRequest tokenServerRequest = server.takeRequest();
@@ -343,11 +372,9 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
     assertEquals(expectedIAMAuthHeader, actualHeaders.get(HttpHeaders.AUTHORIZATION));
 
     // Authenticator should just return the same token this time since we have a valid one stored.
-    Request.Builder newBuilder = request.newBuilder();
-    authenticator.authenticate(newBuilder);
-
-    Request newRequest = newBuilder.build();
-    assertEquals("Bearer " + tokenData.getAccessToken(), newRequest.header(HttpHeaders.AUTHORIZATION));
+    requestBuilder = new Request.Builder().url("https://test.com");
+    authenticator.authenticate(requestBuilder);
+    verifyAuthHeader(requestBuilder, "Bearer " + tokenData.getAccessToken());
   }
 
   @Test
@@ -358,14 +385,16 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
     PowerMockito.mockStatic(Clock.class);
     PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
 
-    IamAuthenticator authenticator = new IamAuthenticator(API_KEY, url, null, null, false, null);
+    IamAuthenticator authenticator = new IamAuthenticator.Builder()
+        .apikey(API_KEY)
+        .url(url)
+        .build();
+    assertNull(authenticator.getScope());
     Request.Builder requestBuilder = new Request.Builder().url("https://test.com");
 
     // Authenticator should request new, valid token.
     authenticator.authenticate(requestBuilder);
-
-    Request request = requestBuilder.build();
-    assertEquals("Bearer " + tokenData.getAccessToken(), request.header(HttpHeaders.AUTHORIZATION));
+    verifyAuthHeader(requestBuilder, "Bearer " + tokenData.getAccessToken());
 
     // Now do some validation on the mock request sent to the token server.
     RecordedRequest tokenServerRequest = server.takeRequest();
@@ -373,27 +402,29 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
     String body = tokenServerRequest.getBody().readUtf8();
     String expectedBody = "grant_type=urn%3Aibm%3Aparams%3Aoauth%3Agrant-type%3Aapikey&apikey=123456789&response_type=cloud_iam";
     assertEquals(expectedBody, body);
-    assertNull(authenticator.getScope());
   }
 
   @Test
   public void testFormBodyParamsWScope() throws Throwable {
+    String scope = "scope1 scope2 scope3";
+
     server.enqueue(jsonResponse(tokenData));
 
     // Mock current time to ensure the token is valid.
     PowerMockito.mockStatic(Clock.class);
     PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
 
-    IamAuthenticator authenticator = new IamAuthenticator(API_KEY, url, null, null, false, null);
+    IamAuthenticator authenticator = new IamAuthenticator.Builder()
+        .apikey(API_KEY)
+        .url(url)
+        .scope(scope)
+        .build();
+    assertEquals(scope, authenticator.getScope());
     Request.Builder requestBuilder = new Request.Builder().url("https://test.com");
 
     // Authenticator should request new, valid token.
-    String scope = "scope1 scope2 scope3";
-    authenticator.setScope(scope);
     authenticator.authenticate(requestBuilder);
-
-    Request request = requestBuilder.build();
-    assertEquals("Bearer " + tokenData.getAccessToken(), request.header(HttpHeaders.AUTHORIZATION));
+    verifyAuthHeader(requestBuilder, "Bearer " + tokenData.getAccessToken());
 
     // Now do some validation on the mock request sent to the token server.
     RecordedRequest tokenServerRequest = server.takeRequest();
@@ -401,10 +432,9 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
     String body = tokenServerRequest.getBody().readUtf8();
     String expectedBody = "grant_type=urn%3Aibm%3Aparams%3Aoauth%3Agrant-type%3Aapikey&apikey=123456789&response_type=cloud_iam&scope=scope1%20scope2%20scope3";
     assertEquals(expectedBody, body);
-    assertEquals(scope, authenticator.getScope());
   }
 
-  @Test
+  @Test(expected = ServiceResponseException.class)
   public void testApiErrorBadRequest() throws Throwable {
     server.enqueue(errorResponse(400));
 
@@ -412,20 +442,15 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
     PowerMockito.mockStatic(Clock.class);
     PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
 
-    IamAuthenticator authenticator = new IamAuthenticator(API_KEY);
-    authenticator.setURL(url);
+    IamAuthenticator authenticator = new IamAuthenticator.Builder()
+        .apikey(API_KEY)
+        .url(url)
+        .build();
 
     Request.Builder requestBuilder = new Request.Builder().url("https://test.com");
 
     // Calling authenticate should result in an exception.
-    try {
-      authenticator.authenticate(requestBuilder);
-      fail("Expected authenticate() to result in exception!");
-    } catch (ServiceResponseException excp) {
-      assertTrue(excp instanceof ServiceResponseException);
-    } catch (Throwable t) {
-      fail("Expected ServiceResponseException, not " + t.getClass().getSimpleName());
-    }
+    authenticator.authenticate(requestBuilder);
   }
 
   @Test
@@ -436,8 +461,10 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
     PowerMockito.mockStatic(Clock.class);
     PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
 
-    IamAuthenticator authenticator = new IamAuthenticator(API_KEY);
-    authenticator.setURL(url);
+    IamAuthenticator authenticator = new IamAuthenticator.Builder()
+        .apikey(API_KEY)
+        .url(url)
+        .build();
 
     Request.Builder requestBuilder = new Request.Builder().url("https://test.com");
 
@@ -452,5 +479,114 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
     } catch (Throwable t) {
       fail("Expected RuntimeException, not " + t.getClass().getSimpleName());
     }
+  }
+
+  // Verify the Authorization header in the specified request builder.
+  private void verifyAuthHeader(Request.Builder builder, String expectedPrefix) {
+    Request request = builder.build();
+    String actualValue = request.header(HttpHeaders.AUTHORIZATION);
+    assertNotNull(actualValue);
+
+    assertTrue(actualValue.startsWith(expectedPrefix));
+  }
+
+
+  //
+  // Tests involving the deprecated ctors.
+  //
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testCtorMissingApiKey() {
+    new IamAuthenticator((String) null);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testCtorEmptyApiKey() {
+    new IamAuthenticator("");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testCtorMissingApiKeyMap() {
+    Map<String, String> props = new HashMap<>();
+    new IamAuthenticator(props);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testCtorMissingClientId() {
+    new IamAuthenticator(API_KEY, "url", null, "clientSecret", false, null);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testCtorEmptyClientId() {
+    new IamAuthenticator(API_KEY, "url", "", "clientSecret", false, null);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testCtorMissingClientSecret() {
+    new IamAuthenticator(API_KEY, "url", "clientId", null, false, null);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testCtorEmptyClientSecret() {
+    new IamAuthenticator(API_KEY, "url", "clientId", "", false, null);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testCtorEmptyApiKeyMap() {
+    Map<String, String> props = new HashMap<>();
+    props.put(Authenticator.PROPNAME_APIKEY, "");
+    new IamAuthenticator(props);
+  }
+
+  @Test
+  public void testCtorCorrectConfig() {
+    Map<String, String> expectedHeaders = new HashMap<>();
+    expectedHeaders.put("header1", "value1");
+    expectedHeaders.put("header2", "value2");
+
+    IamAuthenticator authenticator = new IamAuthenticator(API_KEY, "url", "clientId", "clientSecret", true, expectedHeaders, "scope1");
+    assertEquals(Authenticator.AUTHTYPE_IAM, authenticator.authenticationType());
+    assertEquals(API_KEY, authenticator.getApiKey());
+    assertEquals("url", authenticator.getURL());
+    assertEquals("clientId", authenticator.getClientId());
+    assertEquals("clientSecret", authenticator.getClientSecret());
+    assertEquals("scope1", authenticator.getScope());
+    assertTrue(authenticator.getDisableSSLVerification());
+    assertEquals(expectedHeaders, authenticator.getHeaders());
+  }
+
+  @Test
+  public void testCtorCorrectConfigMap() {
+    Map<String, String> props = new HashMap<>();
+    props.put(Authenticator.PROPNAME_APIKEY, API_KEY);
+    props.put(Authenticator.PROPNAME_URL, "url");
+    props.put(Authenticator.PROPNAME_CLIENT_ID, "clientId");
+    props.put(Authenticator.PROPNAME_CLIENT_SECRET, "clientSecret");
+    props.put(Authenticator.PROPNAME_SCOPE, "scope1 scope2");
+    props.put(Authenticator.PROPNAME_DISABLE_SSL, "true");
+
+    IamAuthenticator authenticator = new IamAuthenticator(props);
+    assertEquals(Authenticator.AUTHTYPE_IAM, authenticator.authenticationType());
+    assertEquals(API_KEY, authenticator.getApiKey());
+    assertEquals("url", authenticator.getURL());
+    assertEquals("clientId", authenticator.getClientId());
+    assertEquals("clientSecret", authenticator.getClientSecret());
+    assertEquals("scope1 scope2", authenticator.getScope());
+    assertTrue(authenticator.getDisableSSLVerification());
+  }
+
+  @Test
+  public void testCorrectConfigMap2() {
+    Map<String, String> props = new HashMap<>();
+    props.put("IAM_APIKEY", API_KEY);
+
+    IamAuthenticator authenticator = new IamAuthenticator(props);
+    assertEquals(Authenticator.AUTHTYPE_IAM, authenticator.authenticationType());
+    assertEquals(API_KEY, authenticator.getApiKey());
+    assertNotNull(authenticator.getURL());
+    assertNull(authenticator.getClientId());
+    assertNull(authenticator.getClientSecret());
+    assertNull(authenticator.getScope());
+    assertFalse(authenticator.getDisableSSLVerification());
   }
 }

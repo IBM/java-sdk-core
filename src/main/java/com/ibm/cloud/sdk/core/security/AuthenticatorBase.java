@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2019.
+ * (C) Copyright IBM Corp. 2019, 2021.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -29,6 +29,7 @@ public class AuthenticatorBase {
   public static final String ERRORMSG_PROP_INVALID =
       "The %s property is invalid. Please remove any surrounding {, }, or \" characters.";
   public static final String ERRORMSG_REQ_FAILED = "Error while fetching access token from token service: ";
+  public static final String ERRORMSG_EXCLUSIVE_PROP_ERROR = "Exactly one of %s or %s must be specified.";
 
   /**
    * Returns a "Basic" Authorization header value for the specified username and password.
