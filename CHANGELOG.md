@@ -1,3 +1,10 @@
+# [9.7.0](https://github.com/IBM/java-sdk-core/compare/9.6.0...9.7.0) (2021-02-02)
+
+
+### Features
+
+* **authentication:** support cp4d /v1/authorize operation ([1144d88](https://github.com/IBM/java-sdk-core/commit/1144d88ccc108287ca3434d1244b5e9b2767b1af))
+
 # [9.6.0](https://github.com/IBM/java-sdk-core/compare/9.5.4...9.6.0) (2021-01-28)
 
 
