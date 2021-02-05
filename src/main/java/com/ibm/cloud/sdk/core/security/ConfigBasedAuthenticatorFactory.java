@@ -74,7 +74,9 @@ public class ConfigBasedAuthenticatorFactory {
       authenticator = BearerTokenAuthenticator.fromConfiguration(props);
     } else if (authType.equalsIgnoreCase(Authenticator.AUTHTYPE_CP4D)) {
       authenticator = CloudPakForDataAuthenticator.fromConfiguration(props);
-    } else if (authType.equalsIgnoreCase(Authenticator.AUTHTYPE_IAM)) {
+    } else if (authType.equalsIgnoreCase(Authenticator.AUTHTYPE_CP4D_SERVICE)) {
+      authenticator = CloudPakForDataServiceAuthenticator.fromConfiguration(props);
+    }  else if (authType.equalsIgnoreCase(Authenticator.AUTHTYPE_IAM)) {
       authenticator = IamAuthenticator.fromConfiguration(props);
     } else if (authType.equalsIgnoreCase(Authenticator.AUTHTYPE_NOAUTH)) {
       authenticator = new NoAuthAuthenticator(props);

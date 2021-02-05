@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2019.
+ * (C) Copyright IBM Corp. 2015, 2021.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -74,7 +74,10 @@ public class ConfigBasedAuthenticatorFactoryTest {
     env.put("SERVICE5_BEARER_TOKEN", "my-bearer-token");
     env.put("ERROR1_AUTH_TYPE", Authenticator.AUTHTYPE_CP4D);
     env.put("ERROR2_AUTH_TYPE", "BAD_AUTH_TYPE");
-
+    env.put("SERVICE6_AUTH_URL", "https://service1/zen-data/internal");
+    env.put("SERVICE6_DISABLE_SSL", "true");
+    env.put("SERVICE6_AUTH_TYPE", Authenticator.AUTHTYPE_CP4D_SERVICE);
+    env.put("SERVICE6_SERVICE_BROKER_SECRET", "f8b7czjt701wy6253be5q8ad8f07kd08");
     return env;
   }
 
@@ -200,6 +203,16 @@ public class ConfigBasedAuthenticatorFactoryTest {
     Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service-1");
     assertNotNull(auth);
     assertEquals(Authenticator.AUTHTYPE_IAM, auth.authenticationType());
+  }
+
+  @Test
+  public void testEnvCredentialsService6() {
+    PowerMockito.spy(EnvironmentUtils.class);
+    PowerMockito.when(EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
+
+    Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service6");
+    assertNotNull(auth);
+    assertEquals(Authenticator.AUTHTYPE_CP4D_SERVICE, auth.authenticationType());
   }
 
   @Test(expected = IllegalArgumentException.class)
