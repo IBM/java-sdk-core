@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2019.
+ * (C) Copyright IBM Corp. 2019, 2021.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -27,6 +27,7 @@ public interface Authenticator {
   String AUTHTYPE_NOAUTH = "noAuth";
   String AUTHTYPE_IAM = "iam";
   String AUTHTYPE_CP4D = "cp4d";
+  String AUTHTYPE_CP4D_SERVICE = "cp4dService";
   String AUTHTYPE_BEARER_TOKEN = "bearerToken";
 
   /**
@@ -42,6 +43,11 @@ public interface Authenticator {
   String PROPNAME_CLIENT_ID = "CLIENT_ID";
   String PROPNAME_CLIENT_SECRET = "CLIENT_SECRET";
   String PROPNAME_SCOPE = "SCOPE";
+  String PROPNAME_UID = "UID";
+  String PROPNAME_DISPLAY_NAME = "DISPLAY_NAME";
+  String PROPNAME_PERMISSIONS = "PERMISSIONS";
+  String PROPNAME_EXPIRATION_TIME = "EXPIRATION_TIME";
+  String PROPNAME_SERVICE_BROKER_SECRET = "SERVICE_BROKER_SECRET";
 
   /**
    * Validates the current set of configuration information in the Authenticator.
