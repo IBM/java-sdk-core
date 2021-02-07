@@ -1,16 +1,12 @@
+---
 language: java
-dist: trusty
+dist: xenial
+
 jdk:
 - openjdk8
 
 notifications:
   email: true
-
-env:
-  global:
-    - BINTRAY_REPO_OWNER=ibm-cloud-sdks
-    - BINTRAY_REPO_NAME=ibm-cloud-sdk-repo
-    - BINTRAY_PKG_NAME=com.ibm.cloud:sdk-core
 
 branches:
   except:
@@ -20,73 +16,65 @@ cache:
   directories:
   - "$HOME/.m2"
 
+env:
+  global:
+    - MVN_ARGS="--settings build/.travis.settings.xml"
+
+stages:
+  - name: Build-Test
+  - name: Semantic-Release
+    if: branch = master AND type = push AND fork = false
+  - name: Publish-Release
+    if: tag IS present
+
 before_install:
-- sudo apt-get update
-- sudo apt-get install python
-- nvm install 12
-- npm install -g npm@6.x
+  - sudo apt-get update
+  - env | grep TRAVIS
 
-install:
-  - curl -s https://codecov.io/bash > $HOME/codecov-bash.sh && chmod +x $HOME/codecov-bash.sh
+jobs:
+  include:
+    - stage: Build-Test
+      jdk: openjdk8
+      install:
+        - curl -s https://codecov.io/bash > $HOME/codecov-bash.sh && chmod +x $HOME/codecov-bash.sh
+      script:
+        - build/setMavenVersion.sh
+        - mvn clean package $MVN_ARGS
+      after_success:
+        - build/publishCodeCoverage.sh
 
-# For a tagged build, we'll set the maven artifact version #.
-before_script:
-- echo "TRAVIS_TAG = '${TRAVIS_TAG}'"
-- '[ "${TRAVIS_TAG}" != "" ] 
-  && mvn versions:set -DnewVersion=${TRAVIS_TAG} -DgenerateBackupPoms=false 
-  || true'
-- '[ "${TRAVIS_TAG}" != "" ] 
-  && cat build/bintray-config.template | envsubst >bintray-config.json 
-  && echo "Contents of bintray-config.json:" 
-  && cat bintray-config.json 
-  || true'
+    - stage: Semantic-Release
+      install:
+        - sudo apt-get install python
+        - nvm install 12
+        - npm install -g npm@6.x
+        - pip install --user bump2version
+        - npm install @semantic-release/changelog
+        - npm install @semantic-release/exec
+        - npm install @semantic-release/git
+        - npm install @semantic-release/github
+      script:
+        - npx semantic-release
+      after_success:
+        - echo "Semantic release has successfully created a new tagged-release"
 
-script:
-- mvn clean package
-- mvn javadoc:javadoc
+    - stage: Publish-Release
+      jdk: openjdk8
+      name: Publish-Javadoc
+      install: true
+      script:
+        - build/setMavenVersion.sh
+        - mvn clean javadoc:javadoc $MVN_ARGS
+        - build/publishJavadoc.sh
+      after_success:
+        - echo "Javadocs successfully published to gh-pages!"
 
-before_deploy:
-- pip install --user bump2version
-- npm install @semantic-release/changelog
-- npm install @semantic-release/exec
-- npm install @semantic-release/git
-- npm install @semantic-release/github
-
-after_success:
-  - build/publishCodeCoverage.sh
-
-deploy:
-- provider: script
-  script: npx semantic-release
-  skip_cleanup: true
-  on:
-    branch: master
-    jdk: openjdk8
-- provider: bintray
-  file: bintray-config.json
-  user: $BINTRAY_USER
-  key:  $BINTRAY_APIKEY
-  skip_cleanup: true
-  on:
-    tags: true
-    jdk: openjdk8
-- provider: releases
-  api_key: $GH_TOKEN
-  file_glob: true
-  file:
-    - target/sdk-core-*.jar
-  skip_cleanup: true
-  on:
-    tags: true
-    jdk: openjdk8
-- provider: script
-  script: "./build/push-javadoc-to-gh-pages.sh"
-  skip_cleanup: true
-  on:
-    tags: true
-    jdk: openjdk8
-
-# Ask bintray to sync the just-deployed artifact to maven central
-after_script:
-- '[ "${TRAVIS_TAG}" != "" ] 
-  && build/sync2MC.sh $BINTRAY_USER $BINTRAY_APIKEY $BINTRAY_REPO_OWNER $BINTRAY_REPO_NAME $BINTRAY_PKG_NAME $TRAVIS_TAG'
+    - jdk: openjdk8
+      name: Publish-To-Maven-Central
+      install: true
+      script:
+        - build/setupSigning.sh
+        - build/setMavenVersion.sh
+        - mvn deploy $MVN_ARGS -DskipTests
+      after_success:
+        - echo "Maven artifacts successfully published to Maven Central!"
