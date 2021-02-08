@@ -1,3 +1,10 @@
+## [9.7.1](https://github.com/IBM/java-sdk-core/compare/9.7.0...9.7.1) (2021-02-08)
+
+
+### Bug Fixes
+
+* **build:** publish artifacts directly to maven central repository ([ecadef4](https://github.com/IBM/java-sdk-core/commit/ecadef407c6f1f8f435c05ef4cb93fcba64afb22))
+
 # [9.7.0](https://github.com/IBM/java-sdk-core/compare/9.6.0...9.7.0) (2021-02-02)
 
 
