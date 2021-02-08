@@ -1,3 +1,10 @@
+# [9.8.0](https://github.com/IBM/java-sdk-core/compare/9.7.1...9.8.0) (2021-02-08)
+
+
+### Features
+
+* **authenticator:** add new cp4d service authenticator ([5d5197b](https://github.com/IBM/java-sdk-core/commit/5d5197b1d2c1dbe0ff7a23c292070f2e6f12be43))
+
 ## [9.7.1](https://github.com/IBM/java-sdk-core/compare/9.7.0...9.7.1) (2021-02-08)
 
 
