@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Publish javadocs only for a tagged-release or non-PR build of master.
-if [[ -n "${TRAVIS_TAG}" || "${TRAVIS_BRANCH}" == "master" && "${TRAVIS_PULL_REQUEST}" == "false" ]]; then
+# Publish javadocs only for a tagged-release or non-PR build of main.
+if [[ -n "${TRAVIS_TAG}" || "${TRAVIS_BRANCH}" == "main" && "${TRAVIS_PULL_REQUEST}" == "false" ]]; then
 
     printf "\n>>>>> Publishing javadoc for release build: repo=%s branch=%s build_num=%s job_num=%s\n" ${TRAVIS_REPO_SLUG} ${TRAVIS_BRANCH} ${TRAVIS_BUILD_NUMBER} ${TRAVIS_JOB_NUMBER} 
 

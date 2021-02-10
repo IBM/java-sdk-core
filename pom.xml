@@ -24,7 +24,7 @@
     <scm>
         <connection>scm:git:https://github.com/IBM/java-sdk-core</connection>
         <developerConnection>scm:git:https://github.com/IBM/java-sdk-core</developerConnection>
-        <url>https://github.com/IBM/java-sdk-core/tree/master</url>
+        <url>https://github.com/IBM/java-sdk-core/tree/main</url>
     </scm>
 
     <issueManagement>

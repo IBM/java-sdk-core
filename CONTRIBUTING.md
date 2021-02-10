@@ -27,7 +27,7 @@ If you want to contribute to the repository, here's a quick guide:
       * Please add one or more tests to validate your changes.
   3. Make sure everything builds/tests cleanly
   4. Commit your changes  
-  5. Push to your fork and submit a pull request to the **master** branch
+  5. Push to your fork and submit a pull request to the **main** branch
 
 # Developer's Certificate of Origin 1.1
 By making a contribution to this project, I certify that:
