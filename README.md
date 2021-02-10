@@ -1,7 +1,7 @@
-[![Build Status](https://travis-ci.com/IBM/java-sdk-core.svg?branch=master)](https://travis-ci.com/IBM/java-sdk-core)
+[![Build Status](https://travis-ci.com/IBM/java-sdk-core.svg?branch=main)](https://travis-ci.com/IBM/java-sdk-core)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.ibm.cloud/sdk-core/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.ibm.cloud/sdk-core)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![codecov](https://codecov.io/gh/IBM/java-sdk-core/branch/master/graph/badge.svg)](https://codecov.io/gh/IBM/java-sdk-core)
+[![codecov](https://codecov.io/gh/IBM/java-sdk-core/branch/main/graph/badge.svg)](https://codecov.io/gh/IBM/java-sdk-core)
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
 [![CLA assistant](https://cla-assistant.io/readme/badge/ibm/java-sdk-core)](https://cla-assistant.io/ibm/java-sdk-core)
 
