@@ -1,3 +1,11 @@
+## [9.8.1](https://github.com/IBM/java-sdk-core/compare/9.8.0...9.8.1) (2021-02-10)
+
+
+### Bug Fixes
+
+* **build:** main migration ([#111](https://github.com/IBM/java-sdk-core/issues/111)) ([cfc2bd3](https://github.com/IBM/java-sdk-core/commit/cfc2bd31b885aa422ea6dfb45313747af6093211))
+* **build:** main migration release ([#112](https://github.com/IBM/java-sdk-core/issues/112)) ([b164c01](https://github.com/IBM/java-sdk-core/commit/b164c0189f1d537eacb21136b648a069cf247c34))
+
 # [9.8.0](https://github.com/IBM/java-sdk-core/compare/9.7.1...9.8.0) (2021-02-08)
 
 
