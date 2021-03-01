@@ -22,6 +22,8 @@ import org.junit.Test;
 import com.ibm.cloud.sdk.core.http.HttpHeaders;
 import com.ibm.cloud.sdk.core.security.Authenticator;
 import com.ibm.cloud.sdk.core.security.ConfigBasedAuthenticatorFactory;
+import com.ibm.cloud.sdk.core.security.IamAuthenticator;
+import com.ibm.cloud.sdk.core.security.IamToken;
 
 import okhttp3.Request;
 
@@ -29,7 +31,7 @@ import okhttp3.Request;
 // This class contains an integration test that uses the live IAM token service.
 // This test is normally @Ignored to avoid trying to run this during automated builds.
 //
-// In order to run these tests, ceate file "cp4dtest.env" in the project root.
+// In order to run these tests, ceate file "iamtest.env" in the project root.
 // It should look like this:
 //
 // IAMTEST1_AUTH_URL=<prod iam url>   e.g. https://iam.cloud.ibm.com
@@ -39,6 +41,8 @@ import okhttp3.Request;
 // IAMTEST2_AUTH_URL=<test iam url>   e.g. https://iam.test.cloud.ibm.com
 // IAMTEST2_AUTH_TYPE=iam
 // IAMTEST2_APIKEY=<apikey>
+// IAMTEST2_CLIENT_ID=bx
+// IAMTEST2_CLIENT_SECRET=bx
 //
 // Then remove/comment-out the @Ignore annotation below and run the method as a junit test.
 //
@@ -57,15 +61,25 @@ public class IamAuthenticatorLiveTest {
 
     Request.Builder requestBuilder;
 
-    // Test the username/password combination.
+    // Perform a test using the "production" IAM token server.
     requestBuilder = new Request.Builder().url("https://test.com");
     auth1.authenticate(requestBuilder);
     verifyAuthHeader(requestBuilder, "Bearer ");
 
-    // Test the username/apikey combination.
+    // Perform a test using the "test" IAM token server.
     requestBuilder = new Request.Builder().url("https://test.com");
     auth2.authenticate(requestBuilder);
     verifyAuthHeader(requestBuilder, "Bearer ");
+
+    // Test the retrieval of a refresh token from the "test" IAM token server.
+    IamToken tokenResponse = ((IamAuthenticator) auth2).requestToken();
+    assertNotNull(tokenResponse);
+    String refreshToken = tokenResponse.getRefreshToken();
+    assertNotNull(refreshToken);
+    System.out.println("Refresh token: " + refreshToken);
+
+    // This check is to ensure we get back a valid refresh token rather than something like "not_supported".
+    assertTrue(refreshToken.length() > 20);
   }
 
   // Verify the Authorization header in the specified request builder.
