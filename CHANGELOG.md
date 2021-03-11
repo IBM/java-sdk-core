@@ -1,3 +1,10 @@
+# [9.9.0](https://github.com/IBM/java-sdk-core/compare/9.8.1...9.9.0) (2021-03-11)
+
+
+### Features
+
+* add getQueryParam utility method to support pagination ([082e62d](https://github.com/IBM/java-sdk-core/commit/082e62ddf3739e5249371a2e41c1102908d59360))
+
 ## [9.8.1](https://github.com/IBM/java-sdk-core/compare/9.8.0...9.8.1) (2021-02-10)
 
 
