@@ -1,3 +1,10 @@
+## [9.9.1](https://github.com/IBM/java-sdk-core/compare/9.9.0...9.9.1) (2021-04-01)
+
+
+### Bug Fixes
+
+* **deps:** update dependencies to avoid vulnerabilities ([775a4d9](https://github.com/IBM/java-sdk-core/commit/775a4d906994f4a0534f485e96c416f16f9b58fb))
+
 # [9.9.0](https://github.com/IBM/java-sdk-core/compare/9.8.1...9.9.0) (2021-03-11)
 
 
