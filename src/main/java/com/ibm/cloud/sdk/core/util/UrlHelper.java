@@ -22,6 +22,9 @@ public class UrlHelper {
 
     /**
      * Returns the value of query parameter `param` from urlStr, or null when not found.
+     * @param urlStr the URL string containing the query param to retrieve
+     * @param param the name of the query param whose value should be returned
+     * @return the value of the specified query parameter
      */
     public static String getQueryParam(String urlStr, String param) {
         if (urlStr != null) {
