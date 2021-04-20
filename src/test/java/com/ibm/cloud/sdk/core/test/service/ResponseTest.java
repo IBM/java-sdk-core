@@ -17,7 +17,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.testng.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import com.ibm.cloud.sdk.core.util.Clock;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -40,9 +38,9 @@ import com.ibm.cloud.sdk.core.security.Authenticator;
 import com.ibm.cloud.sdk.core.security.NoAuthAuthenticator;
 import com.ibm.cloud.sdk.core.service.BaseService;
 import com.ibm.cloud.sdk.core.service.exception.InvalidServiceResponseException;
-import com.ibm.cloud.sdk.core.service.exception.ServiceResponseException;
 import com.ibm.cloud.sdk.core.service.model.GenericModel;
 import com.ibm.cloud.sdk.core.test.BaseServiceUnitTest;
+import com.ibm.cloud.sdk.core.util.Clock;
 import com.ibm.cloud.sdk.core.util.ResponseConverterUtils;
 
 import io.reactivex.Single;
@@ -131,6 +129,9 @@ public class ResponseTest extends BaseServiceUnitTest {
   private String testResponseBody5 = "\"string response\"";
   private String testResponseBody6 = "443374";
   private String testResponseBodyError1 = "{\"city\": \"Colum";
+  private String testResponseBodyMissing = "";
+  private String testResponseBodyEmptyObject = "{}";
+  private String testResponseBodyEmptyList = "[]";
 
   /*
    * (non-Javadoc)
@@ -156,6 +157,30 @@ public class ResponseTest extends BaseServiceUnitTest {
     assertNotNull(response.getResult());
     assertEquals(testResponseValue, response.getResult().getCity());
     assertNotNull(response.getHeaders());
+  }
+
+  /**
+   * Test that a null result is returned when no response body is present.
+   */
+  @Test
+  public void testExecuteTestModelNoResponse() {
+    server.enqueue(new MockResponse().setBody(testResponseBodyMissing));
+
+    Response<TestModel> response = service.getTestModel().execute();
+    assertNull(response.getResult());
+  }
+
+  /**
+   * Test an "empty" model instance is returned when an empty object response is present.
+   */
+  @Test
+  public void testExecuteTestModelEmptyObject() {
+    server.enqueue(new MockResponse().setBody(testResponseBodyEmptyObject));
+
+    Response<TestModel> response = service.getTestModel().execute();
+    TestModel obj = response.getResult();
+    assertNotNull(obj);
+    assertNull(obj.getCity());
   }
 
   /**
@@ -383,6 +408,31 @@ public class ResponseTest extends BaseServiceUnitTest {
     }
     assertEquals(Arrays.asList("Austin", "Georgetown", "Cedar Park"), actualCities);
     assertNotNull(response.getHeaders());
+  }
+
+  /**
+   * Test that a null list is returned when response body is missing.
+   */
+  @Test
+  public void testExecuteListTestModelNoResponse() {
+    server.enqueue(new MockResponse().setBody(testResponseBodyMissing));
+
+    Response<List<TestModel>> response = service.getListTestModel().execute();
+    List<TestModel> list = response.getResult();
+    assertNull(list);
+  }
+
+  /**
+   * Test that an empty list of TestModels are returned when response body is "[]".
+   */
+  @Test
+  public void testExecuteListTestModelEmptyList() {
+    server.enqueue(new MockResponse().setBody(testResponseBodyEmptyList));
+
+    Response<List<TestModel>> response = service.getListTestModel().execute();
+    List<TestModel> list = response.getResult();
+    assertNotNull(list);
+    assertTrue(list.isEmpty());
   }
 
   /**
