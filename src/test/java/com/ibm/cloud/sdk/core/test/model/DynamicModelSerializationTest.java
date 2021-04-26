@@ -161,6 +161,9 @@ public class DynamicModelSerializationTest {
     model.put("football", foo2);
     model.put("basketball", "PF");
     model.put("age", Integer.valueOf(25));
+    Map<String, Object> anyObject = new HashMap<>();
+    anyObject.put("anyKey", "anyValue");
+    model.put("anyObj", anyObject);
     return model;
   }
 
