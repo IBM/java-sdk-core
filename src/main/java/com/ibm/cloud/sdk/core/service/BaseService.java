@@ -14,10 +14,12 @@
 package com.ibm.cloud.sdk.core.service;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -181,6 +183,61 @@ public abstract class BaseService {
    */
   public static boolean isJsonPatchMimeType(String mimeType) {
     return mimeType != null && JSON_PATCH_MIME_PATTERN.matcher(mimeType).matches();
+  }
+
+  /**
+   * Constructs a service URL by formatting a parameterized URL.
+   *
+   * @param parameterizedUrl URL that contains variable placeholders, e.g. "{scheme}://ibm.com".
+   * @param defaultUrlVariables map from variable names to default values.
+   *  Each variable in the parameterized URL must have a default value specified in this map.
+   * @param providedUrlVariables map from variable names to desired values.
+   *  If a variable is not provided in this map,
+   *  the default variable value will be used instead.
+   * @return the formatted URL with all variable placeholders replaced by values.
+   */
+  public static String constructServiceURL(
+    String parameterizedUrl,
+    Map<String, String> defaultUrlVariables,
+    Map<String, String> providedUrlVariables
+  ) {
+
+    // If null was passed, we set the variables to an empty map.
+    // This results in all default variable values being used.
+    if (providedUrlVariables == null) {
+      providedUrlVariables = new HashMap<>();
+    }
+
+    // Verify the provided variable names.
+    for (String name : providedUrlVariables.keySet()) {
+      if (!defaultUrlVariables.containsKey(name)) {
+        throw new IllegalArgumentException(
+          String.format(
+            "'%s' is an invalid variable name."
+            + "\nValid variable names: %s.",
+            name,
+            // Display the variable names in alphabetical order.
+            // This allows for testing the full exception message.
+            defaultUrlVariables.keySet().stream().sorted().collect(Collectors.toList())
+          )
+        );
+      }
+    }
+
+    // Format the URL with provided or default variable values.
+    String formattedUrl = parameterizedUrl;
+
+    for (Map.Entry<String, String> defaultEntry : defaultUrlVariables.entrySet()) {
+      String name = defaultEntry.getKey();
+      String defaultValue = defaultEntry.getValue();
+
+      // Use the default variable value if none was provided.
+      String providedValue = providedUrlVariables.get(name);
+      String formatValue = providedValue != null ? providedValue : defaultValue;
+
+      formattedUrl = formattedUrl.replaceAll("\\{" + name + "}", formatValue);
+    }
+    return formattedUrl;
   }
 
   /**
