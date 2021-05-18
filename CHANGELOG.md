@@ -1,3 +1,10 @@
+# [9.10.0](https://github.com/IBM/java-sdk-core/compare/9.9.1...9.10.0) (2021-05-18)
+
+
+### Features
+
+* add `BaseService.constructServiceURL` method ([#122](https://github.com/IBM/java-sdk-core/issues/122)) ([76eda02](https://github.com/IBM/java-sdk-core/commit/76eda02db45387993d413ac9a926e106a7c556f1))
+
 ## [9.9.1](https://github.com/IBM/java-sdk-core/compare/9.9.0...9.9.1) (2021-04-01)
 
 
