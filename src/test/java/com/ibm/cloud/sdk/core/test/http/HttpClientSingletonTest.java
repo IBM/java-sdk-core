@@ -65,4 +65,13 @@ public class HttpClientSingletonTest {
         getAndAssertEnabledProtocols(client);
     }
 
+    @Test
+    public void testTlsProtocolFilteringWithVerificationDisabled() throws IOException {
+        HttpConfigOptions configOptions = new HttpConfigOptions.Builder()
+            .disableSslVerification(true)
+            .build();
+        OkHttpClient client = HttpClientSingleton.getInstance().configureClient(configOptions);
+        getAndAssertEnabledProtocols(client);
+    }
+
 }

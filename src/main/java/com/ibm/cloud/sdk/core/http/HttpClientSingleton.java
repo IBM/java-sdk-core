@@ -187,7 +187,7 @@ public class HttpClientSingleton {
       throw new RuntimeException(e);
     }
 
-    SSLSocketFactory trustAllSslSocketFactory = trustAllSslContext.getSocketFactory();
+    SSLSocketFactory trustAllSslSocketFactory = new FilteredSSLSocketFactory(trustAllSslContext.getSocketFactory());
 
     OkHttpClient.Builder builder = client.newBuilder();
     builder.sslSocketFactory(trustAllSslSocketFactory, (X509TrustManager) trustAllCerts[0]);
