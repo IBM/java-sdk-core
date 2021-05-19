@@ -1,3 +1,10 @@
+## [9.10.1](https://github.com/IBM/java-sdk-core/compare/9.10.0...9.10.1) (2021-05-19)
+
+
+### Bug Fixes
+
+* **http:** enable TLSv1.3; disable TLSv1.0 TLSv1.1 ([#123](https://github.com/IBM/java-sdk-core/issues/123)) ([3b05fd5](https://github.com/IBM/java-sdk-core/commit/3b05fd5919c41ae471b4bc343d1739867d97f9bc))
+
 # [9.10.0](https://github.com/IBM/java-sdk-core/compare/9.9.1...9.10.0) (2021-05-18)
 
 
