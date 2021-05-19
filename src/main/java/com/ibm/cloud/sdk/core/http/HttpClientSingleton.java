@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2019.
+ * (C) Copyright IBM Corp. 2015, 2021.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -44,7 +44,9 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -81,6 +83,37 @@ public class HttpClientSingleton {
       }
     }
   };
+
+  private static final class FilteredSSLSocketFactory extends DelegatingSSLSocketFactory {
+
+      // Get the TLS verson names from the MODERN_TLS connection spec
+      private static final List<String> MODERN_TLS_NAMES = new ArrayList<>();
+
+      static {
+        for (TlsVersion tlsVersion : ConnectionSpec.MODERN_TLS.tlsVersions()) {
+          MODERN_TLS_NAMES.add(tlsVersion.javaName());
+        }
+        LOG.log(Level.FINEST, "Modern TLS names {0}", MODERN_TLS_NAMES);
+      }
+
+      private FilteredSSLSocketFactory(SSLSocketFactory delegate) {
+          super(delegate);
+      }
+
+      @Override
+      protected SSLSocket configureSocket(SSLSocket socket) throws IOException {
+        // Find the TLS protocols supported by this socket
+        List<String> supportedTlsNames = Arrays.asList(socket.getSupportedProtocols());
+        LOG.log(Level.FINEST, "Socket supported protocols {0}", supportedTlsNames);
+        // Get the union of MODERN_TLS_NAMES and the socket's supported protocols
+        List<String> protocolsToEnable = new ArrayList<>();
+        protocolsToEnable.addAll(supportedTlsNames);
+        protocolsToEnable.retainAll(MODERN_TLS_NAMES);
+        LOG.log(Level.FINEST, "Filtered protocols to enable {0}", protocolsToEnable);
+        socket.setEnabledProtocols(protocolsToEnable.toArray(new String[]{}));
+        return socket;
+      }
+  }
 
   /**
    * Gets the single instance of HttpClientSingleton.
@@ -154,7 +187,7 @@ public class HttpClientSingleton {
       throw new RuntimeException(e);
     }
 
-    SSLSocketFactory trustAllSslSocketFactory = trustAllSslContext.getSocketFactory();
+    SSLSocketFactory trustAllSslSocketFactory = new FilteredSSLSocketFactory(trustAllSslContext.getSocketFactory());
 
     OkHttpClient.Builder builder = client.newBuilder();
     builder.sslSocketFactory(trustAllSslSocketFactory, (X509TrustManager) trustAllCerts[0]);
@@ -245,16 +278,7 @@ public class HttpClientSingleton {
       SSLContext sslContext = SSLContext.getInstance("TLS");
 
       sslContext.init(null, new TrustManager[] { trustManager }, null);
-      SSLSocketFactory sslSocketFactory = new DelegatingSSLSocketFactory(sslContext.getSocketFactory()) {
-        @Override
-        protected SSLSocket configureSocket(SSLSocket socket) throws IOException {
-          socket.setEnabledProtocols(new String[] { TlsVersion.TLS_1_0.javaName(), TlsVersion.TLS_1_1.javaName(),
-              TlsVersion.TLS_1_2.javaName() });
-
-          return socket;
-        }
-      };
-
+      SSLSocketFactory sslSocketFactory = new FilteredSSLSocketFactory(sslContext.getSocketFactory());
       builder.sslSocketFactory(sslSocketFactory, trustManager);
 
     } catch (NoSuchAlgorithmException e) {
