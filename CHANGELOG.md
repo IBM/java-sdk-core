@@ -1,3 +1,10 @@
+## [9.10.2](https://github.com/IBM/java-sdk-core/compare/9.10.1...9.10.2) (2021-05-27)
+
+
+### Bug Fixes
+
+* upgrade okhttp3 dependency to v4.9.1 ([#124](https://github.com/IBM/java-sdk-core/issues/124)) ([5ae3c3a](https://github.com/IBM/java-sdk-core/commit/5ae3c3a0d0ad210003076351c29e3930adbf9dbd))
+
 ## [9.10.1](https://github.com/IBM/java-sdk-core/compare/9.10.0...9.10.1) (2021-05-19)
 
 
