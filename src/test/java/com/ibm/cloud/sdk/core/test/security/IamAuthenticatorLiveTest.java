@@ -16,6 +16,9 @@ package com.ibm.cloud.sdk.core.test.security;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -24,6 +27,7 @@ import com.ibm.cloud.sdk.core.security.Authenticator;
 import com.ibm.cloud.sdk.core.security.ConfigBasedAuthenticatorFactory;
 import com.ibm.cloud.sdk.core.security.IamAuthenticator;
 import com.ibm.cloud.sdk.core.security.IamToken;
+import com.ibm.cloud.sdk.core.util.CredentialUtils;
 
 import okhttp3.Request;
 
@@ -80,6 +84,37 @@ public class IamAuthenticatorLiveTest {
 
     // This check is to ensure we get back a valid refresh token rather than something like "not_supported".
     assertTrue(refreshToken.length() > 20);
+  }
+
+  @Ignore
+  @Test
+  public void testIamLiveTokenServerHeaders() {
+    System.setProperty("IBM_CREDENTIALS_FILE", "iamtest.env");
+
+    Map<String, String> config = CredentialUtils.getServiceProperties("iamtest1");
+    assertNotNull(config);
+
+    String apiKey = config.get("APIKEY");
+    assertNotNull(apiKey);
+
+    String authURL = config.get("AUTH_URL");
+    assertNotNull(authURL);
+
+    Map<String, String> headers = new HashMap<>();
+    headers.put("Host", "iam.cloud.ibm.com:443");
+
+    IamAuthenticator authenticator = new IamAuthenticator.Builder()
+        .apikey(apiKey)
+        .url(authURL)
+        .headers(headers)
+        .build();
+
+    Request.Builder requestBuilder;
+
+    // Perform a test using the "production" IAM token server.
+    requestBuilder = new Request.Builder().url("https://test.com");
+    authenticator.authenticate(requestBuilder);
+    verifyAuthHeader(requestBuilder, "Bearer ");
   }
 
   // Verify the Authorization header in the specified request builder.

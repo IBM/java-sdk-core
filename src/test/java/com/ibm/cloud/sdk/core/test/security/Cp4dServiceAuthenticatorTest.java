@@ -521,6 +521,7 @@ public class Cp4dServiceAuthenticatorTest extends BaseServiceUnitTest {
     Map<String, String> headers = new HashMap<>();
     headers.put("header1", "value1");
     headers.put("header2", "value2");
+    headers.put("Host", "cp4d.cloud.ibm.com:81");
     authenticator.setHeaders(headers);
 
     Request.Builder requestBuilder;
@@ -537,6 +538,7 @@ public class Cp4dServiceAuthenticatorTest extends BaseServiceUnitTest {
     Headers actualHeaders = tokenServerRequest.getHeaders();
     assertEquals("value1", actualHeaders.get("header1"));
     assertEquals("value2", actualHeaders.get("header2"));
+    assertEquals("cp4d.cloud.ibm.com:81", actualHeaders.get("Host"));
 
     // Authenticator should just return the same token this time since we have a valid one stored.
     requestBuilder = new Request.Builder().url("https://test.com");
