@@ -28,7 +28,7 @@ public class ParameterizedUrlTest {
 
   @Test
   public void testConstructServiceURLWithNull() {
-    String constructedUrl = BaseService.constructServiceURL(parameterizedUrl, defaultUrlVariables, null);
+    String constructedUrl = BaseService.constructServiceUrl(parameterizedUrl, defaultUrlVariables, null);
     assertEquals(constructedUrl, "http://ibm.com:9300");
   }
 
@@ -39,7 +39,7 @@ public class ParameterizedUrlTest {
     providedUrlVariables.put("scheme", "https");
     providedUrlVariables.put("port", "22");
 
-    String constructedUrl = BaseService.constructServiceURL(
+    String constructedUrl = BaseService.constructServiceUrl(
       parameterizedUrl, defaultUrlVariables, providedUrlVariables
     );
     assertEquals(constructedUrl, "https://ibm.com:22");
@@ -53,7 +53,7 @@ public class ParameterizedUrlTest {
     providedUrlVariables.put("domain", "google.com");
     providedUrlVariables.put("port", "22");
 
-    String constructedUrl = BaseService.constructServiceURL(
+    String constructedUrl = BaseService.constructServiceUrl(
       parameterizedUrl, defaultUrlVariables, providedUrlVariables
     );
     assertEquals(constructedUrl, "https://google.com:22");
@@ -70,6 +70,6 @@ public class ParameterizedUrlTest {
     Map<String, String> providedUrlVariables = new HashMap<>();
     providedUrlVariables.put("server", "value");
 
-    BaseService.constructServiceURL(parameterizedUrl, defaultUrlVariables, providedUrlVariables);
+    BaseService.constructServiceUrl(parameterizedUrl, defaultUrlVariables, providedUrlVariables);
   }
 }

@@ -196,7 +196,7 @@ public abstract class BaseService {
    *  the default variable value will be used instead.
    * @return the formatted URL with all variable placeholders replaced by values.
    */
-  public static String constructServiceURL(
+  public static String constructServiceUrl(
     String parameterizedUrl,
     Map<String, String> defaultUrlVariables,
     Map<String, String> providedUrlVariables
@@ -238,6 +238,20 @@ public abstract class BaseService {
       formattedUrl = formattedUrl.replaceAll("\\{" + name + "}", formatValue);
     }
     return formattedUrl;
+  }
+
+  /**
+   * @deprecated
+   * Deprecated in favor of `constructServiceUrl`.
+   * This naming convention is consistent with `setServiceUrl`.
+   */
+  @Deprecated
+  public static String constructServiceURL(
+    String parameterizedUrl,
+    Map<String, String> defaultUrlVariables,
+    Map<String, String> providedUrlVariables
+  ) {
+    return BaseService.constructServiceUrl(parameterizedUrl, defaultUrlVariables, providedUrlVariables);
   }
 
   /**
