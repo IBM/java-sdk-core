@@ -241,9 +241,7 @@ public abstract class BaseService {
   }
 
   /**
-   * @deprecated
-   * Deprecated in favor of `constructServiceUrl`.
-   * This naming convention is consistent with `setServiceUrl`.
+   * @deprecated use constructServiceUrl() instead.
    */
   @Deprecated
   public static String constructServiceURL(
