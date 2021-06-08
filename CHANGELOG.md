@@ -1,3 +1,10 @@
+## [9.10.3](https://github.com/IBM/java-sdk-core/compare/9.10.2...9.10.3) (2021-06-08)
+
+
+### Bug Fixes
+
+* change method name to `constructServiceUrl` ([#126](https://github.com/IBM/java-sdk-core/issues/126)) ([4a5eae9](https://github.com/IBM/java-sdk-core/commit/4a5eae97caabdae6014f28e7929960268329f9b7))
+
 ## [9.10.2](https://github.com/IBM/java-sdk-core/compare/9.10.1...9.10.2) (2021-05-27)
 
 
