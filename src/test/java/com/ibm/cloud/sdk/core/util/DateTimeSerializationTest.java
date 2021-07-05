@@ -14,7 +14,9 @@
 package com.ibm.cloud.sdk.core.util;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.time.DateTimeException;
 import java.util.Date;
@@ -48,14 +50,14 @@ public class DateTimeSerializationTest {
     return GsonSingleton.getGsonWithoutPrettyPrinting().toJson(obj);
   }
 
-  // This model simulates a generated model class with java.util.Date interpretted as a date-time.
+  // This model simulates a generated model class with java.util.Date interpreted as a date-time.
   public class DateTimeModel extends GenericModel {
     // The estimated date-time at which the RedSox clinched one of their World Series wins.
     @SerializedName("ws_victory")
     public Date wsVictory;
   }
 
-  // This model simulates a generated model class with java.util.Date interpretted as a full-date.
+  // This model simulates a generated model class with java.util.Date interpreted as a full-date.
   public class DateModel extends GenericModel {
     // The estimated date-time at which the RedSox clinched one of their World Series wins.
     @JsonAdapter(DateTypeAdapter.class)
@@ -128,6 +130,11 @@ public class DateTimeSerializationTest {
 
     // Raw time value.
     roundTripTestDateTime("{\"ws_victory\":\"1540786620000\"}", "{\"ws_victory\":\"2018-10-29T04:17:00.000Z\"}");
+
+    // Input is null
+    roundTripTestDateTime("{\"ws_victory\": null}", "{}");
+    roundTripTestDateTime("{}", "{}");
+
   }
 
   @Test(expected = DateTimeException.class)
@@ -177,6 +184,10 @@ public class DateTimeSerializationTest {
     roundTripTestDate("{\"ws_victory\":\"2007-10-29\"}", "{\"ws_victory\":\"2007-10-29\"}");
     roundTripTestDate("{\"ws_victory\":\"2013-10-31\"}", "{\"ws_victory\":\"2013-10-31\"}");
     roundTripTestDate("{\"ws_victory\":\"2018-10-29\"}", "{\"ws_victory\":\"2018-10-29\"}");
+
+    // Input is null
+    roundTripTestDate("{\"ws_victory\": null}", "{}");
+    roundTripTestDate("{}", "{}");
   }
 
   @Test(expected = DateTimeException.class)
