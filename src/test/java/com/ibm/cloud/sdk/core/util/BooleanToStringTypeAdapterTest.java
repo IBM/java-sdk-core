@@ -6,6 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class BooleanToStringTypeAdapterTest {
@@ -13,39 +14,77 @@ public class BooleanToStringTypeAdapterTest {
   private Gson gson;
 
   @Test
-  public void writeShouldConvertBooleanToString() {
-
-    Model trueToYesModel = new Model();
-    trueToYesModel.setBooleanValue(true);
-    String trueToYesResult = gson.toJson(trueToYesModel);
+  public void writeShouldConvertBooleanTrueToStringYes() {
+    TestData trueToYes = new TestData();
+    trueToYes.setBooleanValue(true);
+    String trueToYesResult = gson.toJson(trueToYes);
     assertTrue(trueToYesResult.contains("\"booleanValue\":\"yes\""));
+  }
 
-    Model falseToNoModel = new Model();
-    falseToNoModel.setBooleanValue(false);
-    String falseToNoResult = gson.toJson(falseToNoModel);
+  @Test
+  public void writeShouldConvertBooleanFalseToStringNo() {
+    TestData falseToNo = new TestData();
+    falseToNo.setBooleanValue(false);
+    String falseToNoResult = gson.toJson(falseToNo);
     assertTrue(falseToNoResult.contains("\"booleanValue\":\"no\""));
   }
 
   @Test
-  public void readShouldConvertStringToBoolean() {
-    String yesToTrueData = "{\"booleanValue\":\"yes\"}";
-    Model yesToTrueResult = gson.fromJson(yesToTrueData, Model.class);
-    assertTrue(yesToTrueResult.getBooleanValue());
+  public void writeShouldRemoveNodeWhenBooleanIsNull() {
+    TestData nullToNull = new TestData();
+    nullToNull.setBooleanValue(null);
+    nullToNull.setName("name");
+    String nullToNullResult = gson.toJson(nullToNull);
+    assertFalse(nullToNullResult.contains("\"booleanValue\""));
+    assertTrue(nullToNullResult.contains("\"name\":\"name\""));
+  }
 
-    String noToFalseData = "{\"booleanValue\":\"no\"}";
-    Model noToFalseResult = gson.fromJson(noToFalseData, Model.class);
+  @Test
+  public void readShouldConvertStringYesToBooleanTrue() {
+    String yesToTrue = "{\"booleanValue\":\"yes\"}";
+    TestData yesToTrueResult = gson.fromJson(yesToTrue, TestData.class);
+    assertTrue(yesToTrueResult.getBooleanValue());
+  }
+
+  @Test
+  public void readShouldConvertStringNoToBooleanFalse() {
+    String noToFalse = "{\"booleanValue\":\"no\"}";
+    TestData noToFalseResult = gson.fromJson(noToFalse, TestData.class);
     assertFalse(noToFalseResult.getBooleanValue());
   }
 
   @Test
-  public void readShouldConvertBooleanToBoolean() {
+  public void readShouldConvertStringTrueToBooleanTrue() {
     String trueToTrueData = "{\"booleanValue\":\"true\"}";
-    Model trueToTrueResult = gson.fromJson(trueToTrueData, Model.class);
+    TestData trueToTrueResult = gson.fromJson(trueToTrueData, TestData.class);
     assertTrue(trueToTrueResult.getBooleanValue());
+  }
 
+  @Test
+  public void readShouldConvertStringFalseToBooleanFalse() {
     String falseToFalseData = "{\"booleanValue\":\"false\"}";
-    Model falseToFalseResult = gson.fromJson(falseToFalseData, Model.class);
+    TestData falseToFalseResult = gson.fromJson(falseToFalseData, TestData.class);
     assertFalse(falseToFalseResult.getBooleanValue());
+  }
+
+  @Test
+  public void readShouldConvertStringNullToBooleanNull() {
+    String nullToNullData = "{\"booleanValue\":null, \"name\":\"Andras\"}";
+    TestData nullToNullResult = gson.fromJson(nullToNullData, TestData.class);
+    assertNull(nullToNullResult.getBooleanValue());
+  }
+
+  @Test
+  public void readShouldConvertEmptyToBooleanNull() {
+    String emptyToNullData = "{\"booleanValue\":\"\", \"name\":\"Andras\"}";
+    TestData emptyToNullResult = gson.fromJson(emptyToNullData, TestData.class);
+    assertNull(emptyToNullResult.getBooleanValue());
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void readShouldThrowWhenValueCannotBeConvertToBoolean() {
+    String emptyToNullData = "{\"booleanValue\":\"bla\", \"name\":\"Andras\"}";
+    TestData emptyToNullResult = gson.fromJson(emptyToNullData, TestData.class);
   }
 
   @Before
@@ -55,9 +94,18 @@ public class BooleanToStringTypeAdapterTest {
     gson = gsonBuilder.create();
   }
 
-  private class Model {
+  private class TestData {
 
     private Boolean booleanValue;
+    private String name;
+
+    public String getName() {
+      return name;
+    }
+
+    public void setName(String name) {
+      this.name = name;
+    }
 
     public Boolean getBooleanValue() {
       return booleanValue;
