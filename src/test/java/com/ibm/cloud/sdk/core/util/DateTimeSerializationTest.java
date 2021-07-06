@@ -132,7 +132,6 @@ public class DateTimeSerializationTest {
     // Input is null
     roundTripTestDateTime("{\"ws_victory\": null}", "{}");
     roundTripTestDateTime("{}", "{}");
-
   }
 
   @Test(expected = DateTimeException.class)
