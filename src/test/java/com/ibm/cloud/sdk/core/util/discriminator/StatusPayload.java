@@ -15,9 +15,11 @@ package com.ibm.cloud.sdk.core.util.discriminator;
 import com.ibm.cloud.sdk.core.service.model.GenericModel;
 
 public class StatusPayload extends GenericModel {
+
   @SuppressWarnings("unused")
   protected static String discriminatorPropertyName = "action";
   protected static java.util.Map<String, Class<?>> discriminatorMapping;
+
   static {
     discriminatorMapping = new java.util.HashMap<>();
     discriminatorMapping.put("resolve", ResolvePayload.class);
@@ -33,4 +35,3 @@ public class StatusPayload extends GenericModel {
   }
 
 }
-

@@ -13,6 +13,4 @@
 package com.ibm.cloud.sdk.core.util.discriminator;
 
 public class AcceptPayloadWithoutDiscriminatorMapping extends StatusPayloadWithoutDiscriminatorMapping {
-
 }
-

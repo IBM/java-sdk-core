@@ -20,6 +20,7 @@ public class StatusPayloadWithoutDiscriminatorPropertyName extends GenericModel 
 
   // protected static String discriminatorPropertyName = "action";
   protected static java.util.Map<String, Class<?>> discriminatorMapping;
+
   static {
     discriminatorMapping = new java.util.HashMap<>();
     discriminatorMapping.put("accept", AcceptPayloadWithoutDiscriminatorPropertyName.class);
@@ -33,5 +34,5 @@ public class StatusPayloadWithoutDiscriminatorPropertyName extends GenericModel 
   public String action() {
     return action;
   }
-}
 
+}

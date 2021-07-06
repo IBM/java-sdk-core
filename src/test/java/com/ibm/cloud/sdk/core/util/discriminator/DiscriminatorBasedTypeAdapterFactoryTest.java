@@ -20,7 +20,7 @@ public class DiscriminatorBasedTypeAdapterFactoryTest {
   @Test
   public void deserializeShouldProduceTheProperObjectType() {
 
-    String resolveJson = "{ \"action\":\"resolve\"}";
+    String resolveJson = "{\"action\":\"resolve\"}";
     Object deserializeToObjectType = gson.fromJson(resolveJson, StatusPayload.class);
     assertEquals(deserializeToObjectType.getClass().getName(), ResolvePayload.class.getName());
 
@@ -30,7 +30,7 @@ public class DiscriminatorBasedTypeAdapterFactoryTest {
 
   @Test
   public void deserializeWithoutDiscriminatorPropertyNameShouldResultTheSuppliedType() {
-    String json = "{ \"action\":\"accept\"}";
+    String json = "{\"action\":\"accept\"}";
     Object result = gson.fromJson(json, StatusPayloadWithoutDiscriminatorPropertyName.class);
     assertEquals(result.getClass().getName(), StatusPayloadWithoutDiscriminatorPropertyName.class.getName());
     assertNotEquals(result.getClass().getName(), AcceptPayloadWithoutDiscriminatorPropertyName.class.getName());
@@ -38,7 +38,7 @@ public class DiscriminatorBasedTypeAdapterFactoryTest {
 
   @Test
   public void deserializedWithoutDiscriminatorMappingShouldResultTheSuppliedType() {
-    String json = "{ \"action\":\"accept\"}";
+    String json = "{\"action\":\"accept\"}";
     Object result = gson.fromJson(json, StatusPayloadWithoutDiscriminatorMapping.class);
     assertEquals(result.getClass().getName(), StatusPayloadWithoutDiscriminatorMapping.class.getName());
     assertNotEquals(result.getClass().getName(), AcceptPayloadWithoutDiscriminatorMapping.class.getName());

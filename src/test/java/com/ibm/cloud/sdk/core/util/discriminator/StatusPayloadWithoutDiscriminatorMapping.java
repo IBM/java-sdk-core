@@ -36,4 +36,3 @@ public class StatusPayloadWithoutDiscriminatorMapping extends GenericModel {
   }
 
 }
-
