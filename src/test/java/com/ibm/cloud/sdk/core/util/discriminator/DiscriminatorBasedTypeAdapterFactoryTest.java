@@ -6,6 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotEquals;
 
 public class DiscriminatorBasedTypeAdapterFactoryTest {
 
@@ -17,22 +18,30 @@ public class DiscriminatorBasedTypeAdapterFactoryTest {
   }
 
   @Test
-  public void deserialize() {
-    String carJson = "{ \"vehicle_type\":\"Car\"}";
-    Car carResult = gson.fromJson(carJson, Car.class);
-    assertEquals(carResult.getVehicleType(), "Car");
-    assertEquals(carResult.getConvertible(), Boolean.TRUE);
+  public void deserializeShouldProduceTheProperObjectType() {
 
-    String truckJson = "{ \"vehicle_type\":\"Truck\"}";
-    Truck truckResult = gson.fromJson(truckJson, Truck.class);
-    assertEquals(truckResult.getVehicleType(), "Truck");
-    assertEquals(truckResult.getMaxLoad(), Integer.parseInt("40"));
+    String resolveJson = "{ \"action\":\"resolve\"}";
+    Object deserializeToObjectType = gson.fromJson(resolveJson, StatusPayload.class);
+    assertEquals(deserializeToObjectType.getClass().getName(), ResolvePayload.class.getName());
 
-    String test = "{ \"vehicle_type_type\":\"Truck\"}";
-    Truck testResult = gson.fromJson(test, Truck.class);
-    System.out.println("testresult: " + testResult);
-    // assertEquals(testResult.getVehicleType(), "Truck");
-    // assertEquals(testResult.getMaxLoad(), Integer.parseInt("40"));
+    ResolvePayload deserializeToExactType = (ResolvePayload) gson.fromJson(resolveJson, StatusPayload.class);
+    assertEquals(deserializeToExactType.action, "resolve");
+  }
+
+  @Test
+  public void deserializeWithoutDiscriminatorPropertyNameShouldResultTheSuppliedType() {
+    String json = "{ \"action\":\"accept\"}";
+    Object result = gson.fromJson(json, StatusPayloadWithoutDiscriminatorPropertyName.class);
+    assertEquals(result.getClass().getName(), StatusPayloadWithoutDiscriminatorPropertyName.class.getName());
+    assertNotEquals(result.getClass().getName(), AcceptPayloadWithoutDiscriminatorPropertyName.class.getName());
+  }
+
+  @Test
+  public void deserializedWithoutDiscriminatorMappingShouldResultTheSuppliedType() {
+    String json = "{ \"action\":\"accept\"}";
+    Object result = gson.fromJson(json, StatusPayloadWithoutDiscriminatorMapping.class);
+    assertEquals(result.getClass().getName(), StatusPayloadWithoutDiscriminatorMapping.class.getName());
+    assertNotEquals(result.getClass().getName(), AcceptPayloadWithoutDiscriminatorMapping.class.getName());
   }
 
 }
