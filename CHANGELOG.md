@@ -1,3 +1,10 @@
+## [9.10.4](https://github.com/IBM/java-sdk-core/compare/9.10.3...9.10.4) (2021-07-08)
+
+
+### Bug Fixes
+
+* bump maven-compiler-plugin source and target version to 1.8 ([#131](https://github.com/IBM/java-sdk-core/issues/131)) ([e8e8a40](https://github.com/IBM/java-sdk-core/commit/e8e8a401940aec7c25883e0e5be08ad2626462f2))
+
 ## [9.10.3](https://github.com/IBM/java-sdk-core/compare/9.10.2...9.10.3) (2021-06-08)
 
 
