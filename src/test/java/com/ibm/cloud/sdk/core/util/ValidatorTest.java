@@ -15,7 +15,7 @@ package com.ibm.cloud.sdk.core.util;
 
 import java.util.ArrayList;
 
-import org.junit.Test;
+import org.testng.annotations.Test;
 
 import com.ibm.cloud.sdk.core.util.Validator;
 
@@ -30,7 +30,7 @@ public class ValidatorTest {
   /**
    * Test is true boolean string.
    */
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testIsTrueBooleanString() {
     Validator.isTrue(false, error);
   }
@@ -39,7 +39,7 @@ public class ValidatorTest {
    * Test not empty collection string.
    */
   @SuppressWarnings("rawtypes")
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testNotEmptyCollectionString() {
     Validator.notEmpty(new ArrayList(), error);
   }
@@ -47,7 +47,7 @@ public class ValidatorTest {
   /**
    * Test not empty object array string.
    */
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testNotEmptyObjectArrayString() {
     Validator.notEmpty(new String[] { }, error);
   }
@@ -55,7 +55,7 @@ public class ValidatorTest {
   /**
    * Test not empty string string.
    */
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testNotEmptyStringString() {
     Validator.notEmpty("", error);
   }
@@ -63,7 +63,7 @@ public class ValidatorTest {
   /**
    * Test not null object string.
    */
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testNotNullObjectString() {
     Validator.notNull(null, error);
   }
