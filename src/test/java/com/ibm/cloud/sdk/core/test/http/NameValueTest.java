@@ -13,15 +13,15 @@
 
 package com.ibm.cloud.sdk.core.test.http;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotEquals;
+import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertTrue;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.testng.annotations.Test;
 
 import com.ibm.cloud.sdk.core.http.NameValue;
+import org.testng.annotations.BeforeMethod;
 
 /**
  * The Class NameValueTest.
@@ -37,7 +37,7 @@ public class NameValueTest {
    *
    * @throws Exception the exception
    */
-  @Before
+  @BeforeMethod
   public void setUp() throws Exception {
     fooBar = new NameValue("foo", "bar");
     foo = new NameValue("foo", null);
@@ -47,7 +47,7 @@ public class NameValueTest {
   /**
    * Test name null.
    */
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testNameNull() {
     new NameValue(null, null);
   }
