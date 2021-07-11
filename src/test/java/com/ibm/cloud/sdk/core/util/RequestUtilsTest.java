@@ -15,14 +15,16 @@ package com.ibm.cloud.sdk.core.util;
 
 import com.google.common.collect.Lists;
 import com.ibm.cloud.sdk.core.util.RequestUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import org.testng.Assert;
+import org.testng.annotations.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertTrue;
 
 /**
  * The Class RequestUtilsTest.
@@ -69,10 +71,10 @@ public class RequestUtilsTest {
   public void testOmitWithNulls() {
     final Map<String, Object> params = createMap();
 
-    Assert.assertArrayEquals(params.keySet().toArray(), RequestUtils.omit(params).keySet().toArray());
-    Assert.assertArrayEquals(params.values().toArray(), RequestUtils.omit(params).values().toArray());
+    assertEquals(params.keySet().toArray(), RequestUtils.omit(params).keySet().toArray());
+    assertEquals(params.values().toArray(), RequestUtils.omit(params).values().toArray());
 
-    Assert.assertNull(RequestUtils.omit(null));
+    assertNull(RequestUtils.omit(null));
   }
 
   /**
@@ -83,12 +85,12 @@ public class RequestUtilsTest {
     final Map<String, Object> params = createMap();
 
     Map<String, Object> picked = RequestUtils.pick(params, "A");
-    Assert.assertArrayEquals(picked.keySet().toArray(), new String[] { "A" });
-    Assert.assertArrayEquals(picked.values().toArray(), new Integer[] { 1 });
+    assertEquals(picked.keySet().toArray(), new String[] { "A" });
+    assertEquals(picked.values().toArray(), new Integer[] { 1 });
 
     picked = RequestUtils.pick(params, "F");
-    Assert.assertArrayEquals(picked.keySet().toArray(), new String[] { });
-    Assert.assertArrayEquals(picked.values().toArray(), new Integer[] { });
+    assertEquals(picked.keySet().toArray(), new String[] { });
+    assertEquals(picked.values().toArray(), new Integer[] { });
   }
 
   /**
@@ -98,10 +100,10 @@ public class RequestUtilsTest {
   public void testPickWithNulls() {
     final Map<String, Object> params = createMap();
 
-    Assert.assertArrayEquals(params.keySet().toArray(), RequestUtils.pick(params).keySet().toArray());
-    Assert.assertArrayEquals(params.values().toArray(), RequestUtils.pick(params).values().toArray());
+    assertEquals(params.keySet().toArray(), RequestUtils.pick(params).keySet().toArray());
+    assertEquals(params.values().toArray(), RequestUtils.pick(params).values().toArray());
 
-    Assert.assertNull(RequestUtils.pick(null));
+    assertNull(RequestUtils.pick(null));
   }
 
   /**
