@@ -13,9 +13,13 @@
 
 package com.ibm.cloud.sdk.core.test.service;
 
-import static org.junit.Assert.*;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.assertFalse;
 
-import org.junit.Test;
+import org.testng.annotations.Test;
 import org.junit.runner.RunWith;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -30,6 +34,8 @@ import com.ibm.cloud.sdk.core.security.Authenticator;
 import com.ibm.cloud.sdk.core.security.BasicAuthenticator;
 import com.ibm.cloud.sdk.core.service.BaseService;
 import com.ibm.cloud.sdk.core.util.EnvironmentUtils;
+import org.powermock.modules.testng.PowerMockTestCase;
+
 import static com.ibm.cloud.sdk.core.test.TestUtils.getStringFromInputStream;
 
 import java.io.InputStream;
@@ -39,10 +45,10 @@ import java.util.List;
  * Unit tests associated with the BaseService core class.
  *
  */
-@RunWith(PowerMockRunner.class)
+// @RunWith(PowerMockRunner.class)
 @PrepareForTest({ EnvironmentUtils.class })
 @PowerMockIgnore("javax.net.ssl.*")
-public class ConfigureServiceTest {
+public class ConfigureServiceTest extends PowerMockTestCase {
   private static final String ALTERNATE_CRED_FILENAME = "src/test/resources/my-credentials.env";
   private static final String VCAP_SERVICES = "vcap_services.json";
   private static final String BASIC_USERNAME = "basicUser";
@@ -112,7 +118,7 @@ public class ConfigureServiceTest {
 
     boolean containsGzipInterceptor = false;
     GzipRequestInterceptor gzip = new GzipRequestInterceptor();
-  
+
     for (Interceptor is: interceptors) {
       if (is.getClass().equals(gzip.getClass())) {
         containsGzipInterceptor = true;
@@ -136,7 +142,7 @@ public class ConfigureServiceTest {
     client = svc.getClient();
     assertNotNull(client);
     interceptors = client.interceptors();
-  
+
     for (Interceptor is: interceptors) {
       if (is.getClass().equals(gzip.getClass())) {
         containsGzipInterceptor = true;
@@ -299,7 +305,7 @@ public class ConfigureServiceTest {
     assertEquals("https://api.us-south.discovery-experimental.watson.cloud.ibm.com", svc.getServiceUrl());
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testConfigureServiceFailure() {
     BasicAuthenticator auth = new BasicAuthenticator(BASIC_USERNAME, "password1");
     TestService svc = new TestService("discovery", auth);
