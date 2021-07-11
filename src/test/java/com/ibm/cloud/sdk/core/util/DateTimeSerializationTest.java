@@ -13,13 +13,13 @@
 
 package com.ibm.cloud.sdk.core.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
 
 import java.time.DateTimeException;
 import java.util.Date;
 
-import org.junit.Test;
+import org.testng.annotations.Test;
 
 import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
@@ -134,37 +134,37 @@ public class DateTimeSerializationTest {
     roundTripTestDateTime("{}", "{}");
   }
 
-  @Test(expected = DateTimeException.class)
+  @Test(expectedExceptions = DateTimeException.class)
   public void testModelsDateTimeError1() {
     roundTripTestDateTime("{\"ws_victory\":\"x1903-10-13T21:30:00.000Z\"}", "n/a");
   }
 
-  @Test(expected = DateTimeException.class)
+  @Test(expectedExceptions = DateTimeException.class)
   public void testModelsDateTimeError2() {
     roundTripTestDateTime("{\"ws_victory\":\"1903-10-13T21:30:00.000X\"}", "n/a");
   }
 
-  @Test(expected = DateTimeException.class)
+  @Test(expectedExceptions = DateTimeException.class)
   public void testModelsDateTimeError3() {
     roundTripTestDateTime("{\"ws_victory\":\"1903-10-13X21:30:00.000Z\"}", "n/a");
   }
 
-  @Test(expected = DateTimeException.class)
+  @Test(expectedExceptions = DateTimeException.class)
   public void testModelsDateTimeError4() {
     roundTripTestDateTime("{\"ws_victory\":\"19031013T213000.000\"}", "n/a");
   }
 
-  @Test(expected = DateTimeException.class)
+  @Test(expectedExceptions = DateTimeException.class)
   public void testModelsDateTimeError5() {
     roundTripTestDateTime("{\"ws_victory\":\"03-10-13T21:30:00.000Z\"}", "n/a");
   }
 
-  @Test(expected = DateTimeException.class)
+  @Test(expectedExceptions = DateTimeException.class)
   public void testModelsDateTimeError6() {
     roundTripTestDateTime("{\"ws_victory\":\"03-10-13\"}", "n/a");
   }
 
-  @Test(expected = DateTimeException.class)
+  @Test(expectedExceptions = DateTimeException.class)
   public void testModelsDateTimeError7() {
     // too many digits in frac-sec part.
     roundTripTestDateTime("{\"ws_victory\":\"1916-10-12T13:43:00.8663050050-05:00\"}", "n/a");
@@ -187,22 +187,22 @@ public class DateTimeSerializationTest {
     roundTripTestDate("{}", "{}");
   }
 
-  @Test(expected = DateTimeException.class)
+  @Test(expectedExceptions = DateTimeException.class)
   public void testModelsDateError1() {
     roundTripTestDate("{\"ws_victory\":\"18-10-29\"}", "n/a");
   }
 
-  @Test(expected = DateTimeException.class)
+  @Test(expectedExceptions = DateTimeException.class)
   public void testModelsDateError2() {
     roundTripTestDate("{\"ws_victory\":\"018-10-29\"}", "n/a");
   }
 
-  @Test(expected = DateTimeException.class)
+  @Test(expectedExceptions = DateTimeException.class)
   public void testModelsDateError3() {
     roundTripTestDate("{\"ws_victory\":\"2018-10-29x\"}", "n/a");
   }
 
-  @Test(expected = DateTimeException.class)
+  @Test(expectedExceptions = DateTimeException.class)
   public void testModelsDateError4() {
     roundTripTestDate("{\"ws_victory\":\"x2018-10-29\"}", "n/a");
   }
