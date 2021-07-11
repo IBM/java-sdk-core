@@ -19,13 +19,14 @@ import com.ibm.cloud.sdk.core.util.GsonSingleton;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.After;
+import org.testng.annotations.AfterMethod;
+import org.powermock.modules.testng.PowerMockTestCase;
 
 import java.io.IOException;
 
 import static com.ibm.cloud.sdk.core.http.HttpHeaders.CONTENT_TYPE;
 
-public class BaseServiceUnitTest {
+public class BaseServiceUnitTest extends PowerMockTestCase {
   private static final Gson GSON = GsonSingleton.getGson();
 
   /** The server. */
@@ -46,7 +47,7 @@ public class BaseServiceUnitTest {
    *
    * @throws IOException Signals that an I/O exception has occurred.
    */
-  @After
+  @AfterMethod
   public void tearDown() throws IOException {
     server.shutdown();
   }

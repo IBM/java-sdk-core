@@ -26,21 +26,16 @@ import java.util.Map;
 
 import org.powermock.modules.testng.PowerMockTestCase;
 import org.testng.annotations.Test;
-import org.junit.runner.RunWith;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import com.ibm.cloud.sdk.core.security.Authenticator;
 import com.ibm.cloud.sdk.core.security.CloudPakForDataAuthenticator;
 import com.ibm.cloud.sdk.core.service.BaseService;
-import com.ibm.cloud.sdk.core.util.CredentialUtils;
-import com.ibm.cloud.sdk.core.util.EnvironmentUtils;
 
 /**
  * The Class CredentialUtilsTest.
  */
-// @RunWith(PowerMockRunner.class)
 @PrepareForTest({ EnvironmentUtils.class })
 public class CredentialUtilsTest extends PowerMockTestCase {
   private static final String ALTERNATE_CRED_FILENAME = "src/test/resources/my-credentials.env";

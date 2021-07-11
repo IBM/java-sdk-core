@@ -34,12 +34,12 @@ import com.ibm.cloud.sdk.core.test.BaseServiceUnitTest;
 import com.ibm.cloud.sdk.core.util.ResponseConverterUtils;
 import okhttp3.HttpUrl;
 import okhttp3.mockwebserver.MockResponse;
-import org.junit.Before;
-import org.junit.Test;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 import static com.ibm.cloud.sdk.core.http.HttpHeaders.CONTENT_TYPE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 public class ErrorResponseTest extends BaseServiceUnitTest {
 
@@ -65,7 +65,7 @@ public class ErrorResponseTest extends BaseServiceUnitTest {
    * @see com.ibm.cloud.sdk.core.test.WatsonServiceTest#setUp()
    */
   @Override
-  @Before
+  @BeforeMethod
   public void setUp() throws Exception {
     super.setUp();
     service = new TestService(new NoAuthAuthenticator());

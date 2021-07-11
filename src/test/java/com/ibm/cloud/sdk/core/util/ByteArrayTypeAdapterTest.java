@@ -18,7 +18,6 @@ import static org.testng.Assert.assertEquals;
 import org.testng.annotations.Test;
 
 import com.ibm.cloud.sdk.core.service.model.GenericModel;
-import com.ibm.cloud.sdk.core.util.GsonSingleton;
 
 /**
  *

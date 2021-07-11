@@ -20,11 +20,9 @@ import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.assertFalse;
 
 import org.testng.annotations.Test;
-import org.junit.runner.RunWith;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -45,7 +43,6 @@ import java.util.List;
  * Unit tests associated with the BaseService core class.
  *
  */
-// @RunWith(PowerMockRunner.class)
 @PrepareForTest({ EnvironmentUtils.class })
 @PowerMockIgnore("javax.net.ssl.*")
 public class ConfigureServiceTest extends PowerMockTestCase {

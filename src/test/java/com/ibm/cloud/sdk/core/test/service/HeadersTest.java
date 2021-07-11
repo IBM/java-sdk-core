@@ -14,10 +14,10 @@
 package com.ibm.cloud.sdk.core.test.service;
 
 import static com.ibm.cloud.sdk.core.http.HttpHeaders.CONTENT_TYPE;
-import static org.junit.Assert.assertEquals;
+import static org.testng.Assert.assertEquals;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 import com.ibm.cloud.sdk.core.http.HttpMediaType;
 import com.ibm.cloud.sdk.core.http.RequestBuilder;
@@ -59,7 +59,7 @@ public class HeadersTest extends BaseServiceUnitTest {
    * @see com.ibm.cloud.sdk.core.test.WatsonServiceTest#setUp()
    */
   @Override
-  @Before
+  @BeforeMethod
   public void setUp() throws Exception {
     super.setUp();
     service = new TestService(new NoAuthAuthenticator());

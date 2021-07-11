@@ -14,24 +14,21 @@
 package com.ibm.cloud.sdk.core.test.security;
 
 import static com.ibm.cloud.sdk.core.test.TestUtils.loadFixture;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.testng.annotations.Test;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import com.ibm.cloud.sdk.core.http.HttpHeaders;
 import com.ibm.cloud.sdk.core.security.Authenticator;
@@ -44,8 +41,8 @@ import com.ibm.cloud.sdk.core.util.Clock;
 import okhttp3.Headers;
 import okhttp3.Request;
 import okhttp3.mockwebserver.RecordedRequest;
+import org.testng.annotations.BeforeMethod;
 
-@RunWith(PowerMockRunner.class)
 @PrepareForTest({ Clock.class })
 @PowerMockIgnore("javax.net.ssl.*")
 @SuppressWarnings("deprecation")
@@ -63,7 +60,7 @@ public class Cp4dAuthenticatorTest extends BaseServiceUnitTest {
   private String testApikey = "test-apikey";
 
   @Override
-  @Before
+  @BeforeMethod
   public void setUp() throws Exception {
     super.setUp();
     url = getMockWebServerUrl();
@@ -76,7 +73,7 @@ public class Cp4dAuthenticatorTest extends BaseServiceUnitTest {
   // Tests involving the new Builder class and fromConfiguration() method.
   //
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testBuilderMissingURL() {
     new CloudPakForDataAuthenticator.Builder()
       .url(null)
@@ -85,7 +82,7 @@ public class Cp4dAuthenticatorTest extends BaseServiceUnitTest {
       .build();
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testBuilderEmptyURL() {
     new CloudPakForDataAuthenticator.Builder()
       .url("")
@@ -94,7 +91,7 @@ public class Cp4dAuthenticatorTest extends BaseServiceUnitTest {
       .build();
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testBuilderMissingUsername() {
     new CloudPakForDataAuthenticator.Builder()
       .url("https://good-url")
@@ -103,7 +100,7 @@ public class Cp4dAuthenticatorTest extends BaseServiceUnitTest {
       .build();
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testBuilderEmptyUsername() {
     new CloudPakForDataAuthenticator.Builder()
       .url("https://good-url")
@@ -112,7 +109,7 @@ public class Cp4dAuthenticatorTest extends BaseServiceUnitTest {
       .build();
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testBuilderMissingPassword() {
     new CloudPakForDataAuthenticator.Builder()
       .url("https://good-url")
@@ -121,7 +118,7 @@ public class Cp4dAuthenticatorTest extends BaseServiceUnitTest {
       .build();
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testBuilderEmptyPassword() {
     new CloudPakForDataAuthenticator.Builder()
       .url("https://good-url")
@@ -130,7 +127,7 @@ public class Cp4dAuthenticatorTest extends BaseServiceUnitTest {
       .build();
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testBuilderMissingApikey() {
     new CloudPakForDataAuthenticator.Builder()
       .url("https://good-url")
@@ -139,7 +136,7 @@ public class Cp4dAuthenticatorTest extends BaseServiceUnitTest {
       .build();
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testBuilderEmptyApikey() {
     new CloudPakForDataAuthenticator.Builder()
       .url("https://good-url")
@@ -148,7 +145,7 @@ public class Cp4dAuthenticatorTest extends BaseServiceUnitTest {
       .build();
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testConfigMissingUrl() {
     Map<String, String> props = new HashMap<>();
     props.put(Authenticator.PROPNAME_URL, null);
@@ -157,7 +154,7 @@ public class Cp4dAuthenticatorTest extends BaseServiceUnitTest {
     CloudPakForDataAuthenticator.fromConfiguration(props);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testConfigMissingUsername() {
     Map<String, String> props = new HashMap<>();
     props.put(Authenticator.PROPNAME_URL, "https://good-url");
@@ -166,7 +163,7 @@ public class Cp4dAuthenticatorTest extends BaseServiceUnitTest {
     CloudPakForDataAuthenticator.fromConfiguration(props);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testConfigMissingPassword() {
     Map<String, String> props = new HashMap<>();
     props.put(Authenticator.PROPNAME_URL, "https://good-url");
@@ -175,7 +172,7 @@ public class Cp4dAuthenticatorTest extends BaseServiceUnitTest {
     CloudPakForDataAuthenticator.fromConfiguration(props);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testConfigMissingApikey() {
     Map<String, String> props = new HashMap<>();
     props.put(Authenticator.PROPNAME_URL, "https://good-url");
@@ -484,37 +481,37 @@ public class Cp4dAuthenticatorTest extends BaseServiceUnitTest {
   // Tests involving the deprecated ctors.
   //
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testCtorMissingURL() {
     new CloudPakForDataAuthenticator(null, testUsername, testPassword);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testCtorEmptyURL() {
     new CloudPakForDataAuthenticator("", testUsername, testPassword);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testCtorMissingUsername() {
     new CloudPakForDataAuthenticator("https://good-url", null, testPassword);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testCtorEmptyUsername() {
     new CloudPakForDataAuthenticator("https://good-url", "", testPassword);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testCtorMissingPassword() {
     new CloudPakForDataAuthenticator("https://good-url", testUsername, null);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testCtorEmptyPassword() {
     new CloudPakForDataAuthenticator("https://good-url", testUsername, "");
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testCtorMissingUsernameMap() {
     Map<String, String> props = new HashMap<>();
     props.put(Authenticator.PROPNAME_URL, "https://good-url");
@@ -522,7 +519,7 @@ public class Cp4dAuthenticatorTest extends BaseServiceUnitTest {
     new CloudPakForDataAuthenticator(props);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testCtorEmptyUsernameMap() {
     Map<String, String> props = new HashMap<>();
     props.put(Authenticator.PROPNAME_URL, "https://good-url");

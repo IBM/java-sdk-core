@@ -13,10 +13,10 @@
 
 package com.ibm.cloud.sdk.core.test.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,8 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 import com.google.gson.reflect.TypeToken;
 import com.ibm.cloud.sdk.core.http.RequestBuilder;
@@ -139,7 +139,7 @@ public class ResponseTest extends BaseServiceUnitTest {
    * @see com.ibm.cloud.sdk.core.test.WatsonServiceTest#setUp()
    */
   @Override
-  @Before
+  @BeforeMethod
   public void setUp() throws Exception {
     super.setUp();
     service = new TestService(new NoAuthAuthenticator());
@@ -186,7 +186,7 @@ public class ResponseTest extends BaseServiceUnitTest {
   /**
    * Test that an invalid JSON response results in an InvalidServiceResponseException.
    */
-  @Test(expected = InvalidServiceResponseException.class)
+  @Test(expectedExceptions = InvalidServiceResponseException.class)
   public void testExecuteTestModelJSONError1() {
     server.enqueue(new MockResponse().setBody(testResponseBodyError1));
     service.getTestModel().execute();
@@ -442,7 +442,7 @@ public class ResponseTest extends BaseServiceUnitTest {
   public void testResponseCode() {
     server.enqueue(new MockResponse().setResponseCode(204));
     Response<Void> response = service.headMethod().execute();
-    assertEquals("The response status code should be 204.", 204, response.getStatusCode());
+    assertEquals(204, response.getStatusCode(), "The response status code should be 204.");
   }
 
   /**
@@ -452,7 +452,7 @@ public class ResponseTest extends BaseServiceUnitTest {
   public void testResponseMessage() {
     server.enqueue(new MockResponse().setStatus("HTTP/1.1 204 No Content"));
     Response<Void> response = service.headMethod().execute();
-    assertEquals("The response status message should be 'No Content'.", "No Content", response.getStatusMessage());
+    assertEquals("No Content", response.getStatusMessage(), "The response status message should be 'No Content'.");
   }
 
   /**

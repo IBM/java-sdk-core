@@ -39,7 +39,6 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <junit-version>4.13.2</junit-version>
         <testng-version>7.4.0</testng-version>
         <surefire-version>3.0.0-M5</surefire-version>
         <checkstyle-plugin-version>3.1.2</checkstyle-plugin-version>
@@ -54,8 +53,8 @@
         <commons-io-version>2.7</commons-io-version>
         <commons-lang3-version>3.8.1</commons-lang3-version>
         <rx-version>2.2.7</rx-version>
-        <mockito-version>2.0.5-beta</mockito-version>
-        <powermock-version>1.6.2</powermock-version>
+        <mockito-version>3.11.2</mockito-version>
+        <powermock-version>2.0.9</powermock-version>
         <maven-deploy-plugin-version>3.0.0-M1</maven-deploy-plugin-version>
         <nexus-staging-plugin-version>1.6.8</nexus-staging-plugin-version>
         <maven-gpg-plugin-version>1.6</maven-gpg-plugin-version>
@@ -124,12 +123,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${junit-version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
             <version>${testng-version}</version>
@@ -153,31 +146,19 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>3.11.2</version>
+            <version>${mockito-version}</version>
             <scope>test</scope>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.powermock</groupId>-->
-<!--            <artifactId>powermock-api-mockito</artifactId>-->
-<!--            <version>${powermock-version}</version>-->
-<!--            <scope>test</scope>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>org.powermock</groupId>
             <artifactId>powermock-api-mockito2</artifactId>
-            <version>2.0.9</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-module-junit4</artifactId>
             <version>${powermock-version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.powermock</groupId>
             <artifactId>powermock-module-testng</artifactId>
-            <version>2.0.9</version>
+            <version>${powermock-version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

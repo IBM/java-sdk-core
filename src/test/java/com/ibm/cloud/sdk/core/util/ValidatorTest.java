@@ -17,8 +17,6 @@ import java.util.ArrayList;
 
 import org.testng.annotations.Test;
 
-import com.ibm.cloud.sdk.core.util.Validator;
-
 /**
  * The Class ValidatorTest.
  */

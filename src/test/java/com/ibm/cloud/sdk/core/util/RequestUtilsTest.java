@@ -14,8 +14,6 @@
 package com.ibm.cloud.sdk.core.util;
 
 import com.google.common.collect.Lists;
-import com.ibm.cloud.sdk.core.util.RequestUtils;
-import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.util.HashMap;

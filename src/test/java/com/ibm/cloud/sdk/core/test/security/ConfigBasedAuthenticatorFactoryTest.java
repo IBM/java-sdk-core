@@ -35,7 +35,6 @@ import com.ibm.cloud.sdk.core.util.EnvironmentUtils;
  * This class tests the ConfigBasedAuthenticatorFactory class.
  * We'll using various mocking techniques to simulate the credential file, environment and vcap services.
  */
-// @RunWith(PowerMockRunner.class)
 @PrepareForTest({ EnvironmentUtils.class })
 public class ConfigBasedAuthenticatorFactoryTest extends PowerMockTestCase {
   private static final String ALTERNATE_CRED_FILENAME = "src/test/resources/my-credentials.env";
