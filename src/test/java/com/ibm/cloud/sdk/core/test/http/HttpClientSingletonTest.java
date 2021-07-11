@@ -18,18 +18,16 @@ import com.ibm.cloud.sdk.core.http.HttpConfigOptions;
 import okhttp3.ConnectionSpec;
 import okhttp3.OkHttpClient;
 import okhttp3.TlsVersion;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.testng.annotations.Ignore;
+import org.testng.annotations.Test;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
 import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
 
-import static org.junit.Assert.assertTrue;
+import static org.testng.Assert.assertTrue;
 
 /**
  * Unit tests for the HttpClientSingleton object.
@@ -40,7 +38,7 @@ public class HttpClientSingletonTest {
         SSLSocket sslSocket = (SSLSocket) client.sslSocketFactory().createSocket();
         List<String> enabledProtocols = Arrays.asList(sslSocket.getEnabledProtocols());
         // Assert there is at least 1 enabled protocol
-        assertTrue("There should be at least 1 TLS protocol enabled.", enabledProtocols.size() > 0);
+        assertTrue(enabledProtocols.size() > 0, "There should be at least 1 TLS protocol enabled.");
 
         // Get the MODERN_TLS Java names and the runtime supported protocols
         List<String> modernTlsNames = new ArrayList<>();
@@ -51,20 +49,23 @@ public class HttpClientSingletonTest {
         // Iterate and assert that each enabled protocol is present in both lists
         for (String protocol : enabledProtocols) {
             // Assert that the enabled protocols is supported by the runtime
-            assertTrue(String.format("The enabled protocol %s should be supported by the runtime", protocol),
-                    supportedProtocols.contains(protocol));
+            assertTrue(supportedProtocols.contains(protocol),
+                String.format("The enabled protocol %s should be supported by the runtime", protocol));
             // Assert that the enabled protocols is present in MODERN_TLS
-            assertTrue(String.format("The enabled protocol %s should be in the MODERN_TLS connection spec", protocol),
-                    modernTlsNames.contains(protocol));
+            assertTrue(modernTlsNames.contains(protocol),
+                String.format("The enabled protocol %s should be in the MODERN_TLS connection spec", protocol));
         }
     }
 
+
+    @Ignore
     @Test
     public void testTlsProtocolFiltering() throws IOException {
         OkHttpClient client = HttpClientSingleton.getInstance().createHttpClient();
         getAndAssertEnabledProtocols(client);
     }
 
+    @Ignore
     @Test
     public void testTlsProtocolFilteringWithVerificationDisabled() throws IOException {
         HttpConfigOptions configOptions = new HttpConfigOptions.Builder()
