@@ -1,3 +1,10 @@
+# [9.11.0](https://github.com/IBM/java-sdk-core/compare/9.10.4...9.11.0) (2021-07-12)
+
+
+### Features
+
+* **BaseService:** remove final modifier from createServiceCall ([#132](https://github.com/IBM/java-sdk-core/issues/132)) ([2e35d1f](https://github.com/IBM/java-sdk-core/commit/2e35d1f5c0056fcef1e01ec7eaf8b8bc6448cc4b))
+
 ## [9.10.4](https://github.com/IBM/java-sdk-core/compare/9.10.3...9.10.4) (2021-07-08)
 
 
