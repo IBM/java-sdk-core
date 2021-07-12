@@ -47,7 +47,9 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 
 @PrepareForTest({ Clock.class })
 @PowerMockIgnore({
-    "javax.net.ssl.*"
+    "javax.net.ssl.*",
+    "okhttp3.*",
+    "okio.*"
 })
 @SuppressWarnings("deprecation")
 public class IamAuthenticatorTest extends BaseServiceUnitTest {
@@ -436,7 +438,7 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
     assertEquals(expectedBody, body);
   }
 
-  @Ignore
+  // @Ignore
   @Test(expectedExceptions = ServiceResponseException.class)
   public void testApiErrorBadRequest() throws Throwable {
     server.enqueue(errorResponse(400));
