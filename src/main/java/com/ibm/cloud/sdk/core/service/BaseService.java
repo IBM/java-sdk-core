@@ -241,6 +241,19 @@ public abstract class BaseService {
   }
 
   /**
+   * Constructs a service URL by formatting a parameterized URL.
+   *
+   * @param parameterizedUrl URL that contains variable placeholders, e.g. "{scheme}://ibm.com".
+   *
+   * @param defaultUrlVariables map from variable names to default values.
+   *  Each variable in the parameterized URL must have a default value specified in this map.
+   *
+   * @param providedUrlVariables map from variable names to desired values.
+   *  If a variable is not provided in this map,
+   *  the default variable value will be used instead.
+   *
+   * @return the formatted URL with all variable placeholders replaced by values.
+   *
    * @deprecated use constructServiceUrl() instead.
    */
   @Deprecated
