@@ -44,7 +44,11 @@ import okhttp3.mockwebserver.RecordedRequest;
 import org.testng.annotations.BeforeMethod;
 
 @PrepareForTest({ Clock.class })
-@PowerMockIgnore("javax.net.ssl.*")
+@PowerMockIgnore({
+    "javax.net.ssl.*",
+    "okhttp3.*",
+    "okio.*"
+})
 public class Cp4dServiceAuthenticatorTest extends BaseServiceUnitTest {
 
   // Token with issued-at time of 1574353085 and expiration time of 1574453956
@@ -543,7 +547,7 @@ public class Cp4dServiceAuthenticatorTest extends BaseServiceUnitTest {
     verifyAuthHeader(requestBuilder, "Bearer " + tokenData.getToken());
   }
 
-  @Test
+  @Test(expectedExceptions = ServiceResponseException.class)
   public void testApiErrorBadRequest() throws Throwable {
     server.enqueue(errorResponse(400));
 
@@ -559,14 +563,7 @@ public class Cp4dServiceAuthenticatorTest extends BaseServiceUnitTest {
     Request.Builder requestBuilder = new Request.Builder().url("https://test.com");
 
     // Calling authenticate should result in an exception.
-    try {
-      authenticator.authenticate(requestBuilder);
-      fail("Expected authenticate() to result in exception!");
-    } catch (ServiceResponseException excp) {
-      assertTrue(excp instanceof ServiceResponseException);
-    } catch (Throwable t) {
-      fail("Expected ServiceResponseException, not " + t.getClass().getSimpleName());
-    }
+    authenticator.authenticate(requestBuilder);
   }
 
   @Test
