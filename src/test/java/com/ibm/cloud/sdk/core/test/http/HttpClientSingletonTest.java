@@ -58,14 +58,12 @@ public class HttpClientSingletonTest {
     }
 
 
-    @Ignore
     @Test
     public void testTlsProtocolFiltering() throws IOException {
         OkHttpClient client = HttpClientSingleton.getInstance().createHttpClient();
         getAndAssertEnabledProtocols(client);
     }
 
-    @Ignore
     @Test
     public void testTlsProtocolFilteringWithVerificationDisabled() throws IOException {
         HttpConfigOptions configOptions = new HttpConfigOptions.Builder()
