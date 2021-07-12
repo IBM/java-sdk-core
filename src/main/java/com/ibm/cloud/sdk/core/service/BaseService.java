@@ -322,7 +322,7 @@ public abstract class BaseService {
    * @param converter the converter
    * @return the service call
    */
-  protected final <T> ServiceCall<T> createServiceCall(final Request request, final ResponseConverter<T> converter) {
+  protected <T> ServiceCall<T> createServiceCall(final Request request, final ResponseConverter<T> converter) {
     final Call call = createCall(request);
     return new IBMCloudSDKServiceCall<>(call, converter);
   }

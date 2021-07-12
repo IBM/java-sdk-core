@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2019.
+ * (C) Copyright IBM Corp. 2015, 2021.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -22,12 +22,15 @@ import org.testng.annotations.Test;
 
 import com.ibm.cloud.sdk.core.http.HttpClientSingleton;
 import com.ibm.cloud.sdk.core.http.HttpConfigOptions;
+import com.ibm.cloud.sdk.core.http.ResponseConverter;
+import com.ibm.cloud.sdk.core.http.ServiceCall;
 import com.ibm.cloud.sdk.core.http.gzip.GzipRequestInterceptor;
 import com.ibm.cloud.sdk.core.security.NoAuthAuthenticator;
 import com.ibm.cloud.sdk.core.service.BaseService;
-
+import com.ibm.cloud.sdk.core.util.ResponseConverterUtils;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import okhttp3.internal.tls.OkHostnameVerifier;
 
 /**
@@ -182,5 +185,26 @@ public class BaseServiceTest {
     assertEquals(60 * 1000, client.connectTimeoutMillis());
     assertEquals(60 * 1000, client.writeTimeoutMillis());
     assertEquals(5 * 60 * 1000, client.readTimeoutMillis());
+  }
+
+  @Test
+  public void testCreateServiceCallOverride() {
+    class ExtendingService extends BaseService {
+
+      @Override
+      protected <T> ServiceCall<T> createServiceCall(final Request request, final ResponseConverter<T> converter) {
+        // For test purposes override to just return null
+        return null;
+      }
+
+      public ServiceCall<String> testOperation() {
+        Request r = new Request.Builder().url("https://foo.example").get().build();
+        return createServiceCall(r, ResponseConverterUtils.getString());
+      }
+    };
+    ExtendingService extendingService = new ExtendingService();
+    ServiceCall<String> testCall = extendingService.testOperation();
+    // Assert that the override was in place
+    assertNull("The service call should have been overridden to return null.", testCall);
   }
 }
