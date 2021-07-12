@@ -14,34 +14,30 @@
 package com.ibm.cloud.sdk.core.util;
 
 import static com.ibm.cloud.sdk.core.test.TestUtils.getStringFromInputStream;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.assertNotNull;
 
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.powermock.modules.testng.PowerMockTestCase;
+import org.testng.annotations.Test;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import com.ibm.cloud.sdk.core.security.Authenticator;
 import com.ibm.cloud.sdk.core.security.CloudPakForDataAuthenticator;
 import com.ibm.cloud.sdk.core.service.BaseService;
-import com.ibm.cloud.sdk.core.util.CredentialUtils;
-import com.ibm.cloud.sdk.core.util.EnvironmentUtils;
 
 /**
  * The Class CredentialUtilsTest.
  */
-@RunWith(PowerMockRunner.class)
 @PrepareForTest({ EnvironmentUtils.class })
-public class CredentialUtilsTest {
+public class CredentialUtilsTest extends PowerMockTestCase {
   private static final String ALTERNATE_CRED_FILENAME = "src/test/resources/my-credentials.env";
   private static final String VCAP_SERVICES = "vcap_services.json";
   private static final String NOT_A_USERNAME = "not-a-username";

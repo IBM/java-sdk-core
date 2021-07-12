@@ -4,12 +4,12 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
 import com.ibm.cloud.sdk.core.service.model.GenericModel;
-import org.junit.Before;
-import org.junit.Test;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertTrue;
 
 public class BooleanToStringTypeAdapterTest {
 
@@ -83,13 +83,13 @@ public class BooleanToStringTypeAdapterTest {
     assertNull(emptyToNullResult.getBooleanValue());
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void readShouldThrowWhenValueCannotBeConvertToBoolean() {
     String emptyToNullData = "{\"boolean_value\":\"invalid_value\", \"name\":\"Andras\"}";
     TestData emptyToNullResult = gson.fromJson(emptyToNullData, TestData.class);
   }
 
-  @Before
+  @BeforeMethod
   public void before() {
     GsonBuilder gsonBuilder = new GsonBuilder();
     gsonBuilder.registerTypeAdapter(Boolean.class, new BooleanToStringTypeAdapter());

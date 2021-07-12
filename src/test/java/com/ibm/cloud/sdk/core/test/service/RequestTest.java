@@ -13,14 +13,14 @@
 
 package com.ibm.cloud.sdk.core.test.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.fail;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 import com.google.gson.JsonObject;
 import com.ibm.cloud.sdk.core.http.RequestBuilder;
@@ -64,14 +64,14 @@ public class RequestTest extends BaseServiceUnitTest {
     ServiceCall<TestModel> postTestModel() {
       final TestModel model = new TestModel();
       model.setCity("Columbus");
-    
+
       final JsonObject contentJson = new JsonObject();
       contentJson.addProperty("city", model.getCity());
       RequestBuilder builder = RequestBuilder.post(HttpUrl.parse(getServiceUrl() + "/v1/test"));
       builder.bodyJson(contentJson).build();
       return createServiceCall(builder.build(), ResponseConverterUtils.getObject(TestModel.class));
     }
-   
+
   }
 
   private TestService service;
@@ -79,7 +79,7 @@ public class RequestTest extends BaseServiceUnitTest {
   private String testResponseBody1 = "{\"city\": \"Columbus\"}";
 
   @Override
-  @Before
+  @BeforeMethod
   public void setUp() throws Exception {
     super.setUp();
   }
@@ -169,7 +169,7 @@ public class RequestTest extends BaseServiceUnitTest {
     request = server.takeRequest();
     assertEquals(expectedAuthBody, request.getBody().readUtf8());
     assertNull(request.getHeader(CONTENT_ENCODING));
-  
+
     // Validate the next request wasn't compressed
     request = server.takeRequest();
     assertNull(request.getHeader(CONTENT_ENCODING));

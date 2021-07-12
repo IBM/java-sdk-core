@@ -13,13 +13,13 @@
 
 package com.ibm.cloud.sdk.core.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNull;
 
 import java.time.DateTimeException;
 import java.util.Date;
 
-import org.junit.Test;
+import org.testng.annotations.Test;
 
 /**
  * Tests related to the DateUtils class.
@@ -49,22 +49,22 @@ public class DateUtilsTest {
     _testFullDate("2020-11-01");
   }
 
-  @Test(expected = DateTimeException.class)
+  @Test(expectedExceptions = DateTimeException.class)
   public void testFullDateError1() {
     _testFullDate("2020-01-01x");
   }
 
-  @Test(expected = DateTimeException.class)
+  @Test(expectedExceptions = DateTimeException.class)
   public void testFullDateError2() {
     _testFullDate("x2020-01-01");
   }
 
-  @Test(expected = DateTimeException.class)
+  @Test(expectedExceptions = DateTimeException.class)
   public void testFullDateError3() {
     _testFullDate("20200101");
   }
 
-  @Test(expected = DateTimeException.class)
+  @Test(expectedExceptions = DateTimeException.class)
   public void testFullDateError4() {
     _testFullDate("not-a-date");
   }
@@ -115,22 +115,22 @@ public class DateUtilsTest {
     _testDateTime("2020-11-10T12:28Z",     "2020-11-10T12:28:00.000Z");
   }
 
-  @Test(expected = DateTimeException.class)
+  @Test(expectedExceptions = DateTimeException.class)
   public void testDateTimeError1() {
     _testDateTime("2016-06-20T04:25:16.218+000", "");
   }
 
-  @Test(expected = DateTimeException.class)
+  @Test(expectedExceptions = DateTimeException.class)
   public void testDateTimeError2() {
     _testDateTime("20160620 042516", "");
   }
 
-  @Test(expected = DateTimeException.class)
+  @Test(expectedExceptions = DateTimeException.class)
   public void testDateTimeError3() {
     _testDateTime("20160620T12:00:00", "");
   }
 
-  @Test(expected = DateTimeException.class)
+  @Test(expectedExceptions = DateTimeException.class)
   public void testDateTimeError4() {
     _testDateTime("x2016-06-20T04:25:16.218+000", "");
   }

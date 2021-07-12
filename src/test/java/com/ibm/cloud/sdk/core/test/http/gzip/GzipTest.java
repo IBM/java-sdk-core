@@ -21,15 +21,15 @@ import okio.BufferedSink;
 import okio.GzipSink;
 import okio.Okio;
 
-import org.junit.Test;
+import org.testng.annotations.Test;
 
 import static com.ibm.cloud.sdk.core.http.HttpHeaders.ACCEPT_ENCODING;
 import static com.ibm.cloud.sdk.core.http.HttpHeaders.CONTENT_ENCODING;
 import static com.ibm.cloud.sdk.core.http.HttpHeaders.CONTENT_TYPE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -89,7 +89,7 @@ public class GzipTest extends BaseServiceUnitTest {
         service.configureClient(builder.build());
         service.setServiceUrl(getMockWebServerUrl());
     }
-    
+
     private Buffer gzip(String data) throws IOException {
         Buffer result = new Buffer();
         BufferedSink sink = Okio.buffer(new GzipSink(result));
@@ -128,10 +128,10 @@ public class GzipTest extends BaseServiceUnitTest {
         // build the request
         final TestModel model = new TestModel();
         model.setSuccess("awesome");
-    
+
         final JsonObject contentJson = new JsonObject();
         contentJson.addProperty("success", model.getSuccess());
-    
+
         final RequestBuilder builder = RequestBuilder.post(HttpUrl.parse(service.getServiceUrl() + "/v1/test"));
         builder.header("Accept", "application/json");
         builder.bodyJson(contentJson).build();
@@ -142,7 +142,7 @@ public class GzipTest extends BaseServiceUnitTest {
             .setResponseCode(201)
             .setBody(mockResponseBody)
             .setHeader("Content-type", "application/json"));
-        
+
         int bodySize = contentJson.toString().length();
 
         // validate response
@@ -152,7 +152,7 @@ public class GzipTest extends BaseServiceUnitTest {
         assertNotNull(responseObj);
         assertEquals(201, response.getStatusCode());
         assertEquals("awesome", responseObj.getSuccess());
-    
+
         // Verify the request was not compressed, content encoding, & content length
         RecordedRequest request = server.takeRequest();
         assertNotNull(request);
@@ -171,10 +171,10 @@ public class GzipTest extends BaseServiceUnitTest {
         // build the request
         final TestModel model = new TestModel();
         model.setSuccess("awesome");
-    
+
         final JsonObject contentJson = new JsonObject();
         contentJson.addProperty("success", model.getSuccess());
-    
+
         final RequestBuilder builder = RequestBuilder.post(HttpUrl.parse(service.getServiceUrl() + "/v1/test"));
         builder.header("Accept", "application/json");
         builder.bodyJson(contentJson).build();
@@ -198,7 +198,7 @@ public class GzipTest extends BaseServiceUnitTest {
         assertNotNull(responseObj);
         assertEquals(201, response.getStatusCode());
         assertEquals("awesome", responseObj.getSuccess());
-    
+
         // Verify the request was indeed compressed, content encoding, & content length
         RecordedRequest request = server.takeRequest();
         assertNotNull(request);
@@ -209,7 +209,7 @@ public class GzipTest extends BaseServiceUnitTest {
         // Uncompress the request body and validate
         assertEquals(contentJson.toString(), ungzipRequestBody(request.getBody()));
     }
-	
+
     @Test
     public void testCompressionWithBodyJsonObjectPost() throws Throwable {
         boolean enableGzip = true;
@@ -218,10 +218,10 @@ public class GzipTest extends BaseServiceUnitTest {
         // build the request
         final TestModel model = new TestModel();
         model.setSuccess("awesome");
-    
+
         final JsonObject contentJson = new JsonObject();
         contentJson.addProperty("success", model.getSuccess());
-    
+
         final RequestBuilder builder = RequestBuilder.post(HttpUrl.parse(service.getServiceUrl() + "/v1/test"));
         builder.header("Accept", "application/json");
         builder.bodyJson(contentJson).build();
@@ -244,7 +244,7 @@ public class GzipTest extends BaseServiceUnitTest {
         assertNotNull(responseObj);
         assertEquals(201, response.getStatusCode());
         assertEquals("awesome", responseObj.getSuccess());
-    
+
         // Verify the request was indeed compressed, content encoding, & content length
         RecordedRequest request = server.takeRequest();
         assertNotNull(request);
@@ -264,10 +264,10 @@ public class GzipTest extends BaseServiceUnitTest {
         // build the request
         final TestModel model = new TestModel();
         model.setSuccess("awesome");
-    
+
         final JsonObject contentJson = new JsonObject();
         contentJson.addProperty("success", model.getSuccess());
-    
+
         final RequestBuilder builder = RequestBuilder.put(HttpUrl.parse(service.getServiceUrl() + "/v1/test"));
         builder.header("Accept", "application/json");
         builder.bodyJson(contentJson).build();
@@ -290,7 +290,7 @@ public class GzipTest extends BaseServiceUnitTest {
         assertNotNull(responseObj);
         assertEquals(200, response.getStatusCode());
         assertEquals("awesome", responseObj.getSuccess());
-    
+
         // Verify the request was indeed compressed, content encoding, & content length
         RecordedRequest request = server.takeRequest();
         assertNotNull(request);
@@ -323,7 +323,7 @@ public class GzipTest extends BaseServiceUnitTest {
         assertNotNull(responseObj);
         assertEquals(200, response.getStatusCode());
         assertEquals("awesome", responseObj.getSuccess());
-    
+
         RecordedRequest request = server.takeRequest();
         assertNotNull(request);
         assertEquals(request.getMethod(), "GET");
@@ -349,7 +349,7 @@ public class GzipTest extends BaseServiceUnitTest {
         TestModel responseObj = response.getResult();
         assertNull(responseObj);
         assertEquals(200, response.getStatusCode());
-    
+
         RecordedRequest request = server.takeRequest();
         assertNotNull(request);
         assertEquals(request.getMethod(), "HEAD");
@@ -379,7 +379,7 @@ public class GzipTest extends BaseServiceUnitTest {
         Void responseObj = response.getResult();
         assertNull(responseObj);
         assertEquals(201, response.getStatusCode());
-    
+
         // Verify the request
         RecordedRequest request = server.takeRequest();
         assertNotNull(request);
@@ -412,7 +412,7 @@ public class GzipTest extends BaseServiceUnitTest {
         Void responseObj = response.getResult();
         assertNull(responseObj);
         assertEquals(200, response.getStatusCode());
-    
+
         // Verify the request
         RecordedRequest request = server.takeRequest();
         assertNotNull(request);
@@ -452,7 +452,7 @@ public class GzipTest extends BaseServiceUnitTest {
         assertNull(responseObj);
         assertEquals(201, response.getStatusCode());
 
-    
+
         // Verify the request
         RecordedRequest request = server.takeRequest();
         assertNotNull(request);
@@ -492,7 +492,7 @@ public class GzipTest extends BaseServiceUnitTest {
         assertNull(responseObj);
         assertEquals(200, response.getStatusCode());
 
-    
+
         // Verify the request
         RecordedRequest request = server.takeRequest();
         assertNotNull(request);
@@ -531,7 +531,7 @@ public class GzipTest extends BaseServiceUnitTest {
         assertNull(responseObj);
         assertEquals(201, response.getStatusCode());
 
-    
+
         // Verify the request
         RecordedRequest request = server.takeRequest();
         assertNotNull(request);
@@ -571,7 +571,7 @@ public class GzipTest extends BaseServiceUnitTest {
         assertNull(responseObj);
         assertEquals(200, response.getStatusCode());
 
-    
+
         // Verify the request
         RecordedRequest request = server.takeRequest();
         assertNotNull(request);
@@ -612,7 +612,7 @@ public class GzipTest extends BaseServiceUnitTest {
         assertNull(responseObj);
         assertEquals(200, response.getStatusCode());
 
-    
+
         // Verify the request
         RecordedRequest request = server.takeRequest();
         assertNotNull(request);
@@ -651,7 +651,7 @@ public class GzipTest extends BaseServiceUnitTest {
         assertNull(responseObj);
         assertEquals(200, response.getStatusCode());
 
-    
+
         // Verify the request
         RecordedRequest request = server.takeRequest();
         assertNotNull(request);
@@ -687,7 +687,7 @@ public class GzipTest extends BaseServiceUnitTest {
         assertNull(responseObj);
         assertEquals(200, response.getStatusCode());
 
-    
+
         // Verify the request
         RecordedRequest request = server.takeRequest();
         assertNotNull(request);
@@ -704,10 +704,10 @@ public class GzipTest extends BaseServiceUnitTest {
         // build the request
         final TestModel model = new TestModel();
         model.setSuccess("awesome");
-    
+
         final JsonObject contentJson = new JsonObject();
         contentJson.addProperty("success", model.getSuccess());
-    
+
         final RequestBuilder builder = RequestBuilder.post(HttpUrl.parse(service.getServiceUrl() + "/v1/test"));
         builder.header("Accept", "application/json");
         builder.header("Content-Encoding", "deflate");
@@ -727,7 +727,7 @@ public class GzipTest extends BaseServiceUnitTest {
         assertNotNull(responseObj);
         assertEquals(201, response.getStatusCode());
         assertEquals("awesome", responseObj.getSuccess());
-    
+
         // Verify the request was not compressed
         RecordedRequest request = server.takeRequest();
         assertNotNull(request);
@@ -759,7 +759,7 @@ public class GzipTest extends BaseServiceUnitTest {
         Void responseObj = response.getResult();
         assertNull(responseObj);
         assertEquals(201, response.getStatusCode());
-    
+
         // Verify the request was not compressed
         RecordedRequest request = server.takeRequest();
         assertNotNull(request);
@@ -793,7 +793,7 @@ public class GzipTest extends BaseServiceUnitTest {
         assertNull(responseObj);
         assertEquals(201, response.getStatusCode());
 
-    
+
         // Verify the request was not compressed
         RecordedRequest request = server.takeRequest();
         assertNotNull(request);
@@ -827,7 +827,7 @@ public class GzipTest extends BaseServiceUnitTest {
         assertNull(responseObj);
         assertEquals(201, response.getStatusCode());
 
-    
+
         // Verify the request was not compressed
         RecordedRequest request = server.takeRequest();
         assertNotNull(request);
@@ -864,7 +864,7 @@ public class GzipTest extends BaseServiceUnitTest {
         assertNull(responseObj);
         assertEquals(201, response.getStatusCode());
 
-    
+
         // Verify the request was not compressed
         RecordedRequest request = server.takeRequest();
         assertNotNull(request);
@@ -881,7 +881,7 @@ public class GzipTest extends BaseServiceUnitTest {
         final String payload = "This is a mock payload.";
         final RequestBuilder builder = RequestBuilder.post(HttpUrl.parse(service.getServiceUrl() + "/v1/test"));
         builder.bodyContent(payload, "text/plain").build();
-    
+
         String message = "The request failed because the moon is full.";
 
         server.enqueue(new MockResponse()
@@ -930,7 +930,7 @@ public class GzipTest extends BaseServiceUnitTest {
         final String payload = "This is a mock payload.";
         final RequestBuilder builder = RequestBuilder.post(HttpUrl.parse(service.getServiceUrl() + "/v1/test"));
         builder.bodyContent(payload, "text/plain").build();
-    
+
         String message = "The request failed because the moon is full.";
 
         server.enqueue(new MockResponse()
@@ -982,7 +982,7 @@ public class GzipTest extends BaseServiceUnitTest {
                 .setResponseCode(200)
                 .addHeader(CONTENT_TYPE, HttpMediaType.APPLICATION_JSON)
                 .setBody("{\"success\": \"awesome\"}"));
-        
+
         r = service.testMethod(builder).execute();
 
         assertEquals(200, r.getStatusCode());

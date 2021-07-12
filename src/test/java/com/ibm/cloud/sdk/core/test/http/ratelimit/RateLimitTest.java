@@ -1,12 +1,10 @@
 package com.ibm.cloud.sdk.core.test.http.ratelimit;
 
-import com.ibm.cloud.sdk.core.http.HttpClientSingleton;
 import com.ibm.cloud.sdk.core.http.HttpConfigOptions;
 import com.ibm.cloud.sdk.core.http.HttpMediaType;
 import com.ibm.cloud.sdk.core.http.RequestBuilder;
 import com.ibm.cloud.sdk.core.http.Response;
 import com.ibm.cloud.sdk.core.http.ServiceCall;
-import com.ibm.cloud.sdk.core.http.ratelimit.RateLimitInterceptor;
 import com.ibm.cloud.sdk.core.security.Authenticator;
 import com.ibm.cloud.sdk.core.security.NoAuthAuthenticator;
 import com.ibm.cloud.sdk.core.service.BaseService;
@@ -15,12 +13,11 @@ import com.ibm.cloud.sdk.core.service.model.GenericModel;
 import com.ibm.cloud.sdk.core.test.BaseServiceUnitTest;
 import com.ibm.cloud.sdk.core.util.ResponseConverterUtils;
 import okhttp3.HttpUrl;
-import okhttp3.OkHttpClient;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.RecordedRequest;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 import static com.ibm.cloud.sdk.core.http.HttpHeaders.CONTENT_TYPE;
 import static com.ibm.cloud.sdk.core.http.HttpHeaders.CONTENT_ENCODING;
@@ -62,7 +59,7 @@ public class RateLimitTest extends BaseServiceUnitTest {
      * @see com.ibm.cloud.sdk.core.test.WatsonServiceTest#setUp()
      */
     @Override
-    @Before
+    @BeforeMethod
     public void setUp() throws Exception {
         super.setUp();
         service = new RateLimitTest.TestService(new NoAuthAuthenticator());
@@ -129,7 +126,7 @@ public class RateLimitTest extends BaseServiceUnitTest {
     /**
      * Test that we take care of invalid Retry-After headers
      */
-    @Test(timeout = 500)
+    @Test(timeOut = 500)
     public void testRetryAfter() {
 
         String message = "The request failed because the moon is full.";

@@ -13,10 +13,10 @@
 
 package com.ibm.cloud.sdk.core.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNull;
 
-import org.junit.Test;
+import org.testng.annotations.Test;
 
 public class UrlHelperTest {
 

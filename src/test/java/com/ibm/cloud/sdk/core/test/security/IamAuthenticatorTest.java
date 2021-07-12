@@ -14,20 +14,21 @@
 package com.ibm.cloud.sdk.core.test.security;
 
 import static com.ibm.cloud.sdk.core.test.TestUtils.loadFixture;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import com.ibm.cloud.sdk.core.util.Clock;
-import org.junit.Before;
-import org.junit.Test;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Ignore;
+import org.testng.annotations.Test;
 
 import com.ibm.cloud.sdk.core.http.HttpHeaders;
 import com.ibm.cloud.sdk.core.security.Authenticator;
@@ -40,15 +41,16 @@ import com.ibm.cloud.sdk.core.test.BaseServiceUnitTest;
 import okhttp3.Headers;
 import okhttp3.Request;
 import okhttp3.mockwebserver.RecordedRequest;
-import org.junit.runner.RunWith;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
-@RunWith(PowerMockRunner.class)
 @PrepareForTest({ Clock.class })
-@PowerMockIgnore("javax.net.ssl.*")
+@PowerMockIgnore({
+    "javax.net.ssl.*",
+    "okhttp3.*",
+    "okio.*"
+})
 @SuppressWarnings("deprecation")
 public class IamAuthenticatorTest extends BaseServiceUnitTest {
 
@@ -59,7 +61,7 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
   private static final String API_KEY = "123456789";
 
   @Override
-  @Before
+  @BeforeMethod
   public void setUp() throws Exception {
     super.setUp();
     url = getMockWebServerUrl();
@@ -72,21 +74,21 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
   // Tests involving the Builder class and fromConfiguration() method.
   //
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testMissingApiKey() {
     new IamAuthenticator.Builder()
       .apikey(null)
       .build();
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testEmptyApiKey() {
     new IamAuthenticator.Builder()
       .apikey("")
       .build();
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testMissingClientId() {
     new IamAuthenticator.Builder()
       .apikey(API_KEY)
@@ -95,7 +97,7 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
       .build();
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testEmptyClientId() {
     new IamAuthenticator.Builder()
       .apikey(API_KEY)
@@ -104,7 +106,7 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
       .build();
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testMissingClientSecret() {
     new IamAuthenticator.Builder()
       .apikey(API_KEY)
@@ -113,7 +115,7 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
       .build();
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testEmptyClientSecret() {
     new IamAuthenticator.Builder()
       .apikey(API_KEY)
@@ -436,7 +438,8 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
     assertEquals(expectedBody, body);
   }
 
-  @Test(expected = ServiceResponseException.class)
+  // @Ignore
+  @Test(expectedExceptions = ServiceResponseException.class)
   public void testApiErrorBadRequest() throws Throwable {
     server.enqueue(errorResponse(400));
 
@@ -497,43 +500,43 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
   // Tests involving the deprecated ctors.
   //
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testCtorMissingApiKey() {
     new IamAuthenticator((String) null);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testCtorEmptyApiKey() {
     new IamAuthenticator("");
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testCtorMissingApiKeyMap() {
     Map<String, String> props = new HashMap<>();
     new IamAuthenticator(props);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testCtorMissingClientId() {
     new IamAuthenticator(API_KEY, "url", null, "clientSecret", false, null);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testCtorEmptyClientId() {
     new IamAuthenticator(API_KEY, "url", "", "clientSecret", false, null);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testCtorMissingClientSecret() {
     new IamAuthenticator(API_KEY, "url", "clientId", null, false, null);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testCtorEmptyClientSecret() {
     new IamAuthenticator(API_KEY, "url", "clientId", "", false, null);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testCtorEmptyApiKeyMap() {
     Map<String, String> props = new HashMap<>();
     props.put(Authenticator.PROPNAME_APIKEY, "");
