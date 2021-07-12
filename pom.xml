@@ -316,6 +316,10 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${surefire-version}</version>
+                <configuration>
+                    <reuseForks>false</reuseForks>
+                    <forkCount>6</forkCount>
+                </configuration>
             </plugin>
         </plugins>
         <resources>
