@@ -318,7 +318,7 @@
                 <version>${surefire-version}</version>
                 <configuration>
                     <reuseForks>false</reuseForks>
-                    <forkCount>6</forkCount>
+                    <forkCount>1</forkCount>
                 </configuration>
             </plugin>
         </plugins>
