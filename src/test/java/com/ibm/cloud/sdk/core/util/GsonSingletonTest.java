@@ -18,11 +18,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.testng.Assert;
+import org.testng.annotations.Test;
 
 import com.google.gson.reflect.TypeToken;
-import com.ibm.cloud.sdk.core.util.GsonSingleton;
 
 /**
  * Test the {@link GsonSingleton} class used to transform from and to JSON.

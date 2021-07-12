@@ -14,7 +14,7 @@
 package com.ibm.cloud.sdk.core.test;
 
 import com.ibm.cloud.sdk.core.util.GsonSingleton;
-import org.junit.Ignore;
+import org.testng.annotations.Ignore;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;

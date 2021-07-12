@@ -13,13 +13,13 @@
 
 package com.ibm.cloud.sdk.core.test.security;
 
-import static junit.framework.TestCase.assertNotNull;
-import static org.junit.Assert.assertEquals;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Test;
+import org.testng.annotations.Test;
 
 import com.ibm.cloud.sdk.core.http.HttpHeaders;
 import com.ibm.cloud.sdk.core.security.Authenticator;
@@ -59,36 +59,36 @@ public class BearerTokenAuthenticatorTest {
     assertEquals("Bearer " + bearerToken, request.header(HttpHeaders.AUTHORIZATION));
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testMissingAccessToken() {
     new BearerTokenAuthenticator((String) null);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testEmptyAccessToken() {
     new BearerTokenAuthenticator("");
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testCtorMissingAccessTokenMap() {
     Map<String, String> props = new HashMap<>();
     new BearerTokenAuthenticator(props);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testCtorEmptyAccessTokenMap() {
     Map<String, String> props = new HashMap<>();
     props.put(Authenticator.PROPNAME_BEARER_TOKEN, "");
     new BearerTokenAuthenticator(props);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testConfigMissingAccessToken() {
     Map<String, String> props = new HashMap<>();
     BearerTokenAuthenticator.fromConfiguration(props);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testConfigEmptyAccessToken() {
     Map<String, String> props = new HashMap<>();
     props.put(Authenticator.PROPNAME_BEARER_TOKEN, "");

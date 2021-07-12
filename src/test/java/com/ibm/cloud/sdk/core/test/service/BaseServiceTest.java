@@ -13,7 +13,12 @@
 
 package com.ibm.cloud.sdk.core.test.service;
 
-import static org.junit.Assert.*;
+import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotEquals;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertNull;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -205,6 +210,6 @@ public class BaseServiceTest {
     ExtendingService extendingService = new ExtendingService();
     ServiceCall<String> testCall = extendingService.testOperation();
     // Assert that the override was in place
-    assertNull("The service call should have been overridden to return null.", testCall);
+    assertNull(testCall, "The service call should have been overridden to return null.");
   }
 }

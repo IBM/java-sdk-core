@@ -13,8 +13,8 @@
 
 package com.ibm.cloud.sdk.core.test.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Test;
+import org.testng.annotations.Test;
 
 import com.google.gson.JsonObject;
 import com.ibm.cloud.sdk.core.http.HttpMediaType;
@@ -76,7 +76,7 @@ public class RequestBuilderTest {
   /**
    * Test request with null url.
    */
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testUrlNull() {
     RequestBuilder.get(null);
   }
@@ -114,7 +114,7 @@ public class RequestBuilderTest {
   /**
    * Test illegal argument exception.
    */
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testIllegalArgumentException() {
     RequestBuilder.delete(null);
   }
@@ -122,7 +122,7 @@ public class RequestBuilderTest {
   /**
    * Test illegal argument exception even numbers.
    */
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testIllegalArgumentExceptionEvenNumbers() {
     RequestBuilder.put(HttpUrl.parse(url)).form("1", "2", "3").build();
   }
@@ -332,14 +332,14 @@ public class RequestBuilderTest {
     assertEquals("https://myserver.com/testservice/api", url.toString());
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testConstructHttpUrlEmpty() {
     String[] pathSegments = { "v1/seg1", "seg2", "seg3"};
     String[] pathParameters = { "param1", "param2" };
     RequestBuilder.constructHttpUrl("", pathSegments, pathParameters);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testConstructHttpUrlNull() {
     String[] pathSegments = { "v1/seg1", "seg2", "seg3"};
     String[] pathParameters = { "param1", "param2" };
@@ -449,7 +449,7 @@ public class RequestBuilderTest {
     assertEquals("https://myserver.com/v1/seg1/param%2F1/seg2/param%202", url.toString());
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testResolveRequestUrlEmptyPathParam() {
     Map<String, String> pathParameters = new HashMap<String, String>() {{
       put("param_1", "");
@@ -462,12 +462,12 @@ public class RequestBuilderTest {
         pathParameters);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testResolveRequestUrlEmpty() {
     RequestBuilder.resolveRequestUrl("", "/");
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testResolveRequestUrlNull() {
     RequestBuilder.resolveRequestUrl(null, "/");
   }

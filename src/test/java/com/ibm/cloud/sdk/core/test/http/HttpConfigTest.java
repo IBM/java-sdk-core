@@ -17,7 +17,7 @@ import okhttp3.Authenticator;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.Route;
-import org.junit.Test;
+import org.testng.annotations.Test;
 
 import com.ibm.cloud.sdk.core.http.HttpConfigOptions;
 
@@ -26,8 +26,9 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertTrue;
 
 /**
  * Unit tests for the HttpConfigOptions object.
@@ -52,7 +53,7 @@ public class HttpConfigTest {
         .loggingLevel(HttpConfigOptions.LoggingLevel.HEADERS)
         .build();
 
-    assertEquals(true, configOptions.shouldDisableSslVerification());
+    assertTrue(configOptions.shouldDisableSslVerification());
     assertEquals(authenticator, configOptions.getProxyAuthenticator());
     assertNull(configOptions.getGzipCompression());
     assertEquals(proxy, configOptions.getProxy());
