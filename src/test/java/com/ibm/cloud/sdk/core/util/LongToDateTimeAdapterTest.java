@@ -82,11 +82,7 @@ public class LongToDateTimeAdapterTest {
     String json = String.format("{\"birth_date\":\"\", \"name\":\"%s\"}", name);
 
     // Act
-    LongToDateTimeAdapterModel model = gson.fromJson(json, LongToDateTimeAdapterModel.class);
-
-    // Assert
-    assertNull(model.birthDate);
-    assertEquals(model.name, "Lorem");
+    gson.fromJson(json, LongToDateTimeAdapterModel.class);
   }
 
   @Test(expectedExceptions = NumberFormatException.class)
@@ -95,11 +91,7 @@ public class LongToDateTimeAdapterTest {
     String json = String.format("{\"birth_date\":\" \", \"name\":\"%s\"}", name);
 
     // Act
-    LongToDateTimeAdapterModel model = gson.fromJson(json, LongToDateTimeAdapterModel.class);
-
-    // Assert
-    assertNull(model.birthDate);
-    assertEquals(model.name, "Lorem");
+    gson.fromJson(json, LongToDateTimeAdapterModel.class);
   }
 
   @Test
@@ -114,7 +106,7 @@ public class LongToDateTimeAdapterTest {
     // Assert
     assertNotNull(model.birthDate);
     assertEquals(model.birthDate.getTime(), date.getTime());
-    assertEquals(model.name, "Lorem");
+    assertEquals(model.name, name);
   }
 
   @Test
@@ -129,7 +121,17 @@ public class LongToDateTimeAdapterTest {
     // Assert
     assertNotNull(model.birthDate);
     assertEquals(model.birthDate.getTime(), date.getTime());
-    assertEquals(model.name, "Lorem");
+    assertEquals(model.name, name);
+  }
+
+  @Test(expectedExceptions = NumberFormatException.class)
+  public void readShouldThrowWhenWhenJsonValueStringIsNotLongAsString() {
+    // Arrange
+    String mixed = "2342sdf345";
+    String json = String.format("{\"birth_date\":\"%s\", \"name\":\"%s\"}", mixed, name);
+
+    // Act
+    gson.fromJson(json, LongToDateTimeAdapterModel.class);
   }
 
 
