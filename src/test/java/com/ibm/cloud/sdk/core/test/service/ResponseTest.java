@@ -67,12 +67,12 @@ public class ResponseTest extends BaseServiceUnitTest {
       super(SERVICE_NAME, auth);
     }
 
-    ServiceCall<TestModel> getTestModel() {
+    ServiceCall<TestModel> getTestModelPOJO() {
       RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getServiceUrl() + "/v1/test"));
       return createServiceCall(builder.build(), ResponseConverterUtils.getObject(TestModel.class));
     }
 
-    ServiceCall<TestModel> getTestModel2() {
+    ServiceCall<TestModel> getTestModelGenericType() {
       RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getServiceUrl() + "/v1/test"));
       ResponseConverter<TestModel> responseConverter =
           ResponseConverterUtils.getValue(new TypeToken<TestModel>(){}.getType());
@@ -121,23 +121,7 @@ public class ResponseTest extends BaseServiceUnitTest {
   }
 
   private TestService service;
-  private String testResponseValue = "Columbus";
-  private String testResponseBody1 = "{\"city\": \"Columbus\"}";
-  private String testResponseBody2 = "[\"string1\",\"string2\",\"string3\"]";
-  private String testResponseBody3 = "[44,33,74]";
-  private String testResponseBody4 = "[{\"city\":\"Austin\"},{\"city\":\"Georgetown\"},{\"city\":\"Cedar Park\"}]";
-  private String testResponseBody5 = "\"string response\"";
-  private String testResponseBody6 = "443374";
-  private String testResponseBodyError1 = "{\"city\": \"Colum";
-  private String testResponseBodyMissing = "";
-  private String testResponseBodyEmptyObject = "{}";
-  private String testResponseBodyEmptyList = "[]";
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see com.ibm.cloud.sdk.core.test.WatsonServiceTest#setUp()
-   */
   @Override
   @BeforeMethod
   public void setUp() throws Exception {
@@ -146,64 +130,71 @@ public class ResponseTest extends BaseServiceUnitTest {
     service.setServiceUrl(getMockWebServerUrl());
   }
 
-  /**
-   * Test that all fields are populated when calling execute().
-   */
   @Test
-  public void testExecuteTestModel() {
-    server.enqueue(new MockResponse().setBody(testResponseBody1));
+  public void testAllFieldsShouldBePopulatedWhenTheResponseIsPOJO() {
+    // Arrange
+    String expectedValue = "Columbus";
+    String responseBody = String.format("{\"city\": \"%s\"}", expectedValue);
+    server.enqueue(new MockResponse().setBody(responseBody));
 
-    Response<TestModel> response = service.getTestModel().execute();
+    // Act
+    Response<TestModel> response = service.getTestModelPOJO().execute();
+
+    // Assert
     assertNotNull(response.getResult());
-    assertEquals(testResponseValue, response.getResult().getCity());
+    assertEquals(expectedValue, response.getResult().getCity());
     assertNotNull(response.getHeaders());
   }
 
-  /**
-   * Test that a null result is returned when no response body is present.
-   */
   @Test
-  public void testExecuteTestModelNoResponse() {
-    server.enqueue(new MockResponse().setBody(testResponseBodyMissing));
+  public void testNullResultShouldReturnWhenNoResponse() {
+    // Arrange
+    String responseBody = "";
+    server.enqueue(new MockResponse().setBody(responseBody));
 
-    Response<TestModel> response = service.getTestModel().execute();
+    // Act
+    Response<TestModel> response = service.getTestModelPOJO().execute();
+
+    // Assert
     assertNull(response.getResult());
   }
 
-  /**
-   * Test an "empty" model instance is returned when an empty object response is present.
-   */
   @Test
-  public void testExecuteTestModelEmptyObject() {
-    server.enqueue(new MockResponse().setBody(testResponseBodyEmptyObject));
+  public void testShouldReturnEmptyModelWhenResponseIsAnEmptyObject() {
+    // Arrange
+    String responseBody = "{}";
+    server.enqueue(new MockResponse().setBody(responseBody));
 
-    Response<TestModel> response = service.getTestModel().execute();
+    // Act
+    Response<TestModel> response = service.getTestModelPOJO().execute();
+
+    // Assert
     TestModel obj = response.getResult();
     assertNotNull(obj);
     assertNull(obj.getCity());
   }
 
-  /**
-   * Test that an invalid JSON response results in an InvalidServiceResponseException.
-   */
   @Test(expectedExceptions = InvalidServiceResponseException.class)
-  public void testExecuteTestModelJSONError1() {
-    server.enqueue(new MockResponse().setBody(testResponseBodyError1));
-    service.getTestModel().execute();
+  public void testShouldThrowWhenJsonResponseIsInvalidJson() {
+    // Arrange
+    String responseBody = "{\"city\": \"Colum";
+    server.enqueue(new MockResponse().setBody(responseBody));
+
+    // Act
+    service.getTestModelPOJO().execute();
   }
 
-  /**
-   * Test that all fields are populated when calling enqueue().
-   *
-   * @throws InterruptedException the interrupted exception
-   */
   @Test
-  public void testEnqueue() throws InterruptedException {
-    server.enqueue(new MockResponse().setBody(testResponseBody1));
+  public void testShouldPopulateAllFieldsWhenCallingEnqueue() throws InterruptedException {
+    // Arrange
+    String expectedValueFromResultModel = "Columbus";
+    String responseBody = String.format("{\"city\": \"%s\"}", expectedValueFromResultModel);
+    server.enqueue(new MockResponse().setBody(responseBody));
 
     final Map<String, Object> results = new HashMap<>();
 
-    service.getTestModel().enqueue(new ServiceCallback<TestModel>() {
+    // Act
+    service.getTestModelPOJO().enqueue(new ServiceCallback<TestModel>() {
       @Override
       public void onResponse(Response<TestModel> response) {
         results.put("method", "onResponse");
@@ -216,28 +207,27 @@ public class ResponseTest extends BaseServiceUnitTest {
       }
     });
 
+    // Assert
     Thread.sleep(2000);
 
     assertEquals("onResponse", results.get("method"));
     Response<TestModel> response = (Response<TestModel>) results.get("response");
     assertNotNull(response);
     assertNotNull(response.getResult());
-    assertEquals(testResponseValue, response.getResult().getCity());
+    assertEquals(expectedValueFromResultModel, response.getResult().getCity());
     assertNotNull(response.getHeaders());
   }
 
-  /**
-   * Test that an invalid JSON response results in an InvalidServiceResponseException.
-   *
-   * @throws InterruptedException
-   */
   @Test
-  public void testEnqueueJSONError() throws InterruptedException{
-    server.enqueue(new MockResponse().setBody(testResponseBodyError1));
+  public void testShouldThrowWhenInvalidJsonIsEnqueued() throws InterruptedException{
+    // Arrange
+    String responseBody = "{\"city\": \"Colum";
+    server.enqueue(new MockResponse().setBody(responseBody));
 
     final Map<String, Object> results = new HashMap<>();
 
-    service.getTestModel().enqueue(new ServiceCallback<TestModel>() {
+    // Act
+    service.getTestModelPOJO().enqueue(new ServiceCallback<TestModel>() {
       @Override
       public void onResponse(Response<TestModel> response) {
         results.put("method", "onResponse");
@@ -250,6 +240,7 @@ public class ResponseTest extends BaseServiceUnitTest {
       }
     });
 
+    // Assert
     Thread.sleep(2000);
 
     assertEquals("onFailure", results.get("method"));
@@ -259,19 +250,19 @@ public class ResponseTest extends BaseServiceUnitTest {
   }
 
 
-  /**
-   * Test that a reactive request completes correctly.
-   *
-   * @throws InterruptedException
-   */
   @Test
-  public void testReactiveRequest() throws InterruptedException {
-    server.enqueue(new MockResponse().setBody(testResponseBody1));
+  public void testReactiveRequestShouldCompleteCorrectly() throws InterruptedException {
+    // Arrange
+    String expectedValue = "Columbus";
+    String responseBody = String.format("{\"city\": \"%s\"}", expectedValue);
+    server.enqueue(new MockResponse().setBody(responseBody));
 
     final Map<String, Object> results = new HashMap<>();
 
-    Single<Response<TestModel>> observableRequest = service.getTestModel().reactiveRequest();
+    // Act
+    Single<Response<TestModel>> observableRequest = service.getTestModelPOJO().reactiveRequest();
 
+    // Assert
     observableRequest
         .subscribeOn(Schedulers.single())
         .subscribe(new Consumer<Response<TestModel>>() {
@@ -288,20 +279,21 @@ public class ResponseTest extends BaseServiceUnitTest {
 
     Response<TestModel> response = (Response<TestModel>) results.get("response");
     assertNotNull(response);
-    assertEquals(testResponseValue, response.getResult().getCity());
+    assertEquals(expectedValue, response.getResult().getCity());
     assertNotNull(response.getHeaders());
   }
 
-  /**
-   * Test that headers are accessible from a HEAD method call using execute().
-   */
   @Test
-  public void testExecuteForHead() {
+  public void testHeadersShouldBeAccessible() {
+    // Arrange
     Headers rawHeaders = Headers.of("Content-Length", "472", "Content-Type", "application/json", "Server", "Mock");
     com.ibm.cloud.sdk.core.http.Headers expectedHeaders = new com.ibm.cloud.sdk.core.http.Headers(rawHeaders);
     server.enqueue(new MockResponse().setHeaders(rawHeaders));
 
+    // Act
     Response<Void> response = service.headMethod().execute();
+
+    // Assert
     com.ibm.cloud.sdk.core.http.Headers actualHeaders = response.getHeaders();
     assertNull(response.getResult());
     assertNotNull(actualHeaders);
@@ -314,41 +306,49 @@ public class ResponseTest extends BaseServiceUnitTest {
     assertEquals(expectedHeaders.toString(), actualHeaders.toString());
   }
 
-  /**
-   * Test that all fields are populated when calling execute().
-   */
   @Test
-  public void testExecuteTestModel2() {
-    server.enqueue(new MockResponse().setBody(testResponseBody1));
+  public void testAllFieldsShouldBePopulatedWhenResultIsGenericType() {
+    // Arrange
+    String expectedValue = "Columbus";
+    String responseBody = String.format("{\"city\": \"%s\"}", expectedValue);
+    server.enqueue(new MockResponse().setBody(responseBody));
 
-    Response<TestModel> response = service.getTestModel2().execute();
+    // Act
+    Response<TestModel> response = service.getTestModelGenericType().execute();
+
+    // Assert
     assertNotNull(response.getResult());
-    assertEquals(testResponseValue, response.getResult().getCity());
+    assertEquals(expectedValue, response.getResult().getCity());
     assertNotNull(response.getHeaders());
   }
 
-  /**
-   * Test that a list of strings response can be deserialized correctly.
-   */
   @Test
-  public void testExecuteString() {
-    server.enqueue(new MockResponse().setBody(testResponseBody5));
+  public void testShouldReturnStringDeserializedCorrectly() {
+    // Arrange
+    String expectedResult = "string response";
+    String responseBody = String.format("\"%s\"", expectedResult);
+    server.enqueue(new MockResponse().setBody(responseBody));
 
+    // Act
     Response<String> response = service.getString().execute();
+
+    // Assert
     String result = response.getResult();
     assertNotNull(result);
-    assertEquals("string response", result);
+    assertEquals(expectedResult, result);
     assertNotNull(response.getHeaders());
   }
 
-  /**
-   * Test that a list of strings response can be deserialized correctly.
-   */
   @Test
-  public void testExecuteListString() {
-    server.enqueue(new MockResponse().setBody(testResponseBody2));
+  public void testShouldReturnListOfStringsDeserializedCorrectly() {
+    // Arrange
+    String responseBody = "[\"string1\",\"string2\",\"string3\"]";
+    server.enqueue(new MockResponse().setBody(responseBody));
 
+    // Act
     Response<List<String>> response = service.getListString().execute();
+
+    // Arrange
     List<String> result = response.getResult();
     assertNotNull(result);
     assertEquals(result.size(), 3);
@@ -356,28 +356,33 @@ public class ResponseTest extends BaseServiceUnitTest {
     assertNotNull(response.getHeaders());
   }
 
-  /**
-   * Test that a list of strings response can be deserialized correctly.
-   */
   @Test
-  public void testExecuteLong() {
-    server.enqueue(new MockResponse().setBody(testResponseBody6));
+  public void testShouldReturnLongDeserializedCorrectly() {
+    // Arrange
+    String responseBody = "443374";
+    Long expectedResult = Long.parseLong(responseBody);
+    server.enqueue(new MockResponse().setBody(responseBody));
 
+    // Act
     Response<Long> response = service.getLong().execute();
+
+    // Assert
     Long result = response.getResult();
     assertNotNull(result);
-    assertEquals(Long.valueOf(443374), result);
+    assertEquals(expectedResult, result);
     assertNotNull(response.getHeaders());
   }
 
-  /**
-   * Test that a list of longs response can be deserialized correctly.
-   */
   @Test
-  public void testExecuteListLong() {
-    server.enqueue(new MockResponse().setBody(testResponseBody3));
+  public void testShouldReturnListOfLongsDeserializedCorrectly() {
+    // Arrange
+    String responseBody = "[44,33,74]";
+    server.enqueue(new MockResponse().setBody(responseBody));
 
+    // Act
     Response<List<Long>> response = service.getListLong().execute();
+
+    // Assert
     List<Long> result = response.getResult();
     assertNotNull(result);
     assertEquals(result.size(), 3);
@@ -395,10 +400,15 @@ public class ResponseTest extends BaseServiceUnitTest {
    * Test that list of TestModels response can be deserialized correctly.
    */
   @Test
-  public void testExecuteListTestModel() {
-    server.enqueue(new MockResponse().setBody(testResponseBody4));
+  public void testShouldReturnListOfObjectDeserializedCorrectly() {
+    // Arrange
+    String responseBody = "[{\"city\":\"Austin\"},{\"city\":\"Georgetown\"},{\"city\":\"Cedar Park\"}]";
+    server.enqueue(new MockResponse().setBody(responseBody));
 
+    // Act
     Response<List<TestModel>> response = service.getListTestModel().execute();
+
+    // Assert
     List<TestModel> result = response.getResult();
     assertNotNull(result);
     assertEquals(result.size(), 3);
@@ -410,66 +420,71 @@ public class ResponseTest extends BaseServiceUnitTest {
     assertNotNull(response.getHeaders());
   }
 
-  /**
-   * Test that a null list is returned when response body is missing.
-   */
   @Test
-  public void testExecuteListTestModelNoResponse() {
-    server.enqueue(new MockResponse().setBody(testResponseBodyMissing));
+  public void testShouldReturnNullListWhenResponseBodyIsMissing() {
+    // Arrange
+    String responseBody = "";
+    server.enqueue(new MockResponse().setBody(responseBody));
 
+    // Act
     Response<List<TestModel>> response = service.getListTestModel().execute();
+
+    // Assert
     List<TestModel> list = response.getResult();
     assertNull(list);
   }
 
-  /**
-   * Test that an empty list of TestModels are returned when response body is "[]".
-   */
   @Test
-  public void testExecuteListTestModelEmptyList() {
-    server.enqueue(new MockResponse().setBody(testResponseBodyEmptyList));
+  public void testShouldReturnEmptyListWhenResponseBodyIsAnEmptyList() {
+    // Arrange
+    String responseBody = "[]";
+    server.enqueue(new MockResponse().setBody(responseBody));
 
+    // Act
     Response<List<TestModel>> response = service.getListTestModel().execute();
+
+    // Assert
     List<TestModel> list = response.getResult();
     assertNotNull(list);
     assertTrue(list.isEmpty());
   }
 
-  /**
-   * Test getting the status code from a response.
-   */
   @Test
-  public void testResponseCode() {
+  public void testShouldReturnTheExpectedResponseCode() {
+    // Arrange
     server.enqueue(new MockResponse().setResponseCode(204));
+
+    // Act
     Response<Void> response = service.headMethod().execute();
+
+    // Assert
     assertEquals(204, response.getStatusCode(), "The response status code should be 204.");
   }
 
-  /**
-   * Test getting the status line message from a response.
-   */
   @Test
-  public void testResponseMessage() {
+  public void testShouldBeAbleToRetrieveStatusLineFromResponseMessage() {
+    // Arrange
     server.enqueue(new MockResponse().setStatus("HTTP/1.1 204 No Content"));
+
+    // Act
     Response<Void> response = service.headMethod().execute();
+
+    // Assert
     assertEquals("No Content", response.getStatusMessage(), "The response status message should be 'No Content'.");
   }
 
-  /**
-   * Test canceling a service call by mimicking setting a timeout and canceling if the call exceeds that value.
-   *
-   * @throws InterruptedException the interrupted exception
-   */
   @Test
-  public void testRequestCancel() throws InterruptedException {
-    server.enqueue(new MockResponse().setBody(testResponseBody1).setBodyDelay(5000, TimeUnit.MILLISECONDS));
+  public void testShouldBeAbleToCancelRequestCall() throws InterruptedException {
+    // Arrange
+    String responseBody = "{\"city\": \"Columbus\"}";
+    server.enqueue(new MockResponse().setBody(responseBody).setBodyDelay(5000, TimeUnit.MILLISECONDS));
 
     // time to consider timeout (in ms)
     long timeoutThreshold = 3000;
     final boolean[] hasCallCompleted = {false};
     final boolean[] callWasCanceled = {false};
 
-    ServiceCall<TestModel> testCall = service.getTestModel();
+    ServiceCall<TestModel> testCall = service.getTestModelPOJO();
     long startTime = Clock.getCurrentTimeInMillis();
     testCall.enqueue(new ServiceCallback<TestModel>() {
       @Override
@@ -491,10 +506,12 @@ public class ResponseTest extends BaseServiceUnitTest {
     }
 
     // if we timed out and it's STILL not complete, we'll just cancel the call
+    // Act
     if (!hasCallCompleted[0]) {
       testCall.cancel();
     }
 
+    // Assert
     // sleep for a bit to make sure all async operations are complete, and then verify we set this value
     // in onFailure()
     Thread.sleep(500);
