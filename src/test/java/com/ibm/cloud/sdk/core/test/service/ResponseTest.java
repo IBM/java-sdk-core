@@ -18,16 +18,14 @@ import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-
+import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
 import com.ibm.cloud.sdk.core.http.RequestBuilder;
 import com.ibm.cloud.sdk.core.http.Response;
@@ -42,13 +40,15 @@ import com.ibm.cloud.sdk.core.service.model.GenericModel;
 import com.ibm.cloud.sdk.core.test.BaseServiceUnitTest;
 import com.ibm.cloud.sdk.core.util.Clock;
 import com.ibm.cloud.sdk.core.util.ResponseConverterUtils;
-
 import io.reactivex.Single;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.Headers;
 import okhttp3.HttpUrl;
 import okhttp3.mockwebserver.MockResponse;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Test;
 
 public class ResponseTest extends BaseServiceUnitTest {
   private class TestModel extends GenericModel {
@@ -56,6 +56,45 @@ public class ResponseTest extends BaseServiceUnitTest {
 
     String getCity() {
       return city;
+    }
+  }
+
+  public class GenericObjectModel extends GenericModel {
+    @SerializedName("name")
+    String name;
+
+    @SerializedName("address")
+    String address;
+
+    @SerializedName("age")
+    Integer age;
+
+    public String getName() {
+      return name;
+    }
+
+    public String getAddress() {
+      return address;
+    }
+
+    public Integer getAge() {
+      return age;
+    }
+  }
+
+  public class PassportModel {
+    @SerializedName("serial")
+    private String serial;
+
+    @SerializedName("issuer")
+    private String issuer;
+
+    public String getSerial() {
+      return serial;
+    }
+
+    public String getIssuer() {
+      return issuer;
     }
   }
 
@@ -75,7 +114,8 @@ public class ResponseTest extends BaseServiceUnitTest {
     ServiceCall<TestModel> getTestModelGenericType() {
       RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getServiceUrl() + "/v1/test"));
       ResponseConverter<TestModel> responseConverter =
-          ResponseConverterUtils.getValue(new TypeToken<TestModel>(){}.getType());
+          ResponseConverterUtils.getValue(new TypeToken<TestModel>() {
+          }.getType());
       return createServiceCall(builder.build(), responseConverter);
     }
 
@@ -84,39 +124,62 @@ public class ResponseTest extends BaseServiceUnitTest {
       return createServiceCall(builder.build(), ResponseConverterUtils.getVoid());
     }
 
-    ServiceCall<String> getString() {
+    ServiceCall<String> getStringTypeGenericType() {
       RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getServiceUrl() + "/v1/test"));
       ResponseConverter<String> responseConverter =
-          ResponseConverterUtils.getValue(new TypeToken<String>(){}.getType());
+          ResponseConverterUtils.getValue(new TypeToken<String>() {
+          }.getType());
       return createServiceCall(builder.build(), responseConverter);
     }
 
-    ServiceCall<List<String>> getListString() {
+    ServiceCall<List<String>> getListStringTypeGenericType() {
       RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getServiceUrl() + "/v1/test"));
       ResponseConverter<List<String>> responseConverter =
-          ResponseConverterUtils.getValue(new TypeToken<List<String>>(){}.getType());
+          ResponseConverterUtils.getValue(new TypeToken<List<String>>() {
+          }.getType());
       return createServiceCall(builder.build(), responseConverter);
     }
 
-    ServiceCall<Long> getLong() {
+    ServiceCall<Long> getLongTypeGenericType() {
       RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getServiceUrl() + "/v1/test"));
       ResponseConverter<Long> responseConverter =
-          ResponseConverterUtils.getValue(new TypeToken<Long>(){}.getType());
+          ResponseConverterUtils.getValue(new TypeToken<Long>() {
+          }.getType());
       return createServiceCall(builder.build(), responseConverter);
     }
 
-    ServiceCall<List<Long>> getListLong() {
+    ServiceCall<List<Long>> getListLongTypeGenericType() {
       RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getServiceUrl() + "/v1/test"));
       ResponseConverter<List<Long>> responseConverter =
-          ResponseConverterUtils.getValue(new TypeToken<List<Long>>(){}.getType());
+          ResponseConverterUtils.getValue(new TypeToken<List<Long>>() {
+          }.getType());
       return createServiceCall(builder.build(), responseConverter);
     }
 
-    ServiceCall<List<TestModel>> getListTestModel() {
+    ServiceCall<List<TestModel>> getListTestModelTypeGenericType() {
       RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getServiceUrl() + "/v1/test"));
       ResponseConverter<List<TestModel>> responseConverter =
-          ResponseConverterUtils.getValue(new TypeToken<List<TestModel>>(){}.getType());
+          ResponseConverterUtils.getValue(new TypeToken<List<TestModel>>() {
+          }.getType());
       return createServiceCall(builder.build(), responseConverter);
+    }
+
+    ServiceCall<String> getStringTypeGenericObject(final String propertyName) {
+      RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getServiceUrl() + "/v1/test"));
+      return createServiceCall(builder.build(),
+          ResponseConverterUtils.getGenericObject(String.class, propertyName));
+    }
+
+    ServiceCall<PassportModel> getPassportModelGenericObject(
+        final String propertyName) {
+      RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getServiceUrl() + "/v1/test"));
+      return createServiceCall(builder.build(),
+          ResponseConverterUtils.getGenericObject(PassportModel.class, propertyName));
+    }
+
+    ServiceCall<GenericObjectModel> getObjectExtendsGeneric(final TestModel type) {
+      RequestBuilder builder = RequestBuilder.get(HttpUrl.get(getServiceUrl() + "/v1/test"));
+      return createServiceCall(builder.build(), ResponseConverterUtils.getValue((Type) type));
     }
   }
 
@@ -219,7 +282,7 @@ public class ResponseTest extends BaseServiceUnitTest {
   }
 
   @Test
-  public void testShouldThrowWhenInvalidJsonIsEnqueued() throws InterruptedException{
+  public void testShouldThrowWhenInvalidJsonIsEnqueued() throws InterruptedException {
     // Arrange
     String responseBody = "{\"city\": \"Colum";
     server.enqueue(new MockResponse().setBody(responseBody));
@@ -330,7 +393,7 @@ public class ResponseTest extends BaseServiceUnitTest {
     server.enqueue(new MockResponse().setBody(responseBody));
 
     // Act
-    Response<String> response = service.getString().execute();
+    Response<String> response = service.getStringTypeGenericType().execute();
 
     // Assert
     String result = response.getResult();
@@ -346,7 +409,7 @@ public class ResponseTest extends BaseServiceUnitTest {
     server.enqueue(new MockResponse().setBody(responseBody));
 
     // Act
-    Response<List<String>> response = service.getListString().execute();
+    Response<List<String>> response = service.getListStringTypeGenericType().execute();
 
     // Arrange
     List<String> result = response.getResult();
@@ -364,7 +427,7 @@ public class ResponseTest extends BaseServiceUnitTest {
     server.enqueue(new MockResponse().setBody(responseBody));
 
     // Act
-    Response<Long> response = service.getLong().execute();
+    Response<Long> response = service.getLongTypeGenericType().execute();
 
     // Assert
     Long result = response.getResult();
@@ -380,7 +443,7 @@ public class ResponseTest extends BaseServiceUnitTest {
     server.enqueue(new MockResponse().setBody(responseBody));
 
     // Act
-    Response<List<Long>> response = service.getListLong().execute();
+    Response<List<Long>> response = service.getListLongTypeGenericType().execute();
 
     // Assert
     List<Long> result = response.getResult();
@@ -406,7 +469,7 @@ public class ResponseTest extends BaseServiceUnitTest {
     server.enqueue(new MockResponse().setBody(responseBody));
 
     // Act
-    Response<List<TestModel>> response = service.getListTestModel().execute();
+    Response<List<TestModel>> response = service.getListTestModelTypeGenericType().execute();
 
     // Assert
     List<TestModel> result = response.getResult();
@@ -427,7 +490,7 @@ public class ResponseTest extends BaseServiceUnitTest {
     server.enqueue(new MockResponse().setBody(responseBody));
 
     // Act
-    Response<List<TestModel>> response = service.getListTestModel().execute();
+    Response<List<TestModel>> response = service.getListTestModelTypeGenericType().execute();
 
     // Assert
     List<TestModel> list = response.getResult();
@@ -441,7 +504,7 @@ public class ResponseTest extends BaseServiceUnitTest {
     server.enqueue(new MockResponse().setBody(responseBody));
 
     // Act
-    Response<List<TestModel>> response = service.getListTestModel().execute();
+    Response<List<TestModel>> response = service.getListTestModelTypeGenericType().execute();
 
     // Assert
     List<TestModel> list = response.getResult();
@@ -517,4 +580,113 @@ public class ResponseTest extends BaseServiceUnitTest {
     Thread.sleep(500);
     assertTrue(callWasCanceled[0]);
   }
+
+  @DataProvider(name = "stringResponseBodyMemberIsNullOrEmptyOrWhitespace")
+  public static Object[][] stringResponseBodyMemberIsNullOrEmptyOrWhitespaceDataProvider() {
+    return new Object[][]{
+        {"null"},
+        {""},
+        {" "}
+    };
+  }
+
+  @Test(dataProvider = "stringResponseBodyMemberIsNullOrEmptyOrWhitespace")
+  public void testGenericObjectStringShouldReturnNullValueWhenStringValueOfResponseBodyMemberIsEmptyOrNullValue(
+      String expectedValue
+  ) {
+    // Arrange
+    String responseBody = String.format("{\"name\":\"%s\"}", expectedValue);
+    server.enqueue(new MockResponse().setBody(responseBody));
+
+    // Act
+    Response<String> response = service.getStringTypeGenericObject("name").execute();
+
+    // Assert
+    assertNotNull(response);
+    assertNotNull(response.getResult());
+    assertTrue(response.getResult().equals(expectedValue));
+  }
+
+  @Test
+  public void testGenericObjectStringShouldReturnStringValueOfResponseBodyMember2() {
+    // Arrange
+    String expectedNameValue = "lorem";
+    String responseBody = String.format("{\"name\":\"%s\"}", expectedNameValue);
+    server.enqueue(new MockResponse().setBody(responseBody));
+
+    // Act
+    Response<String> response = service.getStringTypeGenericObject("name").execute();
+
+    // Assert
+    assertNotNull(response);
+    assertNotNull(response.getResult());
+    assertEquals(response.getResult(), expectedNameValue);
+  }
+
+  @Test
+  public void testGenericObjectShouldReturnNullObjectWhenResponseBodyMemberIsNullValue() {
+    // Arrange
+    String responseBody = "{\"name\"=\"Lorem\", \"age\":\"45\", \"passport\":null}";
+    server.enqueue(new MockResponse().setBody(responseBody));
+
+    // Act
+    Response<PassportModel> response = service.getPassportModelGenericObject("passport").execute();
+
+    // Assert
+    assertNotNull(response);
+    assertNull(response.getResult());
+  }
+
+  @Test
+  public void testGenericObjectShouldReturnObjectWhenResponseBodyMemberIsEmptyObject() {
+    // Arrange
+    String responseBody = "{\"name\"=\"Lorem\", \"age\":\"45\", \"passport\":{}}";
+    server.enqueue(new MockResponse().setBody(responseBody));
+
+    // Act
+    Response<PassportModel> response = service.getPassportModelGenericObject("passport").execute();
+
+    // Assert
+    assertNotNull(response);
+    assertNotNull(response.getResult());
+    assertNull(response.getResult().getIssuer());
+    assertNull(response.getResult().getSerial());
+  }
+
+  @Test
+  public void testGenericObjectShouldReturnGivenTypeOfObjectOfResponseBodyMember() {
+    // Arrange
+    String expectedPassportIssuer = "Office";
+    String expectedPassportSerialNumber = "AB12345";
+    String passportModel = String.format("{\"issuer\":\"%s\", \"serial\":\"%s\"}",
+        expectedPassportIssuer,
+        expectedPassportSerialNumber);
+    String responseBody = String.format("{\"name\"=\"Lorem\", \"age\":\"45\", \"passport\":%s}", passportModel);
+    server.enqueue(new MockResponse().setBody(responseBody));
+
+    // Act
+    Response<PassportModel> response = service.getPassportModelGenericObject("passport").execute();
+
+    // Assert
+    assertNotNull(response);
+    assertNotNull(response.getResult());
+    assertEquals(response.getResult().getSerial(), expectedPassportSerialNumber);
+    assertEquals(response.getResult().getIssuer(), expectedPassportIssuer);
+  }
+
+  // @Test
+  // public void test() {
+  //   // Arrange
+  //   String expectedValue = "Columbus";
+  //   String responseBody = String.format("{\"city\": \"%s\"}", expectedValue);
+  //   server.enqueue(new MockResponse().setBody(responseBody));
+  //
+  //   // Act
+  //   Response<TestModel> response = service.getObjectExtendsGeneric(TestModel.class).execute();
+  //
+  //   // Assert
+  //   assertNotNull(response.getResult());
+  //   assertEquals(expectedValue, response.getResult().getCity());
+  //   assertNotNull(response.getHeaders());
+  // }
 }
