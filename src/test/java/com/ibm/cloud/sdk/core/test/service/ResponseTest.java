@@ -24,10 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-
+import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
 import com.ibm.cloud.sdk.core.http.RequestBuilder;
 import com.ibm.cloud.sdk.core.http.Response;
@@ -42,13 +39,15 @@ import com.ibm.cloud.sdk.core.service.model.GenericModel;
 import com.ibm.cloud.sdk.core.test.BaseServiceUnitTest;
 import com.ibm.cloud.sdk.core.util.Clock;
 import com.ibm.cloud.sdk.core.util.ResponseConverterUtils;
-
 import io.reactivex.Single;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.Headers;
 import okhttp3.HttpUrl;
 import okhttp3.mockwebserver.MockResponse;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Test;
 
 public class ResponseTest extends BaseServiceUnitTest {
   private class TestModel extends GenericModel {
@@ -56,6 +55,45 @@ public class ResponseTest extends BaseServiceUnitTest {
 
     String getCity() {
       return city;
+    }
+  }
+
+  public class GenericObjectModel extends GenericModel {
+    @SerializedName("name")
+    String name;
+
+    @SerializedName("address")
+    String address;
+
+    @SerializedName("age")
+    Integer age;
+
+    public String getName() {
+      return name;
+    }
+
+    public String getAddress() {
+      return address;
+    }
+
+    public Integer getAge() {
+      return age;
+    }
+  }
+
+  public class PassportModel {
+    @SerializedName("serial")
+    private String serial;
+
+    @SerializedName("issuer")
+    private String issuer;
+
+    public String getSerial() {
+      return serial;
+    }
+
+    public String getIssuer() {
+      return issuer;
     }
   }
 
@@ -67,15 +105,16 @@ public class ResponseTest extends BaseServiceUnitTest {
       super(SERVICE_NAME, auth);
     }
 
-    ServiceCall<TestModel> getTestModel() {
+    ServiceCall<TestModel> getTestModelByResponseConverterUtilsGetObject() {
       RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getServiceUrl() + "/v1/test"));
       return createServiceCall(builder.build(), ResponseConverterUtils.getObject(TestModel.class));
     }
 
-    ServiceCall<TestModel> getTestModel2() {
+    ServiceCall<TestModel> getTestModelByResponseConverterUtilsGetValue() {
       RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getServiceUrl() + "/v1/test"));
       ResponseConverter<TestModel> responseConverter =
-          ResponseConverterUtils.getValue(new TypeToken<TestModel>(){}.getType());
+          ResponseConverterUtils.getValue(new TypeToken<TestModel>() {
+          }.getType());
       return createServiceCall(builder.build(), responseConverter);
     }
 
@@ -84,60 +123,68 @@ public class ResponseTest extends BaseServiceUnitTest {
       return createServiceCall(builder.build(), ResponseConverterUtils.getVoid());
     }
 
-    ServiceCall<String> getString() {
+    ServiceCall<String> getStringByResponseConverterUtilsGetValue() {
       RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getServiceUrl() + "/v1/test"));
       ResponseConverter<String> responseConverter =
-          ResponseConverterUtils.getValue(new TypeToken<String>(){}.getType());
+          ResponseConverterUtils.getValue(new TypeToken<String>() {
+          }.getType());
       return createServiceCall(builder.build(), responseConverter);
     }
 
-    ServiceCall<List<String>> getListString() {
+    ServiceCall<List<String>> getListOfStringsByResponseConverterUtilsGetValue() {
       RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getServiceUrl() + "/v1/test"));
       ResponseConverter<List<String>> responseConverter =
-          ResponseConverterUtils.getValue(new TypeToken<List<String>>(){}.getType());
+          ResponseConverterUtils.getValue(new TypeToken<List<String>>() {
+          }.getType());
       return createServiceCall(builder.build(), responseConverter);
     }
 
-    ServiceCall<Long> getLong() {
+    ServiceCall<Long> getLongByResponseConverterUtilsGetValue() {
       RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getServiceUrl() + "/v1/test"));
       ResponseConverter<Long> responseConverter =
-          ResponseConverterUtils.getValue(new TypeToken<Long>(){}.getType());
+          ResponseConverterUtils.getValue(new TypeToken<Long>() {
+          }.getType());
       return createServiceCall(builder.build(), responseConverter);
     }
 
-    ServiceCall<List<Long>> getListLong() {
+    ServiceCall<List<Long>> getListLongValuesByResponseConverterUtilsGetValue() {
       RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getServiceUrl() + "/v1/test"));
       ResponseConverter<List<Long>> responseConverter =
-          ResponseConverterUtils.getValue(new TypeToken<List<Long>>(){}.getType());
+          ResponseConverterUtils.getValue(new TypeToken<List<Long>>() {
+          }.getType());
       return createServiceCall(builder.build(), responseConverter);
     }
 
-    ServiceCall<List<TestModel>> getListTestModel() {
+    ServiceCall<List<TestModel>> getListOfTestModelsByResponseConverterUtilsGetValue() {
       RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getServiceUrl() + "/v1/test"));
       ResponseConverter<List<TestModel>> responseConverter =
-          ResponseConverterUtils.getValue(new TypeToken<List<TestModel>>(){}.getType());
+          ResponseConverterUtils.getValue(new TypeToken<List<TestModel>>() {
+          }.getType());
       return createServiceCall(builder.build(), responseConverter);
     }
+
+    ServiceCall<String> getStringByResponseConverterUtilsGenericObject(final String propertyName) {
+      RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getServiceUrl() + "/v1/test"));
+      return createServiceCall(builder.build(),
+          ResponseConverterUtils.getGenericObject(String.class, propertyName));
+    }
+
+    ServiceCall<PassportModel> getPassportModelByResponseConverterUtilsGenericObject(
+        final String propertyName) {
+      RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getServiceUrl() + "/v1/test"));
+      return createServiceCall(builder.build(),
+          ResponseConverterUtils.getGenericObject(PassportModel.class, propertyName));
+    }
+
+    ServiceCall<String> getStringRepresentationOfResponseBodyByResponseConverterUtilsGetString() {
+      RequestBuilder builder = RequestBuilder.get(HttpUrl.get(getServiceUrl() + "/v1/test"));
+      return createServiceCall(builder.build(), ResponseConverterUtils.getString());
+    }
+
   }
 
   private TestService service;
-  private String testResponseValue = "Columbus";
-  private String testResponseBody1 = "{\"city\": \"Columbus\"}";
-  private String testResponseBody2 = "[\"string1\",\"string2\",\"string3\"]";
-  private String testResponseBody3 = "[44,33,74]";
-  private String testResponseBody4 = "[{\"city\":\"Austin\"},{\"city\":\"Georgetown\"},{\"city\":\"Cedar Park\"}]";
-  private String testResponseBody5 = "\"string response\"";
-  private String testResponseBody6 = "443374";
-  private String testResponseBodyError1 = "{\"city\": \"Colum";
-  private String testResponseBodyMissing = "";
-  private String testResponseBodyEmptyObject = "{}";
-  private String testResponseBodyEmptyList = "[]";
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see com.ibm.cloud.sdk.core.test.WatsonServiceTest#setUp()
-   */
   @Override
   @BeforeMethod
   public void setUp() throws Exception {
@@ -146,64 +193,71 @@ public class ResponseTest extends BaseServiceUnitTest {
     service.setServiceUrl(getMockWebServerUrl());
   }
 
-  /**
-   * Test that all fields are populated when calling execute().
-   */
   @Test
-  public void testExecuteTestModel() {
-    server.enqueue(new MockResponse().setBody(testResponseBody1));
+  public void testGetObjectShouldReturnAnObjectAllFieldsPopulatedWhenResponseBodyIsAPOJO() {
+    // Arrange
+    String expectedValue = "Columbus";
+    String responseBody = String.format("{\"city\": \"%s\"}", expectedValue);
+    server.enqueue(new MockResponse().setBody(responseBody));
 
-    Response<TestModel> response = service.getTestModel().execute();
+    // Act
+    Response<TestModel> response = service.getTestModelByResponseConverterUtilsGetObject().execute();
+
+    // Assert
     assertNotNull(response.getResult());
-    assertEquals(testResponseValue, response.getResult().getCity());
+    assertEquals(expectedValue, response.getResult().getCity());
     assertNotNull(response.getHeaders());
   }
 
-  /**
-   * Test that a null result is returned when no response body is present.
-   */
   @Test
-  public void testExecuteTestModelNoResponse() {
-    server.enqueue(new MockResponse().setBody(testResponseBodyMissing));
+  public void testGetObjectShouldReturnNullWhenResponseBodyIsEmpty() {
+    // Arrange
+    String responseBody = "";
+    server.enqueue(new MockResponse().setBody(responseBody));
 
-    Response<TestModel> response = service.getTestModel().execute();
+    // Act
+    Response<TestModel> response = service.getTestModelByResponseConverterUtilsGetObject().execute();
+
+    // Assert
     assertNull(response.getResult());
   }
 
-  /**
-   * Test an "empty" model instance is returned when an empty object response is present.
-   */
   @Test
-  public void testExecuteTestModelEmptyObject() {
-    server.enqueue(new MockResponse().setBody(testResponseBodyEmptyObject));
+  public void testGetObjectShouldReturnEmptyModelWhenResponseBodyIsEmptyObject() {
+    // Arrange
+    String responseBody = "{}";
+    server.enqueue(new MockResponse().setBody(responseBody));
 
-    Response<TestModel> response = service.getTestModel().execute();
+    // Act
+    Response<TestModel> response = service.getTestModelByResponseConverterUtilsGetObject().execute();
+
+    // Assert
     TestModel obj = response.getResult();
     assertNotNull(obj);
     assertNull(obj.getCity());
   }
 
-  /**
-   * Test that an invalid JSON response results in an InvalidServiceResponseException.
-   */
   @Test(expectedExceptions = InvalidServiceResponseException.class)
-  public void testExecuteTestModelJSONError1() {
-    server.enqueue(new MockResponse().setBody(testResponseBodyError1));
-    service.getTestModel().execute();
+  public void testGetObjectShouldThrowWhenResponseBodyIsInvalidJson() {
+    // Arrange
+    String responseBody = "{\"city\": \"Colum";
+    server.enqueue(new MockResponse().setBody(responseBody));
+
+    // Act
+    service.getTestModelByResponseConverterUtilsGetObject().execute();
   }
 
-  /**
-   * Test that all fields are populated when calling enqueue().
-   *
-   * @throws InterruptedException the interrupted exception
-   */
   @Test
-  public void testEnqueue() throws InterruptedException {
-    server.enqueue(new MockResponse().setBody(testResponseBody1));
+  public void testGetObjectShouldPopulateAllFieldsWhenCallingEnqueue() throws InterruptedException {
+    // Arrange
+    String expectedValueFromResultModel = "Columbus";
+    String responseBody = String.format("{\"city\": \"%s\"}", expectedValueFromResultModel);
+    server.enqueue(new MockResponse().setBody(responseBody));
 
     final Map<String, Object> results = new HashMap<>();
 
-    service.getTestModel().enqueue(new ServiceCallback<TestModel>() {
+    // Act
+    service.getTestModelByResponseConverterUtilsGetObject().enqueue(new ServiceCallback<TestModel>() {
       @Override
       public void onResponse(Response<TestModel> response) {
         results.put("method", "onResponse");
@@ -216,28 +270,27 @@ public class ResponseTest extends BaseServiceUnitTest {
       }
     });
 
+    // Assert
     Thread.sleep(2000);
 
     assertEquals("onResponse", results.get("method"));
     Response<TestModel> response = (Response<TestModel>) results.get("response");
     assertNotNull(response);
     assertNotNull(response.getResult());
-    assertEquals(testResponseValue, response.getResult().getCity());
+    assertEquals(expectedValueFromResultModel, response.getResult().getCity());
     assertNotNull(response.getHeaders());
   }
 
-  /**
-   * Test that an invalid JSON response results in an InvalidServiceResponseException.
-   *
-   * @throws InterruptedException
-   */
   @Test
-  public void testEnqueueJSONError() throws InterruptedException{
-    server.enqueue(new MockResponse().setBody(testResponseBodyError1));
+  public void testGetObjectShouldThrowWhenInvalidJsonIsEnqueued() throws InterruptedException {
+    // Arrange
+    String responseBody = "{\"city\": \"Colum";
+    server.enqueue(new MockResponse().setBody(responseBody));
 
     final Map<String, Object> results = new HashMap<>();
 
-    service.getTestModel().enqueue(new ServiceCallback<TestModel>() {
+    // Act
+    service.getTestModelByResponseConverterUtilsGetObject().enqueue(new ServiceCallback<TestModel>() {
       @Override
       public void onResponse(Response<TestModel> response) {
         results.put("method", "onResponse");
@@ -250,6 +303,7 @@ public class ResponseTest extends BaseServiceUnitTest {
       }
     });
 
+    // Assert
     Thread.sleep(2000);
 
     assertEquals("onFailure", results.get("method"));
@@ -259,19 +313,20 @@ public class ResponseTest extends BaseServiceUnitTest {
   }
 
 
-  /**
-   * Test that a reactive request completes correctly.
-   *
-   * @throws InterruptedException
-   */
   @Test
-  public void testReactiveRequest() throws InterruptedException {
-    server.enqueue(new MockResponse().setBody(testResponseBody1));
+  public void testGetObjectReactiveRequestShouldCompleteCorrectly() throws InterruptedException {
+    // Arrange
+    String expectedValue = "Columbus";
+    String responseBody = String.format("{\"city\": \"%s\"}", expectedValue);
+    server.enqueue(new MockResponse().setBody(responseBody));
 
     final Map<String, Object> results = new HashMap<>();
 
-    Single<Response<TestModel>> observableRequest = service.getTestModel().reactiveRequest();
+    // Act
+    Single<Response<TestModel>> observableRequest = service.getTestModelByResponseConverterUtilsGetObject()
+        .reactiveRequest();
 
+    // Assert
     observableRequest
         .subscribeOn(Schedulers.single())
         .subscribe(new Consumer<Response<TestModel>>() {
@@ -288,20 +343,21 @@ public class ResponseTest extends BaseServiceUnitTest {
 
     Response<TestModel> response = (Response<TestModel>) results.get("response");
     assertNotNull(response);
-    assertEquals(testResponseValue, response.getResult().getCity());
+    assertEquals(expectedValue, response.getResult().getCity());
     assertNotNull(response.getHeaders());
   }
 
-  /**
-   * Test that headers are accessible from a HEAD method call using execute().
-   */
   @Test
-  public void testExecuteForHead() {
+  public void testHeadersShouldBeAccessible() {
+    // Arrange
     Headers rawHeaders = Headers.of("Content-Length", "472", "Content-Type", "application/json", "Server", "Mock");
     com.ibm.cloud.sdk.core.http.Headers expectedHeaders = new com.ibm.cloud.sdk.core.http.Headers(rawHeaders);
     server.enqueue(new MockResponse().setHeaders(rawHeaders));
 
+    // Act
     Response<Void> response = service.headMethod().execute();
+
+    // Assert
     com.ibm.cloud.sdk.core.http.Headers actualHeaders = response.getHeaders();
     assertNull(response.getResult());
     assertNotNull(actualHeaders);
@@ -314,41 +370,110 @@ public class ResponseTest extends BaseServiceUnitTest {
     assertEquals(expectedHeaders.toString(), actualHeaders.toString());
   }
 
-  /**
-   * Test that all fields are populated when calling execute().
-   */
   @Test
-  public void testExecuteTestModel2() {
-    server.enqueue(new MockResponse().setBody(testResponseBody1));
+  public void testGetValueShouldReturnObjectWithAllFieldsPopulatedWhenResponseBodyIsPOJO() {
+    // Arrange
+    String expectedValue = "Columbus";
+    String responseBody = String.format("{\"city\": \"%s\"}", expectedValue);
+    server.enqueue(new MockResponse().setBody(responseBody));
 
-    Response<TestModel> response = service.getTestModel2().execute();
+    // Act
+    Response<TestModel> response = service.getTestModelByResponseConverterUtilsGetValue().execute();
+
+    // Assert
     assertNotNull(response.getResult());
-    assertEquals(testResponseValue, response.getResult().getCity());
+    assertEquals(expectedValue, response.getResult().getCity());
     assertNotNull(response.getHeaders());
   }
 
-  /**
-   * Test that a list of strings response can be deserialized correctly.
-   */
   @Test
-  public void testExecuteString() {
-    server.enqueue(new MockResponse().setBody(testResponseBody5));
+  public void testGetValueShouldReturnNullWhenResponseBodyIsEmpty() {
+    // Arrange
+    String responseBody = "";
+    server.enqueue(new MockResponse().setBody(responseBody));
 
-    Response<String> response = service.getString().execute();
+    // Act
+    Response<TestModel> response = service.getTestModelByResponseConverterUtilsGetValue().execute();
+
+    // Assert
+    assertNotNull(response);
+    assertNull(response.getResult());
+  }
+
+  @Test
+  public void testGetValueShouldReturnEmptyModelWhenResponseBodyIsEmpty() {
+    // Arrange
+    String responseBody = "{}";
+    server.enqueue(new MockResponse().setBody(responseBody));
+
+    // Act
+    Response<TestModel> response = service.getTestModelByResponseConverterUtilsGetValue().execute();
+
+    // Assert
+    assertNotNull(response);
+    assertNotNull(response.getResult());
+    assertNull(response.getResult().getCity());
+  }
+
+  @Test(expectedExceptions = InvalidServiceResponseException.class)
+  public void testGetValueShouldThrowWhenResponseBodyIsInvalidJson() {
+    // Arrange
+    String responseBody = "{\"city\": \"Colum";
+    server.enqueue(new MockResponse().setBody(responseBody));
+
+    // Act
+    service.getTestModelByResponseConverterUtilsGetValue().execute();
+  }
+
+  @Test
+  public void testGetValueShouldReturnStringDeserializedCorrectly() {
+    // Arrange
+    String expectedResult = "string response";
+    String responseBody = String.format("\"%s\"", expectedResult);
+    server.enqueue(new MockResponse().setBody(responseBody));
+
+    // Act
+    Response<String> response = service.getStringByResponseConverterUtilsGetValue().execute();
+
+    // Assert
     String result = response.getResult();
     assertNotNull(result);
-    assertEquals("string response", result);
+    assertEquals(expectedResult, result);
     assertNotNull(response.getHeaders());
   }
 
-  /**
-   * Test that a list of strings response can be deserialized correctly.
-   */
-  @Test
-  public void testExecuteListString() {
-    server.enqueue(new MockResponse().setBody(testResponseBody2));
+  @DataProvider(name = "testGetValueShouldReturnString")
+  public static Object[][] testGetValueShouldReturnStringDataProvider() {
+    return new Object[][]{
+        {""},
+        {" "},
+        };
+  }
 
-    Response<List<String>> response = service.getListString().execute();
+  @Test(dataProvider = "testGetValueShouldReturnString")
+  public void testGetValueShouldReturnNullWhenStringResponseIsEmptyOrWhitespace(String responseBody) {
+    // Arrange
+    server.enqueue(new MockResponse().setBody(responseBody));
+
+    // Act
+    Response<String> response = service.getStringByResponseConverterUtilsGetValue().execute();
+
+    // Assert
+    String result = response.getResult();
+    assertNull(result);
+    assertNotNull(response.getHeaders());
+  }
+
+  @Test
+  public void testGetValueShouldReturnListOfStringsDeserializedCorrectly() {
+    // Arrange
+    String responseBody = "[\"string1\",\"string2\",\"string3\"]";
+    server.enqueue(new MockResponse().setBody(responseBody));
+
+    // Act
+    Response<List<String>> response = service.getListOfStringsByResponseConverterUtilsGetValue().execute();
+
+    // Arrange
     List<String> result = response.getResult();
     assertNotNull(result);
     assertEquals(result.size(), 3);
@@ -356,28 +481,94 @@ public class ResponseTest extends BaseServiceUnitTest {
     assertNotNull(response.getHeaders());
   }
 
-  /**
-   * Test that a list of strings response can be deserialized correctly.
-   */
   @Test
-  public void testExecuteLong() {
-    server.enqueue(new MockResponse().setBody(testResponseBody6));
+  public void testGetValueShouldReturnListOfStringsDeserializedCorrectlyWhenAnItemIsNullValue() {
+    // Arrange
+    String responseBody = "[\"string1\",null ,\"string3\"]";
+    server.enqueue(new MockResponse().setBody(responseBody));
 
-    Response<Long> response = service.getLong().execute();
-    Long result = response.getResult();
+    // Act
+    Response<List<String>> response = service.getListOfStringsByResponseConverterUtilsGetValue().execute();
+
+    // Arrange
+    List<String> result = response.getResult();
     assertNotNull(result);
-    assertEquals(Long.valueOf(443374), result);
+    assertEquals(result.size(), 3);
+    assertEquals(Arrays.asList("string1", null, "string3"), result);
     assertNotNull(response.getHeaders());
   }
 
-  /**
-   * Test that a list of longs response can be deserialized correctly.
-   */
   @Test
-  public void testExecuteListLong() {
-    server.enqueue(new MockResponse().setBody(testResponseBody3));
+  public void testGetValueShouldReturnListOfStringsDeserializedCorrectlyWhenAnItemIsEmptyString() {
+    // Arrange
+    String responseBody = "[\"string1\",\"\" ,\"string3\"]";
+    server.enqueue(new MockResponse().setBody(responseBody));
 
-    Response<List<Long>> response = service.getListLong().execute();
+    // Act
+    Response<List<String>> response = service.getListOfStringsByResponseConverterUtilsGetValue().execute();
+
+    // Arrange
+    List<String> result = response.getResult();
+    assertNotNull(result);
+    assertEquals(result.size(), 3);
+    assertEquals(Arrays.asList("string1", "", "string3"), result);
+    assertNotNull(response.getHeaders());
+  }
+
+  @Test
+  public void testGetValueShouldReturnListOfStringsDeserializedCorrectlyWhenAnItemIsWhitespace() {
+    // Arrange
+    String responseBody = "[\"string1\",\" \" ,\"string3\"]";
+    server.enqueue(new MockResponse().setBody(responseBody));
+
+    // Act
+    Response<List<String>> response = service.getListOfStringsByResponseConverterUtilsGetValue().execute();
+
+    // Arrange
+    List<String> result = response.getResult();
+    assertNotNull(result);
+    assertEquals(result.size(), 3);
+    assertEquals(Arrays.asList("string1", " ", "string3"), result);
+    assertNotNull(response.getHeaders());
+  }
+
+  @Test
+  public void testGetValueShouldReturnLongDeserializedCorrectly() {
+    // Arrange
+    String responseBody = "443374";
+    Long expectedResult = Long.parseLong(responseBody);
+    server.enqueue(new MockResponse().setBody(responseBody));
+
+    // Act
+    Response<Long> response = service.getLongByResponseConverterUtilsGetValue().execute();
+
+    // Assert
+    Long result = response.getResult();
+    assertNotNull(result);
+    assertEquals(expectedResult, result);
+    assertNotNull(response.getHeaders());
+  }
+
+  @Test(expectedExceptions = {InvalidServiceResponseException.class})
+  public void testGetValueShouldThrowWhenLongValueIsInvalid() {
+    // Arrange
+    String responseBody = "443f374";
+    server.enqueue(new MockResponse().setBody(responseBody));
+
+    // Act
+    service.getLongByResponseConverterUtilsGetValue().execute();
+  }
+
+  @Test
+  public void testGetValueShouldReturnListOfLongsDeserializedCorrectly() {
+    // Arrange
+    String responseBody = "[44,33,74]";
+    server.enqueue(new MockResponse().setBody(responseBody));
+
+    // Act
+    Response<List<Long>> response = service.getListLongValuesByResponseConverterUtilsGetValue().execute();
+
+    // Assert
     List<Long> result = response.getResult();
     assertNotNull(result);
     assertEquals(result.size(), 3);
@@ -391,14 +582,26 @@ public class ResponseTest extends BaseServiceUnitTest {
     assertNotNull(response.getHeaders());
   }
 
-  /**
-   * Test that list of TestModels response can be deserialized correctly.
-   */
-  @Test
-  public void testExecuteListTestModel() {
-    server.enqueue(new MockResponse().setBody(testResponseBody4));
+  @Test(expectedExceptions = {InvalidServiceResponseException.class})
+  public void testGetValueShouldThrowWhenInvalidLongIsInTheList() {
+    // Arrange
+    String responseBody = "[44,3f3,74]";
+    server.enqueue(new MockResponse().setBody(responseBody));
 
-    Response<List<TestModel>> response = service.getListTestModel().execute();
+    // Act
+    service.getListLongValuesByResponseConverterUtilsGetValue().execute();
+  }
+
+  @Test
+  public void testGetValueShouldReturnListOfObjectsDeserializedCorrectly() {
+    // Arrange
+    String responseBody = "[{\"city\":\"Austin\"},{\"city\":\"Georgetown\"},{\"city\":\"Cedar Park\"}]";
+    server.enqueue(new MockResponse().setBody(responseBody));
+
+    // Act
+    Response<List<TestModel>> response = service.getListOfTestModelsByResponseConverterUtilsGetValue().execute();
+
+    // Assert
     List<TestModel> result = response.getResult();
     assertNotNull(result);
     assertEquals(result.size(), 3);
@@ -410,66 +613,117 @@ public class ResponseTest extends BaseServiceUnitTest {
     assertNotNull(response.getHeaders());
   }
 
-  /**
-   * Test that a null list is returned when response body is missing.
-   */
   @Test
-  public void testExecuteListTestModelNoResponse() {
-    server.enqueue(new MockResponse().setBody(testResponseBodyMissing));
+  public void testGetValueShouldReturnListOfObjectsDeserializedCorrectlyWhenOneFromTheItemIsNull() {
+    // Arrange
+    String responseBody = "[{\"city\":\"Austin\"},null ,{\"city\":\"Cedar Park\"}]";
+    server.enqueue(new MockResponse().setBody(responseBody));
 
-    Response<List<TestModel>> response = service.getListTestModel().execute();
+    // Act
+    Response<List<TestModel>> response = service.getListOfTestModelsByResponseConverterUtilsGetValue().execute();
+
+    // Assert
+    List<TestModel> result = response.getResult();
+    assertNotNull(result);
+    assertEquals(result.size(), 3);
+    List<String> actualCities = new ArrayList<>();
+    for (TestModel obj : result) {
+      if (obj != null && obj.getCity() != null) {
+        actualCities.add(obj.getCity());
+      }
+    }
+    assertEquals(Arrays.asList("Austin", "Cedar Park"), actualCities);
+    assertNotNull(response.getHeaders());
+  }
+
+  @Test
+  public void testGetValueShouldReturnListOfObjectsDeserializedCorrectlyWhenFromTheItemsIsEmptyObject() {
+    // Arrange
+    String responseBody = "[{\"city\":\"Austin\"},{} ,{\"city\":\"Cedar Park\"}]";
+    server.enqueue(new MockResponse().setBody(responseBody));
+
+    // Act
+    Response<List<TestModel>> response = service.getListOfTestModelsByResponseConverterUtilsGetValue().execute();
+
+    // Assert
+    List<TestModel> result = response.getResult();
+    assertNotNull(result);
+    assertEquals(result.size(), 3);
+    List<String> actualCities = new ArrayList<>();
+    for (TestModel obj : result) {
+      if (obj != null && obj.getCity() != null) {
+        actualCities.add(obj.getCity());
+      }
+    }
+    assertEquals(Arrays.asList("Austin", "Cedar Park"), actualCities);
+    assertNotNull(response.getHeaders());
+  }
+
+  @Test
+  public void testGetValueShouldReturnNullListWhenResponseBodyIsMissing() {
+    // Arrange
+    String responseBody = "";
+    server.enqueue(new MockResponse().setBody(responseBody));
+
+    // Act
+    Response<List<TestModel>> response = service.getListOfTestModelsByResponseConverterUtilsGetValue().execute();
+
+    // Assert
     List<TestModel> list = response.getResult();
     assertNull(list);
   }
 
-  /**
-   * Test that an empty list of TestModels are returned when response body is "[]".
-   */
   @Test
-  public void testExecuteListTestModelEmptyList() {
-    server.enqueue(new MockResponse().setBody(testResponseBodyEmptyList));
+  public void testGetValueShouldReturnEmptyListWhenResponseBodyIsAnEmptyList() {
+    // Arrange
+    String responseBody = "[]";
+    server.enqueue(new MockResponse().setBody(responseBody));
 
-    Response<List<TestModel>> response = service.getListTestModel().execute();
+    // Act
+    Response<List<TestModel>> response = service.getListOfTestModelsByResponseConverterUtilsGetValue().execute();
+
+    // Assert
     List<TestModel> list = response.getResult();
     assertNotNull(list);
     assertTrue(list.isEmpty());
   }
 
-  /**
-   * Test getting the status code from a response.
-   */
   @Test
-  public void testResponseCode() {
+  public void testHeadMethodShouldReturnTheExpectedResponseCode() {
+    // Arrange
     server.enqueue(new MockResponse().setResponseCode(204));
+
+    // Act
     Response<Void> response = service.headMethod().execute();
+
+    // Assert
     assertEquals(204, response.getStatusCode(), "The response status code should be 204.");
   }
 
-  /**
-   * Test getting the status line message from a response.
-   */
   @Test
-  public void testResponseMessage() {
+  public void testHeadMethodShouldBeAbleToRetrieveStatusLineFromResponseMessage() {
+    // Arrange
     server.enqueue(new MockResponse().setStatus("HTTP/1.1 204 No Content"));
+
+    // Act
     Response<Void> response = service.headMethod().execute();
+
+    // Assert
     assertEquals("No Content", response.getStatusMessage(), "The response status message should be 'No Content'.");
   }
 
-  /**
-   * Test canceling a service call by mimicking setting a timeout and canceling if the call exceeds that value.
-   *
-   * @throws InterruptedException the interrupted exception
-   */
   @Test
-  public void testRequestCancel() throws InterruptedException {
-    server.enqueue(new MockResponse().setBody(testResponseBody1).setBodyDelay(5000, TimeUnit.MILLISECONDS));
+  public void testGetObjectShouldBeAbleToCancelRequestCall() throws InterruptedException {
+    // Arrange
+    String responseBody = "{\"city\": \"Columbus\"}";
+    server.enqueue(new MockResponse().setBody(responseBody).setBodyDelay(5000, TimeUnit.MILLISECONDS));
 
     // time to consider timeout (in ms)
     long timeoutThreshold = 3000;
     final boolean[] hasCallCompleted = {false};
     final boolean[] callWasCanceled = {false};
 
-    ServiceCall<TestModel> testCall = service.getTestModel();
+    ServiceCall<TestModel> testCall = service.getTestModelByResponseConverterUtilsGetObject();
     long startTime = Clock.getCurrentTimeInMillis();
     testCall.enqueue(new ServiceCallback<TestModel>() {
       @Override
@@ -491,13 +745,151 @@ public class ResponseTest extends BaseServiceUnitTest {
     }
 
     // if we timed out and it's STILL not complete, we'll just cancel the call
+    // Act
     if (!hasCallCompleted[0]) {
       testCall.cancel();
     }
 
+    // Assert
     // sleep for a bit to make sure all async operations are complete, and then verify we set this value
     // in onFailure()
     Thread.sleep(500);
     assertTrue(callWasCanceled[0]);
   }
+
+  @DataProvider(name = "stringResponseBodyMemberIsNullOrEmptyOrWhitespace")
+  public static Object[][] stringResponseBodyMemberIsNullOrEmptyOrWhitespaceDataProvider() {
+    return new Object[][]{
+        {"null"},
+        {""},
+        {" "}
+    };
+  }
+
+  @Test(dataProvider = "stringResponseBodyMemberIsNullOrEmptyOrWhitespace")
+  public void testGenericObjectStringShouldReturnNullValueWhenResponseBodyStringValueIsEmptyOrNullValue(
+      String expectedValue
+  ) {
+    // Arrange
+    String responseBody = String.format("{\"name\":\"%s\"}", expectedValue);
+    server.enqueue(new MockResponse().setBody(responseBody));
+
+    // Act
+    Response<String> response = service.getStringByResponseConverterUtilsGenericObject("name").execute();
+
+    // Assert
+    assertNotNull(response);
+    assertNotNull(response.getResult());
+    assertTrue(response.getResult().equals(expectedValue));
+  }
+
+  @Test
+  public void testGenericObjectStringShouldReturnStringValue() {
+    // Arrange
+    String expectedNameValue = "lorem";
+    String responseBody = String.format("{\"name\":\"%s\"}", expectedNameValue);
+    server.enqueue(new MockResponse().setBody(responseBody));
+
+    // Act
+    Response<String> response = service.getStringByResponseConverterUtilsGenericObject("name").execute();
+
+    // Assert
+    assertNotNull(response);
+    assertNotNull(response.getResult());
+    assertEquals(response.getResult(), expectedNameValue);
+  }
+
+  @Test
+  public void testGenericObjectShouldReturnNullObjectWhenResponseBodyMemberIsNullValue() {
+    // Arrange
+    String responseBody = "{\"name\"=\"Lorem\", \"age\":\"45\", \"passport\":null}";
+    server.enqueue(new MockResponse().setBody(responseBody));
+
+    // Act
+    Response<PassportModel> response = service.getPassportModelByResponseConverterUtilsGenericObject("passport")
+        .execute();
+
+    // Assert
+    assertNotNull(response);
+    assertNull(response.getResult());
+  }
+
+  @Test
+  public void testGenericObjectShouldReturnEmptyDefinedTypeWhenResponseBodyMemberIsEmptyObject() {
+    // Arrange
+    String responseBody = "{\"name\"=\"Lorem\", \"age\":\"45\", \"passport\":{}}";
+    server.enqueue(new MockResponse().setBody(responseBody));
+
+    // Act
+    Response<PassportModel> response = service.getPassportModelByResponseConverterUtilsGenericObject("passport")
+        .execute();
+
+    // Assert
+    assertNotNull(response);
+    assertNotNull(response.getResult());
+    assertNull(response.getResult().getIssuer());
+    assertNull(response.getResult().getSerial());
+  }
+
+  @Test
+  public void testGenericObjectShouldReturnDefinedType() {
+    // Arrange
+    String expectedPassportIssuer = "Office";
+    String expectedPassportSerialNumber = "AB12345";
+    String passportModel = String.format("{\"issuer\":\"%s\", \"serial\":\"%s\"}",
+        expectedPassportIssuer,
+        expectedPassportSerialNumber);
+    String responseBody = String.format("{\"name\"=\"Lorem\", \"age\":\"45\", \"passport\":%s}", passportModel);
+    server.enqueue(new MockResponse().setBody(responseBody));
+
+    // Act
+    Response<PassportModel> response = service.getPassportModelByResponseConverterUtilsGenericObject("passport")
+        .execute();
+
+    // Assert
+    assertNotNull(response);
+    assertNotNull(response.getResult());
+    assertEquals(response.getResult().getSerial(), expectedPassportSerialNumber);
+    assertEquals(response.getResult().getIssuer(), expectedPassportIssuer);
+  }
+
+  @Test
+  public void testGetResponseBodyAsStringShouldReturnStringRepresentationOfResponseBody() {
+    // Arrange
+    String responseBody = "{\"name\":\"Lorem\", \"age\":\"45\"}";
+    server.enqueue(new MockResponse().setBody(responseBody));
+
+    // Act
+    Response<String> response = service.getStringRepresentationOfResponseBodyByResponseConverterUtilsGetString()
+        .execute();
+
+    // Assert
+    assertNotNull(response);
+    assertNotNull(response.getResult());
+    assertEquals(response.getResult(), responseBody);
+  }
+
+  @DataProvider(name = "getResponseBodyStringRepresentation")
+  public static Object[][] getResponseBodyStringRepresentationDataProvider() {
+    return new Object[][]{
+        {""},
+        {" "}
+    };
+  }
+
+  @Test(dataProvider = "getResponseBodyStringRepresentation")
+  public void testGetResponseBodyAsStringShouldReturnNullWhenResponseBodyIsEmptyOrWhitespace(String responseBody) {
+    // Arrange
+    server.enqueue(new MockResponse().setBody(responseBody));
+
+    // Act
+    Response<String> response = service.getStringRepresentationOfResponseBodyByResponseConverterUtilsGetString()
+        .execute();
+
+    // Assert
+    assertNotNull(response);
+    assertNotNull(response.getResult());
+    assertEquals(response.getResult(), responseBody);
+  }
+
 }
