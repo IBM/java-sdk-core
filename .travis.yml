@@ -47,9 +47,10 @@ jobs:
     - stage: Build-Test
       jdk: openjdk11
       script:
-        - mvn clean package $MVN_ARGS
+        - mvn clean test
 
     - stage: Semantic-Release
+      jdk: openjdk8
       install:
         - sudo apt-get install python
         - nvm install 12
