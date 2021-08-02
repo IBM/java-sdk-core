@@ -4,6 +4,7 @@ dist: xenial
 
 jdk:
 - openjdk8
+- openjdk11
 
 notifications:
   email: true
@@ -42,6 +43,11 @@ jobs:
         - mvn clean package $MVN_ARGS
       after_success:
         - build/publishCodeCoverage.sh
+
+    - stage: Build-Test
+      jdk: openjdk11
+      script:
+        - mvn clean package $MVN_ARGS
 
     - stage: Semantic-Release
       install:
