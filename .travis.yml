@@ -47,7 +47,7 @@ jobs:
     - stage: Build-Test
       jdk: openjdk11
       script:
-        - mvn clean test
+        - mvn clean package $MVN_ARGS
 
     - stage: Semantic-Release
       jdk: openjdk8
