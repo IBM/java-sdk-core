@@ -227,6 +227,8 @@
                     <show>public</show>
                     <doctitle>${project.name}, version ${project.version}</doctitle>
                     <footer>IBM Corporation</footer>
+                    <source>8</source>
+                    <detectJavaApiLink>false</detectJavaApiLink>
                 </configuration>
                 <executions>
                     <execution>
