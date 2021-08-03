@@ -1,3 +1,10 @@
+## [9.11.1](https://github.com/IBM/java-sdk-core/compare/9.11.0...9.11.1) (2021-08-02)
+
+
+### Bug Fixes
+
+* **http:** avoid gzipping zero length content ([4c86252](https://github.com/IBM/java-sdk-core/commit/4c862522f1a3f9fdab6be82c0e18935129c9c130))
+
 # [9.11.0](https://github.com/IBM/java-sdk-core/compare/9.10.4...9.11.0) (2021-07-12)
 
 

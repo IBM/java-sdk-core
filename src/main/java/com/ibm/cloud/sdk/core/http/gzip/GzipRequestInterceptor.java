@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2020.
+ * (C) Copyright IBM Corp. 2015, 2021.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -28,7 +28,9 @@ import okio.Okio;
 public final class GzipRequestInterceptor implements Interceptor {
     @Override public Response intercept(Interceptor.Chain chain) throws IOException {
       Request originalRequest = chain.request();
-      if (originalRequest.body() == null || originalRequest.header("Content-Encoding") != null) {
+      if (originalRequest.body() == null
+          || originalRequest.body().contentLength() == 0L
+          || originalRequest.header("Content-Encoding") != null) {
         return chain.proceed(originalRequest);
       }
 

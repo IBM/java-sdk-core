@@ -1,3 +1,15 @@
+/**
+ * (C) Copyright IBM Corp. 2021.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ */
 package com.ibm.cloud.sdk.core.test.http.gzip;
 
 import com.google.gson.JsonObject;
@@ -1004,5 +1016,36 @@ public class GzipTest extends BaseServiceUnitTest {
         assertNull(request.getHeader(CONTENT_ENCODING));
         assertEquals(bodySize, request.getBodySize());
         assertEquals(payload, request.getBody().readUtf8());
+    }
+
+    @Test
+    public void testShouldNotGzipDeleteZeroLengthBody() throws Throwable {
+        boolean enableGzip = true;
+        boolean enableRateLimit = false;
+        setUp(enableGzip, enableRateLimit);
+        // OkHttp DELETE requests appear to have a zero length body (as opposed to a null body)
+        final RequestBuilder builder = RequestBuilder.delete(HttpUrl.parse(service.getServiceUrl() + "/v1/test"));
+
+        // queue the response to the mock server
+        String mockResponseBody = "";
+        server.enqueue(new MockResponse()
+            .setResponseCode(201)
+            .setBody(mockResponseBody)
+            .setHeader("Content-type", "text/plain"));
+
+        // validate response
+        Response<Void> response = service.testMethodVoid(builder).execute();
+        assertNotNull(response);
+        Void responseObj = response.getResult();
+        assertNull(responseObj);
+        assertEquals(201, response.getStatusCode());
+
+
+        // Verify the request was not compressed
+        RecordedRequest request = server.takeRequest();
+        assertNotNull(request);
+        assertEquals(request.getMethod(), "DELETE");
+        assertNull(request.getHeader(CONTENT_ENCODING));
+        assertEquals(0, request.getBodySize());
     }
 }
