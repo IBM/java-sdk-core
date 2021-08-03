@@ -35,7 +35,6 @@ before_install:
 jobs:
   include:
     - stage: Build-Test
-      jdk: openjdk8
       install:
         - curl -s https://codecov.io/bash > $HOME/codecov-bash.sh && chmod +x $HOME/codecov-bash.sh
       script:
@@ -43,11 +42,6 @@ jobs:
         - mvn clean package $MVN_ARGS
       after_success:
         - build/publishCodeCoverage.sh
-
-    - jdk: openjdk11
-      install: true
-      script:
-        - mvn clean package $MVN_ARGS
 
     - stage: Semantic-Release
       jdk: openjdk8
