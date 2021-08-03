@@ -48,6 +48,12 @@ jobs:
       jdk: openjdk11
       install: true
       script:
+        - echo $JAVA_HOME
+        - echo $MVN_HOME
+        - which javac
+        - which javadoc
+        - java -version
+        - javadoc --version
         - mvn clean package $MVN_ARGS
 
     - stage: Semantic-Release
