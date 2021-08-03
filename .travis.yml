@@ -23,6 +23,7 @@ env:
 
 stages:
   - name: Build-Test
+  - name: Build-Test OpenJDK 11
   - name: Semantic-Release
     if: branch = main AND type = push AND fork = false
   - name: Publish-Release
@@ -44,7 +45,7 @@ jobs:
       after_success:
         - build/publishCodeCoverage.sh
 
-    - stage: Build-Test
+    - stage: Build-Test OpenJDK 11
       jdk: openjdk11
       install: true
       script:
