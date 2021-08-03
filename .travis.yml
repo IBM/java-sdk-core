@@ -33,7 +33,8 @@ before_install:
 
 jobs:
   include:
-    - jdk: openjdk8
+    - stage: Build-Test
+      jdk: openjdk8
       install:
         - curl -s https://codecov.io/bash > $HOME/codecov-bash.sh && chmod +x $HOME/codecov-bash.sh
       script:
@@ -47,50 +48,39 @@ jobs:
       script:
         - mvn clean package $MVN_ARGS
 
-#jobs:
-#  include:
-#    - stage: Build-Test
-#      install:
-#        - curl -s https://codecov.io/bash > $HOME/codecov-bash.sh && chmod +x $HOME/codecov-bash.sh
-#      script:
-#        - build/setMavenVersion.sh
-#        - mvn clean package $MVN_ARGS
-#      after_success:
-#        - build/publishCodeCoverage.sh
-#
-#    - stage: Semantic-Release
-#      jdk: openjdk8
-#      install:
-#        - sudo apt-get install python
-#        - nvm install 12
-#        - npm install -g npm@6.x
-#        - pip install --user bump2version
-#        - npm install @semantic-release/changelog
-#        - npm install @semantic-release/exec
-#        - npm install @semantic-release/git
-#        - npm install @semantic-release/github
-#      script:
-#        - npx semantic-release
-#      after_success:
-#        - echo "Semantic release has successfully created a new tagged-release"
-#
-#    - stage: Publish-Release
-#      jdk: openjdk8
-#      name: Publish-Javadoc
-#      install: true
-#      script:
-#        - build/setMavenVersion.sh
-#        - mvn clean javadoc:javadoc $MVN_ARGS
-#        - build/publishJavadoc.sh
-#      after_success:
-#        - echo "Javadocs successfully published to gh-pages!"
-#
-#    - jdk: openjdk8
-#      name: Publish-To-Maven-Central
-#      install: true
-#      script:
-#        - build/setupSigning.sh
-#        - build/setMavenVersion.sh
-#        - mvn deploy $MVN_ARGS -DskipTests
-#      after_success:
-#        - echo "Maven artifacts successfully published to Maven Central!"
+    - stage: Semantic-Release
+      jdk: openjdk8
+      install:
+        - sudo apt-get install python
+        - nvm install 12
+        - npm install -g npm@6.x
+        - pip install --user bump2version
+        - npm install @semantic-release/changelog
+        - npm install @semantic-release/exec
+        - npm install @semantic-release/git
+        - npm install @semantic-release/github
+      script:
+        - npx semantic-release
+      after_success:
+        - echo "Semantic release has successfully created a new tagged-release"
+
+    - stage: Publish-Release
+      jdk: openjdk8
+      name: Publish-Javadoc
+      install: true
+      script:
+        - build/setMavenVersion.sh
+        - mvn clean javadoc:javadoc $MVN_ARGS
+        - build/publishJavadoc.sh
+      after_success:
+        - echo "Javadocs successfully published to gh-pages!"
+
+    - jdk: openjdk8
+      name: Publish-To-Maven-Central
+      install: true
+      script:
+        - build/setupSigning.sh
+        - build/setMavenVersion.sh
+        - mvn deploy $MVN_ARGS -DskipTests
+      after_success:
+        - echo "Maven artifacts successfully published to Maven Central!"
