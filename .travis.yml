@@ -43,7 +43,13 @@ jobs:
       after_success:
         - build/publishCodeCoverage.sh
 
+    - jdk: openjdk11
+      install: skip
+      script:
+        - mvn clean package $MVN_ARGS
+
     - stage: Semantic-Release
+      jdk: openjdk8
       install:
         - sudo apt-get install python
         - nvm install 12
