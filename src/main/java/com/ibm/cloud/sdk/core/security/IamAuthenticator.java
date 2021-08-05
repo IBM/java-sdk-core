@@ -31,32 +31,19 @@ import okhttp3.FormBody;
  * an access token from the IAM token service via the "POST /identity/token" operation.
  * When the access token expires, a new access token will be fetched.
  */
-public class IamAuthenticator extends TokenRequestBasedAuthenticator<IamToken, IamToken> implements Authenticator {
+public class IamAuthenticator extends IamRequestBasedAuthenticator implements Authenticator {
   private static final String DEFAULT_IAM_URL = "https://iam.cloud.ibm.com";
   private static final String OPERATION_PATH = "/identity/token";
-  private static final String GRANT_TYPE = "grant_type";
-  private static final String REQUEST_GRANT_TYPE = "urn:ibm:params:oauth:grant-type:apikey";
-  private static final String API_KEY = "apikey";
-  private static final String RESPONSE_TYPE = "response_type";
-  private static final String CLOUD_IAM = "cloud_iam";
-  private static final String SCOPE = "scope";
 
   // Properties specific to an IAM authenticator.
-  private String url;
   private String apikey;
-  private String scope;
-  private String clientId;
-  private String clientSecret;
-
-  // This is the value of the Authorization header we'll use when interacting with the token server.
-  private String cachedAuthorizationHeader = null;
 
   /**
    * This Builder class is used to construct IamAuthenticator instances.
    */
   public static class Builder {
-    private String url;
     private String apikey;
+    private String url;
     private String scope;
     private String clientId;
     private String clientSecret;
@@ -70,12 +57,12 @@ public class IamAuthenticator extends TokenRequestBasedAuthenticator<IamToken, I
 
     // Builder ctor which copies config from an existing authenticator instance.
     private Builder(IamAuthenticator obj) {
-      this.url = obj.url;
       this.apikey = obj.apikey;
-      this.scope = obj.scope;
-      this.clientId = obj.clientId;
-      this.clientSecret = obj.clientSecret;
 
+      this.url = obj.getURL();
+      this.scope = obj.getScope();
+      this.clientId = obj.getClientId();
+      this.clientSecret = obj.getClientSecret();
       this.disableSSLVerification = obj.getDisableSSLVerification();
       this.headers = obj.getHeaders();
       this.proxy = obj.getProxy();
@@ -89,6 +76,16 @@ public class IamAuthenticator extends TokenRequestBasedAuthenticator<IamToken, I
      */
     public IamAuthenticator build() {
       return new IamAuthenticator(this);
+    }
+
+    /**
+     * Sets the apikey property.
+     * @param apikey the apikey to use when retrieving an access token
+     * @return the Builder
+     */
+    public Builder apikey(String apikey) {
+      this.apikey = apikey;
+      return this;
     }
 
     /**
@@ -118,16 +115,6 @@ public class IamAuthenticator extends TokenRequestBasedAuthenticator<IamToken, I
      */
     public Builder clientSecret(String clientSecret) {
       this.clientSecret = clientSecret;
-      return this;
-    }
-
-    /**
-     * Sets the apikey property.
-     * @param apikey the apikey to use when retrieving an access token
-     * @return the Builder
-     */
-    public Builder apikey(String apikey) {
-      this.apikey = apikey;
       return this;
     }
 
@@ -195,12 +182,11 @@ public class IamAuthenticator extends TokenRequestBasedAuthenticator<IamToken, I
    * @param builder the Builder instance containing the configuration to be used
    */
   protected IamAuthenticator(Builder builder) {
-    this.url = builder.url;
     this.apikey = builder.apikey;
-    this.scope = builder.scope;
-    this.clientId = builder.clientId;
-    this.clientSecret = builder.clientSecret;
 
+    setURL(builder.url);
+    setScope(builder.scope);
+    setClientIdAndSecret(builder.clientId, builder.clientSecret);
     setDisableSSLVerification(builder.disableSSLVerification);
     setHeaders(builder.headers);
     setProxy(builder.proxy);
@@ -319,8 +305,8 @@ public class IamAuthenticator extends TokenRequestBasedAuthenticator<IamToken, I
     }
 
     return new Builder()
-      .url(config.get(PROPNAME_URL))
       .apikey(apikey)
+      .url(config.get(PROPNAME_URL))
       .scope(config.get(PROPNAME_SCOPE))
       .clientId(config.get(PROPNAME_CLIENT_ID))
       .clientSecret(config.get(PROPNAME_CLIENT_SECRET))
@@ -350,7 +336,8 @@ public class IamAuthenticator extends TokenRequestBasedAuthenticator<IamToken, I
   protected void init(String apikey, String url, String clientId, String clientSecret,
     boolean disableSSLVerification, Map<String, String> headers, String scope) {
     this.apikey = apikey;
-    this.url = url;
+
+    setURL(url);
     setClientIdAndSecret(clientId, clientSecret);
     setScope(scope);
     this.validate();
@@ -361,13 +348,14 @@ public class IamAuthenticator extends TokenRequestBasedAuthenticator<IamToken, I
 
   @Override
   public void validate() {
+    super.validate();
 
-    if (StringUtils.isEmpty(this.url)) {
+    if (StringUtils.isEmpty(this.getURL())) {
       // If no base URL was configured, then use the default IAM base URL.
-      this.url = DEFAULT_IAM_URL;
-    } else if (this.url.endsWith(OPERATION_PATH)) {
+      this.setURL(DEFAULT_IAM_URL);
+    } else {
       // Canonicalize the URL by removing the operation path from it if present.
-      this.url = this.url.substring(0, this.url.length() - OPERATION_PATH.length());
+      this.setURL(StringUtils.removeEnd(this.getURL(), OPERATION_PATH));
     }
 
     if (StringUtils.isEmpty(this.apikey)) {
@@ -377,21 +365,6 @@ public class IamAuthenticator extends TokenRequestBasedAuthenticator<IamToken, I
     if (CredentialUtils.hasBadStartOrEndChar(this.apikey)) {
       throw new IllegalArgumentException(String.format(ERRORMSG_PROP_INVALID, "apikey"));
     }
-
-    if (StringUtils.isEmpty(getUsername()) && StringUtils.isEmpty(getPassword())) {
-      // both empty is ok.
-    } else {
-      if (StringUtils.isEmpty(getUsername())) {
-        throw new IllegalArgumentException(String.format(ERRORMSG_PROP_MISSING, "clientId"));
-      }
-      if (StringUtils.isEmpty(getPassword())) {
-        throw new IllegalArgumentException(String.format(ERRORMSG_PROP_MISSING, "clientSecret"));
-      }
-    }
-
-    // Assuming everything validates clean, let's cache the basic auth header if
-    // the clientId/clientSecret properties are configured.
-    this.cachedAuthorizationHeader = constructBasicAuthHeader(this.clientId, this.clientSecret);
   }
 
   @Override
@@ -404,38 +377,6 @@ public class IamAuthenticator extends TokenRequestBasedAuthenticator<IamToken, I
    */
   public String getApiKey() {
     return this.apikey;
-  }
-
-  /**
-   * @return the URL configured on this Authenticator.
-   */
-  public String getURL() {
-    return this.url;
-  }
-
-  /**
-   * Sets the URL on this Authenticator.
-   * @param url the URL representing the IAM token server endpoint
-   */
-  public void setURL(String url) {
-    if (StringUtils.isEmpty(url)) {
-      url = DEFAULT_IAM_URL;
-    }
-    this.url = url;
-  }
-
-  /**
-   * @return the clientId configured on this Authenticator.
-   */
-  public String getClientId() {
-    return this.clientId;
-  }
-
-  /**
-   * @return the clientSecret configured on this Authenticator.
-   */
-  public String getClientSecret() {
-    return this.clientSecret;
   }
 
   /**
@@ -471,32 +412,6 @@ public class IamAuthenticator extends TokenRequestBasedAuthenticator<IamToken, I
   }
 
   /**
-   * Sets the clientId and clientSecret on this Authenticator.
-   * @param clientId the clientId to use in interactions with the token server
-   * @param clientSecret the clientSecret to use in interactions with the token server
-   */
-  public void setClientIdAndSecret(String clientId, String clientSecret) {
-    this.clientId = clientId;
-    this.clientSecret = clientSecret;
-    this.validate();
-  }
-
-  /**
-   * @return the scope parameter
-   */
-  public String getScope() {
-    return this.scope;
-  }
-
-  /**
-   * Sets the "scope" parameter to use when fetching the bearer token from the IAM token server.
-   * @param value a space seperated string that makes up the scope parameter.
-   */
-  public void setScope(String value) {
-    this.scope = value;
-  }
-
-  /**
    * Fetches an IAM access token for the apikey using the configured URL.
    *
    * @return an IamToken instance that contains the access token
@@ -504,23 +419,22 @@ public class IamAuthenticator extends TokenRequestBasedAuthenticator<IamToken, I
   @Override
   public IamToken requestToken() {
     // Form a POST request to retrieve the access token.
-    RequestBuilder builder = RequestBuilder.post(RequestBuilder.resolveRequestUrl(this.url, OPERATION_PATH));
+    RequestBuilder builder = RequestBuilder.post(RequestBuilder.resolveRequestUrl(this.getURL(), OPERATION_PATH));
 
     // Now add the Content-Type and (optionally) the Authorization header to the token server request.
     builder.header(HttpHeaders.CONTENT_TYPE, HttpMediaType.APPLICATION_FORM_URLENCODED);
-    if (StringUtils.isNotEmpty(this.cachedAuthorizationHeader)) {
-      builder.header(HttpHeaders.AUTHORIZATION, this.cachedAuthorizationHeader);
-    }
+    addAuthorizationHeader(builder);
 
     // Build the form request body.
     FormBody formBody;
     final FormBody.Builder formBodyBuilder = new FormBody.Builder()
-        .add(GRANT_TYPE, REQUEST_GRANT_TYPE)
-        .add(API_KEY, apikey)
-        .add(RESPONSE_TYPE, CLOUD_IAM);
-    // Add the scope param if it's not empty
+        .add("grant_type", "urn:ibm:params:oauth:grant-type:apikey")
+        .add("apikey", getApiKey())
+        .add("response_type", "cloud_iam");
+
+    // Add the scope param if it's not empty.
     if (!StringUtils.isEmpty(getScope())) {
-      formBodyBuilder.add(SCOPE, getScope());
+      formBodyBuilder.add("scope", getScope());
     }
     formBody = formBodyBuilder.build();
     builder.body(formBody);
