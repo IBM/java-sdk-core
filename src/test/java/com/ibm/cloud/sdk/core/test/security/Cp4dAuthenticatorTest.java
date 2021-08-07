@@ -25,12 +25,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import org.testng.annotations.Test;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
-import com.ibm.cloud.sdk.core.http.HttpHeaders;
 import com.ibm.cloud.sdk.core.security.Authenticator;
 import com.ibm.cloud.sdk.core.security.CloudPakForDataAuthenticator;
 import com.ibm.cloud.sdk.core.security.Cp4dTokenResponse;
@@ -41,7 +41,6 @@ import com.ibm.cloud.sdk.core.util.Clock;
 import okhttp3.Headers;
 import okhttp3.Request;
 import okhttp3.mockwebserver.RecordedRequest;
-import org.testng.annotations.BeforeMethod;
 
 @PrepareForTest({ Clock.class })
 @PowerMockIgnore({
@@ -462,15 +461,6 @@ public class Cp4dAuthenticatorTest extends BaseServiceUnitTest {
     } catch (Throwable t) {
       fail("Expected RuntimeException, not " + t.getClass().getSimpleName());
     }
-  }
-
-  // Verify the Authorization header in the specified request builder.
-  private void verifyAuthHeader(Request.Builder builder, String expectedPrefix) {
-    Request request = builder.build();
-    String actualValue = request.header(HttpHeaders.AUTHORIZATION);
-    assertNotNull(actualValue);
-
-    assertTrue(actualValue.startsWith(expectedPrefix));
   }
 
 

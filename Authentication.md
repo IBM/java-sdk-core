@@ -1,9 +1,10 @@
 # Authentication
 The java-sdk-core project supports the following types of authentication:
 - Basic Authentication
-- Bearer Token 
-- Identity and Access Management (IAM)
-- Cloud Pak for Data
+- Bearer Token Authentication
+- Identity and Access Management (IAM) Authentication
+- Container Authentication
+- Cloud Pak for Data Authentication
 - No Authentication
 
 The SDK user configures the appropriate type of authentication for use with service instances.  
@@ -23,15 +24,20 @@ configuration information.  The configuration examples below will use
 environment variables, although the same properties could be specified in a
 credentials file instead.
 
+
 ## Basic Authentication
 The `BasicAuthenticator` is used to add Basic Authentication information to
 each outbound request in the `Authorization` header in the form:
 ```
    Authorization: Basic <encoded username and password>
 ```
+
 ### Properties
+
 - username: (required) the basic auth username
+
 - password: (required) the basic auth password
+
 ### Programming example
 ```java
 import com.ibm.cloud.sdk.core.security.BasicAuthenticator;
@@ -48,6 +54,7 @@ ExampleService service = new ExampleService(authenticator);
 
 // 'service' can now be used to invoke operations.
 ```
+
 ### Configuration example
 External configuration:
 ```
@@ -69,14 +76,18 @@ ExampleService service = new ExampleService(authenticator);
 // 'service' can now be used to invoke operations.
 ```
 
+
 ## Bearer Token Authentication
 The `BearerTokenAuthenticator` will add a user-supplied bearer token to
 each outbound request in the `Authorization` header in the form:
 ```
     Authorization: Bearer <bearer-token>
 ```
+
 ### Properties
+
 - bearerToken: (required) the bearer token value
+
 ### Programming example
 ```java
 import com.ibm.cloud.sdk.core.security.BearerTokenAuthenticator;
@@ -96,6 +107,7 @@ ExampleService service = new ExampleService(authenticator);
 newToken = // ... obtain new bearer token value
 authenticator.setBearerToken(newToken);
 ```
+
 ### Configuration example
 External configuration:
 ```
@@ -120,13 +132,15 @@ ExampleService service = new ExampleService(authenticator);
 newToken = // ... obtain new bearer token value
 ((BearerTokenAuthenticator) authenticator).setBearerToken(newToken);
 ```
+
 Note that the use of external configuration is not as useful with the `BearerTokenAuthenticator` as it
 is for other authenticator types because bearer tokens typically need to be obtained and refreshed
 programmatically since they normally have a relatively short lifespan before they expire.  This
 authenticator type is intended for situations in which the application will be managing the bearer 
 token itself in terms of initial acquisition and refreshing as needed.
 
-## Identity and Access Management Authentication (IAM)
+
+## Identity and Access Management (IAM) Authentication
 The `IamAuthenticator` will accept a user-supplied api key and will perform
 the necessary interactions with the IAM token service to obtain a suitable
 bearer token for the specified api key.  The authenticator will also obtain 
@@ -136,18 +150,25 @@ form:
 ```
    Authorization: Bearer <bearer-token>
 ```
+
 ### Properties
+
 - apikey: (required) the IAM api key
+
 - url: (optional) The URL representing the IAM token service endpoint.  If not specified, a suitable
 default value is used.
+
 - clientId/clientSecret: (optional) The `clientId` and `clientSecret` fields are used to form a 
 "basic auth" Authorization header for interactions with the IAM token server. If neither field 
 is specified, then no Authorization header will be sent with token server requests.  These fields 
 are optional, but must be specified together.
+
 - disableSSLVerification: (optional) A flag that indicates whether verificaton of the server's SSL 
 certificate should be disabled or not. The default value is `false`.
+
 - headers: (optional) A set of key/value pairs that will be sent as HTTP headers in requests
 made to the IAM token service.
+
 ### Programming example
 ```java
 import com.ibm.cloud.sdk.core.security.IamAuthenticator;
@@ -163,6 +184,7 @@ ExampleService service = new ExampleService(authenticator);
 
 // 'service' can now be used to invoke operations.
 ```
+
 ### Configuration example
 External configuration:
 ```
@@ -183,7 +205,99 @@ ExampleService service = new ExampleService(authenticator);
 // 'service' can now be used to invoke operations.
 ```
 
-##  Cloud Pak for Data
+
+## Container Authentication
+The `ContainerAuthenticator` is intended to be used by application code
+running inside a compute resource managed by the IBM Kubernetes Service (IKS)
+in which a secure compute resource token (CR token) has been stored in a file
+within the compute resource's local file system.
+The CR token is similar to an IAM apikey except that it is managed automatically by
+the compute resource provider (IKS).
+This allows the application developer to:
+- avoid storing credentials in application code, configuraton files or a password vault
+- avoid managing or rotating credentials
+
+The `ContainerAuthenticator` will retrieve the CR token from
+the compute resource in which the application is running, and will then perform
+the necessary interactions with the IAM token service to obtain an IAM access token
+using the IAM "get token" operation with grant-type `cr-token`.
+The authenticator will repeat these steps to obtain a new IAM access token when the
+current access token expires.
+The IAM access token is added to each outbound request in the `Authorization` header in the form:
+```
+   Authorization: Bearer <IAM-access-token>
+```
+
+### Properties
+
+- crTokenFilename: (optional) the name of the file containing the injected CR token value.
+If not specified, then `/var/run/secrets/tokens/vault-token` is used as the default value.
+The application must have `read` permissions on the file containing the CR token value.
+
+- iamProfileName: (optional) the name of the linked trusted IAM profile to be used when obtaining the
+IAM access token (a CR token might map to multiple IAM profiles).
+One of `iamProfileName` or `iamProfileID` must be specified.
+
+- iamProfileID: (optional) the id of the linked trusted IAM profile to be used when obtaining the
+IAM access token (a CR token might map to multiple IAM profiles).
+One of `iamProfileName` or `iamProfileID` must be specified.
+
+- url: (optional) The base endpoint URL of the IAM token service.
+The default value of this property is the "prod" IAM token service endpoint
+(`https://iam.cloud.ibm.com`).
+
+- clientId/clientSecret: (optional) The `clientId` and `clientSecret` fields are used to form a 
+"basic auth" Authorization header for interactions with the IAM token service. If neither field 
+is specified, then no Authorization header will be sent with token server requests.  These fields 
+are optional, but must be specified together.
+
+- scope: (optional) the scope to be associated with the IAM access token.
+If not specified, then no scope will be associated with the access token.
+
+- disableSSLVerification: (optional) A flag that indicates whether verificaton of the server's SSL 
+certificate should be disabled or not. The default value is `false`.
+
+- headers: (optional) A set of key/value pairs that will be sent as HTTP headers in requests
+made to the IAM token service.
+
+### Programming example
+```java
+import com.ibm.cloud.sdk.core.security.ContainerAuthenticator;
+import <sdk_base_package>.ExampleService.v1.ExampleService;
+...
+// Create the authenticator.
+ContainerAuthenticator authenticator = new ContainerAuthenticator.Builder()
+    .iamProfileName("iam-user123")
+    .build();
+
+// Create the service instance.
+ExampleService service = new ExampleService(authenticator);
+
+// 'service' can now be used to invoke operations.
+```
+
+### Configuration example
+External configuration:
+```
+export EXAMPLE_SERVICE_AUTH_TYPE=container
+export EXAMPLE_SERVICE_IAM_PROFILE_NAME=iam-user123
+```
+Application code:
+```java
+import com.ibm.cloud.sdk.core.security.ConfigBaseAuthenticatorFactory;
+import <sdk_base_package>.ExampleService.v1.ExampleService;
+...
+// Create the authenticator.
+Authenticator authenticator = ConfigBasedAuthenticatorFactory.getAuthenticator("example_service");
+
+// Create the service instance.
+ExampleService service = new ExampleService(authenticator);
+
+// 'service' can now be used to invoke operations.
+```
+
+
+##  Cloud Pak for Data Authentication
 The `CloudPakForDataAuthenticator` will accept user-supplied values for the username and either a password or apikey, and will 
 perform the necessary interactions with the Cloud Pak for Data token service to obtain a suitable
 bearer token.  The authenticator will also obtain a new bearer token when the current token expires.
@@ -192,15 +306,23 @@ form:
 ```
    Authorization: Bearer <bearer-token>
 ```
+
 ### Properties
+
 - username: (required) the username used to obtain a bearer token.
+
 - password: (required if apikey is not specified) the password used to obtain a bearer token.
+
 - apikey: (required if password is not specified) the apikey used to obtain a bearer token.
+
 - url: (required) The base URL associated with the Cloud Pak for Data token service.
+
 - disableSSLVerification: (optional) A flag that indicates whether verificaton of the server's SSL 
 certificate should be disabled or not. The default value is `false`.
+
 - headers: (optional) A set of key/value pairs that will be sent as HTTP headers in requests
 made to the IAM token service.
+
 ### Programming example
 ```java
 import com.ibm.cloud.sdk.core.security.CloudPakForDataAuthenticator;

@@ -25,9 +25,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import com.ibm.cloud.sdk.core.util.Clock;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
+import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 
 import com.ibm.cloud.sdk.core.http.HttpHeaders;
@@ -37,13 +38,11 @@ import com.ibm.cloud.sdk.core.security.IamAuthenticator;
 import com.ibm.cloud.sdk.core.security.IamToken;
 import com.ibm.cloud.sdk.core.service.exception.ServiceResponseException;
 import com.ibm.cloud.sdk.core.test.BaseServiceUnitTest;
+import com.ibm.cloud.sdk.core.util.Clock;
 
 import okhttp3.Headers;
 import okhttp3.Request;
 import okhttp3.mockwebserver.RecordedRequest;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
 
 @PrepareForTest({ Clock.class })
 @PowerMockIgnore({
@@ -484,15 +483,6 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
     } catch (Throwable t) {
       fail("Expected RuntimeException, not " + t.getClass().getSimpleName());
     }
-  }
-
-  // Verify the Authorization header in the specified request builder.
-  private void verifyAuthHeader(Request.Builder builder, String expectedPrefix) {
-    Request request = builder.build();
-    String actualValue = request.header(HttpHeaders.AUTHORIZATION);
-    assertNotNull(actualValue);
-
-    assertTrue(actualValue.startsWith(expectedPrefix));
   }
 
 

@@ -421,7 +421,8 @@ public class IamAuthenticator extends IamRequestBasedAuthenticator implements Au
     // Form a POST request to retrieve the access token.
     RequestBuilder builder = RequestBuilder.post(RequestBuilder.resolveRequestUrl(this.getURL(), OPERATION_PATH));
 
-    // Now add the Content-Type and (optionally) the Authorization header to the token server request.
+    // Now add the Accept, Content-Type and (optionally) the Authorization header to the token server request.
+    builder.header(HttpHeaders.ACCEPT, HttpMediaType.APPLICATION_JSON);
     builder.header(HttpHeaders.CONTENT_TYPE, HttpMediaType.APPLICATION_FORM_URLENCODED);
     addAuthorizationHeader(builder);
 
