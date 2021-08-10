@@ -1,3 +1,10 @@
+# [9.12.0](https://github.com/IBM/java-sdk-core/compare/9.11.1...9.12.0) (2021-08-10)
+
+
+### Features
+
+* introduce new container authenticator ([#140](https://github.com/IBM/java-sdk-core/issues/140)) ([d6b455b](https://github.com/IBM/java-sdk-core/commit/d6b455b94c8d8059fce7a843889872b9f5a854b3))
+
 ## [9.11.1](https://github.com/IBM/java-sdk-core/compare/9.11.0...9.11.1) (2021-08-02)
 
 
