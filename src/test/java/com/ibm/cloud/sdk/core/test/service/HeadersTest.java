@@ -114,7 +114,7 @@ public class HeadersTest extends BaseServiceUnitTest {
   public void testImplicitHostHeader() throws InterruptedException {
     HttpUrl url = server.url("");
     String expectedHostHeaderValue = url.host() + ":" + String.valueOf(url.port());
-    System.out.println("expectedHostHeaderValue: " + expectedHostHeaderValue);
+    // System.out.println("expectedHostHeaderValue: " + expectedHostHeaderValue);
     server.enqueue(new MockResponse()
         .addHeader(CONTENT_TYPE, HttpMediaType.APPLICATION_JSON)
         .setBody("{\"test_key\": \"test_value\"}"));

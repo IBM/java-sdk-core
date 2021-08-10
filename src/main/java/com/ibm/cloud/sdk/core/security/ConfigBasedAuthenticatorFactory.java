@@ -61,10 +61,15 @@ public class ConfigBasedAuthenticatorFactory {
   private static Authenticator createAuthenticator(Map<String, String> props) {
     Authenticator authenticator = null;
 
-    // If auth type was not specified, we'll use "iam" as the default.
+    // If auth type was not specified, we'll use "iam" as the default if the "apikey" property
+    // is present, otherwise we'll use "container" as the default.
     String authType = props.get(Authenticator.PROPNAME_AUTH_TYPE);
     if (StringUtils.isEmpty(authType)) {
-      authType = Authenticator.AUTHTYPE_IAM;
+      if (props.get(Authenticator.PROPNAME_APIKEY) != null || props.get("IAM_APIKEY") != null) {
+        authType = Authenticator.AUTHTYPE_IAM;
+      } else {
+        authType = Authenticator.AUTHTYPE_CONTAINER;
+      }
     }
 
     // Create the appropriate authenticator based on the auth type.
@@ -76,8 +81,10 @@ public class ConfigBasedAuthenticatorFactory {
       authenticator = CloudPakForDataAuthenticator.fromConfiguration(props);
     } else if (authType.equalsIgnoreCase(Authenticator.AUTHTYPE_CP4D_SERVICE)) {
       authenticator = CloudPakForDataServiceAuthenticator.fromConfiguration(props);
-    }  else if (authType.equalsIgnoreCase(Authenticator.AUTHTYPE_IAM)) {
+    } else if (authType.equalsIgnoreCase(Authenticator.AUTHTYPE_IAM)) {
       authenticator = IamAuthenticator.fromConfiguration(props);
+    } else if (authType.equalsIgnoreCase(Authenticator.AUTHTYPE_CONTAINER)) {
+      authenticator = ContainerAuthenticator.fromConfiguration(props);
     } else if (authType.equalsIgnoreCase(Authenticator.AUTHTYPE_NOAUTH)) {
       authenticator = new NoAuthAuthenticator(props);
     } else {

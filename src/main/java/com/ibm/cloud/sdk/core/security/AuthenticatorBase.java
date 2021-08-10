@@ -30,6 +30,7 @@ public class AuthenticatorBase {
       "The %s property is invalid. Please remove any surrounding {, }, or \" characters.";
   public static final String ERRORMSG_REQ_FAILED = "Error while fetching access token from token service: ";
   public static final String ERRORMSG_EXCLUSIVE_PROP_ERROR = "Exactly one of %s or %s must be specified.";
+  public static final String ERRORMSG_ATLEAST_ONE_PROP_ERROR = "At least one of %s or %s must be specified.";
   public static final String ERRORMSG_PROP_INVALID_INTEGER_VALUE =
           "The %s property must be a valid integer but was %s.";
   /**
