@@ -64,6 +64,13 @@ public class ConfigBasedAuthenticatorFactory {
     // If auth type was not specified, we'll use "iam" as the default if the "apikey" property
     // is present, otherwise we'll use "container" as the default.
     String authType = props.get(Authenticator.PROPNAME_AUTH_TYPE);
+
+    // Check for the alternate "AUTHTYPE" property.
+    if (StringUtils.isEmpty(authType)) {
+      authType = props.get("AUTHTYPE");
+    }
+
+    // Determine the default auth type if it wasn't configured by the user.
     if (StringUtils.isEmpty(authType)) {
       if (props.get(Authenticator.PROPNAME_APIKEY) != null || props.get("IAM_APIKEY") != null) {
         authType = Authenticator.AUTHTYPE_IAM;

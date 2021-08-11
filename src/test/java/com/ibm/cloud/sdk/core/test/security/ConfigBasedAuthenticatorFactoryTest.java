@@ -59,13 +59,13 @@ public class ConfigBasedAuthenticatorFactoryTest extends PowerMockTestCase {
 
     env.put("SERVICE2_URL", "https://service2/api");
     env.put("SERVICE2_DISABLE_SSL", "false");
-    env.put("SERVICE2_AUTH_TYPE", Authenticator.AUTHTYPE_BASIC);
+    env.put("SERVICE2_AUTHTYPE", Authenticator.AUTHTYPE_BASIC);
     env.put("SERVICE2_USERNAME", "my-user");
     env.put("SERVICE2_PASSWORD", "my-password");
 
     env.put("SERVICE3_URL", "https://service3/api");
     env.put("SERVICE3_DISABLE_SSL", "false");
-    env.put("SERVICE3_AUTH_TYPE", "Cp4D");
+    env.put("SERVICE3_AUTHTYPE", "Cp4D");
     env.put("SERVICE3_AUTH_URL", "https://cp4dhost/cp4d/api");
     env.put("SERVICE3_USERNAME", "my-cp4d-user");
     env.put("SERVICE3_PASSWORD", "my-cp4d-password");
