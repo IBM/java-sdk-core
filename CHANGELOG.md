@@ -1,3 +1,10 @@
+## [9.12.1](https://github.com/IBM/java-sdk-core/compare/9.12.0...9.12.1) (2021-08-13)
+
+
+### Bug Fixes
+
+* support 'AUTHTYPE' as alias for 'AUTH_TYPE' config property ([#141](https://github.com/IBM/java-sdk-core/issues/141)) ([c64b6e6](https://github.com/IBM/java-sdk-core/commit/c64b6e63f0333215587b0175ba9d7d1aa167d5e4))
+
 # [9.12.0](https://github.com/IBM/java-sdk-core/compare/9.11.1...9.12.0) (2021-08-10)
 
 
