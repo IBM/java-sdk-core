@@ -35,6 +35,8 @@ public class HttpConfigOptions {
 
   private boolean disableSslVerification;
   private Boolean enableGzipCompression;
+  private int maxRetry;
+  private int maxRetryInterval;
   private Proxy proxy;
   private Authenticator proxyAuthenticator;
   private LoggingLevel loggingLevel;
@@ -50,6 +52,14 @@ public class HttpConfigOptions {
 
   public Boolean getGzipCompression() {
     return this.enableGzipCompression;
+  }
+
+  public int getMaxRetry() {
+    return this.maxRetry;
+  }
+
+  public int getMaxRetryInterval() {
+    return this.maxRetryInterval;
   }
 
   public Proxy getProxy() {
@@ -79,6 +89,8 @@ public class HttpConfigOptions {
   public static class Builder {
     private boolean disableSslVerification;
     private Boolean enableGzipCompression;
+    private int maxRetry;
+    private int maxRetryInterval;
     private Proxy proxy;
     private Authenticator proxyAuthenticator;
     private LoggingLevel loggingLevel;
@@ -133,6 +145,30 @@ public class HttpConfigOptions {
     }
 
     /**
+     * Sets retry specific parameters to enable it.
+     *
+     * @param maxRetries the maximum amount of retries for an request
+     * @param maxRetryInterval if not specified in the response, how long to wait until the next attempt
+     * @return the builder
+     */
+    public Builder enableRetry(int maxRetries, int maxRetryInterval) {
+      this.maxRetry = maxRetries;
+      this.maxRetryInterval = maxRetryInterval;
+      return this;
+    }
+
+    /**
+     * Sets the retry specific parameter to zero to disable the retry functionality.
+     *
+     * @return the builder
+     */
+    public Builder disableRetry() {
+      this.maxRetry = 0;
+      this.maxRetryInterval = 0;
+      return this;
+    }
+
+    /**
      * Sets HTTP proxy to be used by connections with the current client.
      *
      * @param proxy the desired {@link Proxy}
@@ -169,6 +205,8 @@ public class HttpConfigOptions {
   private HttpConfigOptions(Builder builder) {
     this.disableSslVerification = builder.disableSslVerification;
     this.enableGzipCompression = builder.enableGzipCompression;
+    this.maxRetry = builder.maxRetry;
+    this.maxRetryInterval = builder.maxRetryInterval;
     this.proxy = builder.proxy;
     this.proxyAuthenticator = builder.proxyAuthenticator;
     this.loggingLevel = builder.loggingLevel;

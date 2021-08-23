@@ -64,6 +64,9 @@ public abstract class BaseService {
   public static final String PROPNAME_URL = "URL";
   public static final String PROPNAME_DISABLE_SSL = "DISABLE_SSL";
   public static final String PROPNAME_ENABLE_GZIP = "ENABLE_GZIP";
+  public static final String PROPNAME_ENABLE_RETRIES = "ENABLE_RETRIES";
+  public static final String PROPNAME_MAX_RETRIES = "MAX_RETRIES";
+  public static final String PROPNAME_RETRY_INTERVAL = "RETRY_INTERVAL";
 
   private static final Logger LOG = Logger.getLogger(BaseService.class.getName());
 
@@ -134,6 +137,32 @@ public abstract class BaseService {
       Boolean enableGzipCompression = Boolean.valueOf(s);
       enableGzipCompression(enableGzipCompression);
     }
+
+    // Check to see if "ENABLE_RETRIES" was set in the service properties.
+    // If it is set to true, then we'll also try to retrieve "MAX_RETRIES" and
+    // "RETRY_INTERVAL". If those are not specified, we'll use 0 to trigger a
+    // default value for each.
+    Boolean enableRetries = Boolean.valueOf(props.get(PROPNAME_ENABLE_RETRIES));
+    if (enableRetries) {
+      // The default number of the maximum retries is 4.
+      int maxRetries = 4;
+      // Set the max retry interval to 30 seconds.
+      int maxRetryInterval = 30 * 1000;
+
+      try {
+        maxRetries = Integer.valueOf(props.get(PROPNAME_MAX_RETRIES));
+      } catch (NumberFormatException e) {
+        LOG.info("Non-numeric MAX_RETRIES value.");
+      }
+
+      try {
+        maxRetryInterval = Integer.valueOf(props.get(PROPNAME_RETRY_INTERVAL));
+      } catch (NumberFormatException e) {
+        LOG.info("Non-numeric RETRY_INTERVAL value.");
+      }
+
+      enableRetries(maxRetries, maxRetryInterval);
+    }
   }
 
   /**
@@ -147,7 +176,15 @@ public abstract class BaseService {
         .enableGzipCompression(shouldEnableCompression)
         .build();
     this.configureClient(options);
-}
+  }
+
+  // TODO: comments
+  public void enableRetries(int maxRetries, int maxRetryInterval) {
+    HttpConfigOptions options = new HttpConfigOptions.Builder()
+      .enableRetry(maxRetries, maxRetryInterval)
+      .build();
+    this.configureClient(options);
+  }
 
   /**
    * Returns the currently-configured {@link OkHttpClient} instance.

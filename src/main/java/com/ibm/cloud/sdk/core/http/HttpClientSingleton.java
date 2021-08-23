@@ -361,6 +361,11 @@ public class HttpClientSingleton {
       if (options.getLoggingLevel() != null) {
         client = setLoggingLevel(client, options.getLoggingLevel());
       }
+      int maxRetry = options.getMaxRetry();
+      int maxRetryInterval = options.getMaxRetryInterval();
+      if (maxRetry > 0 && maxRetryInterval > 0) {
+        client = client.newBuilder().addInterceptor(new RetryInterceptor(maxRetry, maxRetryInterval)).build();
+      }
       if (options.getDefaultRetryInterval() > 0) {
         client = client.newBuilder()
                 .addInterceptor(new RateLimitInterceptor(
