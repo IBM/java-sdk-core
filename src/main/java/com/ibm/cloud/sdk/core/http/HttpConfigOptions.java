@@ -147,7 +147,7 @@ public class HttpConfigOptions {
     /**
      * Sets retry specific parameters to enable it.
      *
-     * @param maxRetries the maximum amount of retries for an request
+     * @param maxRetries the maximum amount of retries for a request
      * @param maxRetryInterval if not specified in the response, how long to wait until the next attempt
      * @return the builder
      */

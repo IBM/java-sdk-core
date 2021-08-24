@@ -57,8 +57,6 @@ public class RetryInterceptor implements Interceptor {
         LOG.fine("Thread was interrupted, likely the call has been cancelled.");
       }
 
-      // At this point, time has passed, so we want to ensure auth is up-to date,
-      // as well as ensure we embed a context to carry state forward
       Request.Builder builder = request.newBuilder();
 
       // If this is the first retry, create the context and attach it to the requests.
