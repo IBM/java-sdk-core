@@ -147,7 +147,7 @@ public abstract class BaseService {
       // The default number of the maximum retries is 4.
       int maxRetries = 4;
       // Set the max retry interval to 30 seconds.
-      int maxRetryInterval = 30 * 1000;
+      int maxRetryInterval = 30;
 
       try {
         maxRetries = Integer.valueOf(props.get(PROPNAME_MAX_RETRIES));
@@ -181,8 +181,8 @@ public abstract class BaseService {
   /**
    * Enables the retries for the HTTP requests.
    *
-   * @param maxRetries the value of the maximum number of retruies
-   * @param maxRetryInterval the maximum time to wait between to retries in milliseconds
+   * @param maxRetries the value of the maximum number of retries
+   * @param maxRetryInterval the maximum time to wait between to retries in seconds
    */
   public void enableRetries(int maxRetries, int maxRetryInterval) {
     HttpConfigOptions options = new HttpConfigOptions.Builder()

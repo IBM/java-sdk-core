@@ -38,7 +38,8 @@ public class RetryInterceptor implements Interceptor {
 
   public RetryInterceptor(int maxRetries, int maxRetryInterval) {
     this.maxRetries = maxRetries;
-    this.maxRetryInterval = maxRetryInterval;
+    // Convert the interval from seconds to milliseconds.
+    this.maxRetryInterval = maxRetryInterval * 1000;
   }
 
   @Override

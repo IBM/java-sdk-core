@@ -60,7 +60,7 @@ public class RetryTest extends BaseServiceUnitTest {
         service = new RetryTest.TestService(new NoAuthAuthenticator());
 
         HttpConfigOptions.Builder builder = new HttpConfigOptions.Builder();
-        builder.enableRetries(3, 10000);
+        builder.enableRetries(3, 10);
         service.configureClient(builder.build());
         service.setServiceUrl(getMockWebServerUrl());
     }
@@ -190,9 +190,9 @@ public class RetryTest extends BaseServiceUnitTest {
         assertEquals(2, server.getRequestCount());
     }
 
-    @Test(timeOut = 1000)
+    @Test(timeOut = 5000)
     public void testMaxRetryInterval() {
-        service.enableRetries(10, 100);
+        service.enableRetries(10, 1);
 
         String message = "phew";
         for (int i = 0; i < 4; i++) {
