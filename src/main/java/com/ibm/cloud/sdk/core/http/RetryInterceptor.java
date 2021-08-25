@@ -76,7 +76,6 @@ public class RetryInterceptor implements Interceptor {
   private int getInterval(Response response, Request request) {
     Integer interval = null;
 
-    // TODO: RateLimit-Reset??
     String headerVal = response.header("Retry-After");
 
     if (headerVal != null && !headerVal.equals("")) {
