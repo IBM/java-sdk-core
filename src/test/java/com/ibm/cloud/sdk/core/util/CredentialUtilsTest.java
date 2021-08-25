@@ -88,6 +88,14 @@ public class CredentialUtilsTest extends PowerMockTestCase {
     env.put("SERVICE_9_CLIENT_SECRET", "my-client-secret");
     env.put("SERVICE_9_AUTH_URL", "https://iamhost/iam/api");
     env.put("SERVICE_9_ENABLE_GZIP", "true");
+    env.put("SERVICE_14_AUTH_TYPE", Authenticator.AUTHTYPE_IAM);
+    env.put("SERVICE_14_APIKEY", "my-api-key");
+    env.put("SERVICE_14_CLIENT_ID", "my-client-id");
+    env.put("SERVICE_14_CLIENT_SECRET", "my-client-secret");
+    env.put("SERVICE_14_AUTH_URL", "https://iamhost/iam/api");
+    env.put("SERVICE_14_ENABLE_RETRIES", "true");
+    env.put("SERVICE_14_MAX_RETRIES", "5");
+    env.put("SERVICE_14_RETRY_INTERVAL", "10");
 
     return env;
   }
@@ -443,6 +451,17 @@ public class CredentialUtilsTest extends PowerMockTestCase {
   }
 
   @Test
+  public void testFileCredentialsSystemPropService14() {
+    System.setProperty("IBM_CREDENTIALS_FILE", ALTERNATE_CRED_FILENAME);
+    assertEquals(ALTERNATE_CRED_FILENAME, System.getProperty("IBM_CREDENTIALS_FILE"));
+
+    Map<String, String> props = CredentialUtils.getFileCredentialsAsMap("service-14");
+    verifyMapService14(props);
+    System.clearProperty("IBM_CREDENTIALS_FILE");
+    assertNull(System.getProperty("IBM_CREDENTIALS_FILE"));
+  }
+
+  @Test
   public void testEnvCredentialsMapEmpty() {
     PowerMockito.spy(EnvironmentUtils.class);
     PowerMockito.when(EnvironmentUtils.getenv()).thenReturn(new HashMap<String, String>());
@@ -529,6 +548,15 @@ public class CredentialUtilsTest extends PowerMockTestCase {
 
     Map<String, String> props = CredentialUtils.getEnvCredentialsAsMap("service-9");
     verifyMapService9(props);
+  }
+
+  @Test
+  public void testEnvCredentialsMapService14() {
+    PowerMockito.spy(EnvironmentUtils.class);
+    PowerMockito.when(EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
+
+    Map<String, String> props = CredentialUtils.getEnvCredentialsAsMap("service-14");
+    verifyMapService14(props);
   }
 
   @Test
@@ -865,5 +893,19 @@ public class CredentialUtilsTest extends PowerMockTestCase {
     assertEquals("https://iamhost/iam/api", props.get(Authenticator.PROPNAME_URL));
     assertNull(props.get(Authenticator.PROPNAME_SCOPE));
     assertEquals("true", props.get(BaseService.PROPNAME_ENABLE_GZIP));
+  }
+
+  private void verifyMapService14(Map<String, String> props) {
+    assertNotNull(props);
+    assertFalse(props.isEmpty());
+    assertEquals(Authenticator.AUTHTYPE_IAM, props.get(Authenticator.PROPNAME_AUTH_TYPE));
+    assertEquals("my-api-key", props.get(Authenticator.PROPNAME_APIKEY));
+    assertEquals("my-client-secret", props.get(Authenticator.PROPNAME_CLIENT_SECRET));
+    assertEquals("my-client-id", props.get(Authenticator.PROPNAME_CLIENT_ID));
+    assertEquals("https://iamhost/iam/api", props.get(Authenticator.PROPNAME_URL));
+    assertNull(props.get(Authenticator.PROPNAME_SCOPE));
+    assertEquals("true", props.get(BaseService.PROPNAME_ENABLE_RETRIES));
+    assertEquals("5", props.get(BaseService.PROPNAME_MAX_RETRIES));
+    assertEquals("10", props.get(BaseService.PROPNAME_RETRY_INTERVAL));
   }
 }
