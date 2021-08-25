@@ -95,7 +95,12 @@ public class RetryInterceptor implements Interceptor {
     // So we cannot use interval from the response so let's calculate it.
     if (interval == null) {
       RetryContext context = request.tag(RetryContext.class);
-      interval = calculateBackoff(context.getRetryCount());
+      if (context != null) {
+        interval = calculateBackoff(context.getRetryCount());
+      } else {
+        // There is RetryContext tag in the request, which means this is the first retry.
+        interval = calculateBackoff(0);
+      }
     }
 
     return interval;
