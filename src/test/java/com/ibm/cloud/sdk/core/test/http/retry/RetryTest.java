@@ -140,11 +140,37 @@ public class RetryTest extends BaseServiceUnitTest {
         }
     }
 
+     /**
+     * Test that we take care of valid Retry-After headers.
+     */
+    @Test(timeOut = 6000)
+    public void testValidRetryAfter() {
+
+        String message = "The request failed because the moon is full.";
+        server.enqueue(new MockResponse()
+                .setResponseCode(504)
+                .addHeader(CONTENT_TYPE, HttpMediaType.APPLICATION_JSON)
+                .addHeader("Retry-After", "5")
+                .setBody("{\"error\": \"" + message + "\"}"));
+        server.enqueue(new MockResponse()
+                .setResponseCode(200)
+                .addHeader(CONTENT_TYPE, HttpMediaType.APPLICATION_JSON)
+                .setBody("{\"success\": \"awesome\"}"));
+
+
+        Response<TestModel> r = service.testMethod().execute();
+
+        assertEquals(200, r.getStatusCode());
+        assertEquals("awesome", r.getResult().getSuccess());
+        assertEquals(2, server.getRequestCount());
+
+    }
+
     /**
-     * Test that we take care of invalid Retry-After headers
+     * Test that we take care of invalid Retry-After headers.
      */
     @Test(timeOut = 2000)
-    public void testRetryAfter() {
+    public void testInvalidRetryAfter() {
 
         String message = "The request failed because the moon is full.";
         server.enqueue(new MockResponse()
