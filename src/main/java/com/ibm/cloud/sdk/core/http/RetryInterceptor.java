@@ -14,8 +14,8 @@ public class RetryInterceptor implements Interceptor {
 
   private static final Logger LOG = Logger.getLogger(RetryInterceptor.class.getName());
 
-  // The default "starting" retry interval.
-  private static final int DEFAULT_RETRY_INTERVAL = 1;
+  // The default "starting" retry interval in milliseconds.
+  private static final int DEFAULT_RETRY_INTERVAL = 1000;
 
   private int maxRetries;
   private int maxRetryInterval;
@@ -128,8 +128,6 @@ public class RetryInterceptor implements Interceptor {
   private int calculateBackoff(int retryCount) {
     // Exponential interval calculation based on the number of retries.
     double newInterval = (Math.pow(2, Double.valueOf(retryCount))) * RetryInterceptor.DEFAULT_RETRY_INTERVAL;
-    // Seconds to milliseconds.
-    newInterval *= 1000;
     if (newInterval > this.maxRetryInterval) {
       return this.maxRetryInterval;
     }
