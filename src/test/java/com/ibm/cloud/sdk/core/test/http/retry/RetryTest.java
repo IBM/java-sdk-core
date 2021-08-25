@@ -60,7 +60,7 @@ public class RetryTest extends BaseServiceUnitTest {
         service = new RetryTest.TestService(new NoAuthAuthenticator());
 
         HttpConfigOptions.Builder builder = new HttpConfigOptions.Builder();
-        builder.enableRetry(3, 10000);
+        builder.enableRetries(3, 10000);
         service.configureClient(builder.build());
         service.setServiceUrl(getMockWebServerUrl());
     }
@@ -172,12 +172,11 @@ public class RetryTest extends BaseServiceUnitTest {
     @Test(timeOut = 2000)
     public void testInvalidRetryAfter() {
 
-        String message = "The request failed because the moon is full.";
         server.enqueue(new MockResponse()
                 .setResponseCode(504)
                 .addHeader(CONTENT_TYPE, HttpMediaType.APPLICATION_JSON)
                 .addHeader("Retry-After", "-1")
-                .setBody("{\"error\": \"" + message + "\"}"));
+                .setBody("{\"error\": \"this is not valid\"}"));
         server.enqueue(new MockResponse()
                 .setResponseCode(200)
                 .addHeader(CONTENT_TYPE, HttpMediaType.APPLICATION_JSON)
@@ -189,5 +188,53 @@ public class RetryTest extends BaseServiceUnitTest {
         assertEquals(200, r.getStatusCode());
         assertEquals("awesome", r.getResult().getSuccess());
         assertEquals(2, server.getRequestCount());
+    }
+
+    @Test(timeOut = 1000)
+    public void testMaxRetryInterval() {
+        service.enableRetries(10, 100);
+
+        String message = "phew";
+        for (int i = 0; i < 4; i++) {
+            server.enqueue(
+                    new MockResponse()
+                            .setResponseCode(429)
+                            .addHeader(CONTENT_TYPE, HttpMediaType.APPLICATION_JSON)
+                            .setBody("{\"error\": \"too fast\"}"));
+        }
+        server.enqueue(
+            new MockResponse()
+                    .setResponseCode(200)
+                    .addHeader(CONTENT_TYPE, HttpMediaType.APPLICATION_JSON)
+                    .setBody("{\"success\": \"" + message + "\"}"));
+
+        Response<TestModel> r = service.testMethod().execute();
+
+        assertEquals(200, r.getStatusCode());
+        assertEquals(message, r.getResult().getSuccess());
+        assertEquals(5, server.getRequestCount());
+    }
+
+    @Test
+    public void testDisableRetries() {
+        service.disableRetries();
+
+        String message = "retry please";
+        for (int i = 0; i <= 5; i++) {
+            server.enqueue(
+                    new MockResponse()
+                            .setResponseCode(429)
+                            .addHeader(CONTENT_TYPE, HttpMediaType.APPLICATION_JSON)
+                            .setBody("{\"error\": \"" + message + "\"}"));
+        }
+        try {
+            service.testMethod().execute();
+        } catch (Exception e) {
+            assertTrue(e instanceof TooManyRequestsException);
+            TooManyRequestsException ex = (TooManyRequestsException) e;
+            assertEquals(429, ex.getStatusCode());
+            assertEquals(message, ex.getMessage());
+            assertEquals(1, server.getRequestCount());
+        }
     }
 }

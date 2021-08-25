@@ -178,10 +178,25 @@ public abstract class BaseService {
     this.configureClient(options);
   }
 
-  // TODO: comments
+  /**
+   * Enables the retries for the HTTP requests.
+   *
+   * @param maxRetries the value of the maximum number of retruies
+   * @param maxRetryInterval the maximum time to wait between to retries in milliseconds
+   */
   public void enableRetries(int maxRetries, int maxRetryInterval) {
     HttpConfigOptions options = new HttpConfigOptions.Builder()
-      .enableRetry(maxRetries, maxRetryInterval)
+      .enableRetries(maxRetries, maxRetryInterval)
+      .build();
+    this.configureClient(options);
+  }
+
+  /**
+   * Disables the retries for the HTTP requests.
+   */
+  public void disableRetries() {
+    HttpConfigOptions options = new HttpConfigOptions.Builder()
+      .disableRetries()
       .build();
     this.configureClient(options);
   }

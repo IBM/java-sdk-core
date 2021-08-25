@@ -151,7 +151,7 @@ public class HttpConfigOptions {
      * @param maxRetryInterval if not specified in the response, how long to wait until the next attempt
      * @return the builder
      */
-    public Builder enableRetry(int maxRetries, int maxRetryInterval) {
+    public Builder enableRetries(int maxRetries, int maxRetryInterval) {
       this.maxRetry = maxRetries;
       this.maxRetryInterval = maxRetryInterval;
       return this;
@@ -162,7 +162,7 @@ public class HttpConfigOptions {
      *
      * @return the builder
      */
-    public Builder disableRetry() {
+    public Builder disableRetries() {
       this.maxRetry = 0;
       this.maxRetryInterval = 0;
       return this;
