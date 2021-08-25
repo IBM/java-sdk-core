@@ -189,6 +189,5 @@ public class RetryTest extends BaseServiceUnitTest {
         assertEquals(200, r.getStatusCode());
         assertEquals("awesome", r.getResult().getSuccess());
         assertEquals(2, server.getRequestCount());
-
     }
 }
