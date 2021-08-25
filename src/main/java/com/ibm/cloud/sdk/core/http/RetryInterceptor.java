@@ -126,12 +126,14 @@ public class RetryInterceptor implements Interceptor {
   // This calculation is based on what the go-retryablehttp package does in its
   // DefaultBackoff function.
   private int calculateBackoff(int retryCount) {
+    // Exponential interval calculation based on the number of retries.
     double newInterval = (Math.pow(2, Double.valueOf(retryCount))) * RetryInterceptor.DEFAULT_RETRY_INTERVAL;
-
+    // Seconds to milliseconds.
+    newInterval *= 1000;
     if (newInterval > this.maxRetryInterval) {
       return this.maxRetryInterval;
     }
 
-    return (int) newInterval * 1000;
+    return (int) newInterval;
   }
 }
