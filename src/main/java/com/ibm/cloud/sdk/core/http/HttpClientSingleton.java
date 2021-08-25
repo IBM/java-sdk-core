@@ -363,6 +363,7 @@ public class HttpClientSingleton {
       }
       int maxRetry = options.getMaxRetry();
       int maxRetryInterval = options.getMaxRetryInterval();
+      client = reconfigureClientInterceptors(client, "RetryInterceptor");
       if (maxRetry > 0 && maxRetryInterval > 0) {
         client = client.newBuilder().addInterceptor(new RetryInterceptor(maxRetry, maxRetryInterval)).build();
       }
