@@ -113,6 +113,10 @@ public class DateUtilsTest {
     _testDateTime("2020-11-10T12:28+0000", "2020-11-10T12:28:00.000Z");
     _testDateTime("2020-11-10T07:28-0500", "2020-11-10T12:28:00.000Z");
     _testDateTime("2020-11-10T12:28Z",     "2020-11-10T12:28:00.000Z");
+
+    // RFC 2616 HTTP Date.
+    _testDateTime("Fri, 31 Dec 1999 23:59:59 GMT", "1999-12-31T23:59:59.000Z");
+    _testDateTime("Fri, 31 Dec 1999 23:59:59 CT", "2000-01-01T05:59:59.000Z");
   }
 
   @Test(expectedExceptions = DateTimeException.class)

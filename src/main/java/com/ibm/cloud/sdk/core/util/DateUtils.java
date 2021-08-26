@@ -33,6 +33,7 @@ import java.time.temporal.TemporalAccessor;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -146,6 +147,9 @@ public class DateUtils {
       .appendOffset("+HHMM", "Z")
       .toFormatter();
 
+  // This implements the RFC2616 "date-time" format with timezone.
+  private static final DateTimeFormatter rfc2616DateTimeParser =
+      DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH).withZone(ZoneOffset.UTC);
 
   // This is the ordered list of parsers that we will use when trying to parse a particular date-time string.
   private static final List<DateTimeFormatter> dateTimeParsers =
@@ -156,7 +160,8 @@ public class DateUtils {
           utcDateTimeWithoutTZ,          // "yyyy-MM-dd'T'HH:mm:ss[.nnnnnnnnn]"    optional frac-sec, no tz
           dialogDateTimeParser,          // "yyyy-MM-dd HH:mm:ss"                  no tz
           alchemyDateTimeParser,         // "yyyyMMdd'T'HHmmss"                    no tz
-          iamIdentityParser              // "yyyy-MM-dd'T'HH:mmXXX"                no seconds, tz: Z or -0600)
+          iamIdentityParser,             // "yyyy-MM-dd'T'HH:mmXXX"                no seconds, tz: Z or -0600)
+          rfc2616DateTimeParser          // "EEE, dd MMM yyyy HH:mm:ss z"
           );
 
   // This regex is used to recognize a datetime expressed as # of milliseconds since epoch time.
