@@ -182,7 +182,7 @@ public abstract class BaseService {
    * Enables the retries for the HTTP requests.
    *
    * @param maxRetries the value of the maximum number of retries
-   * @param maxRetryInterval the maximum time to wait between to retries in seconds
+   * @param maxRetryInterval the maximum time to wait between retries in seconds
    */
   public void enableRetries(int maxRetries, int maxRetryInterval) {
     HttpConfigOptions options = new HttpConfigOptions.Builder()
