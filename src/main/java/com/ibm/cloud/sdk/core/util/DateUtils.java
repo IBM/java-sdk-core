@@ -147,9 +147,21 @@ public class DateUtils {
       .appendOffset("+HHMM", "Z")
       .toFormatter();
 
-  // This implements the RFC2616 "date-time" format with timezone.
+  // This implements the HTTP date (RFC1123) "date-time" format with timezone.
   private static final DateTimeFormatter rfc2616DateTimeParser =
-      DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH).withZone(ZoneOffset.UTC);
+      DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.ENGLISH);
+
+  // This implements the RFC850 "date-time" format with timezone.
+  private static final DateTimeFormatter rfc850DateTimeParser =
+      DateTimeFormatter.ofPattern("EEEE, dd-MMM-yyyy HH:mm:ss zzz", Locale.ENGLISH);
+
+  // This implements the ANSIC "date-time" format .
+  private static final DateTimeFormatter ansicOneDigitDateTimeParser =
+      DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss yyyy", Locale.ENGLISH).withZone(ZoneOffset.UTC);
+
+  // This implements the ANSIC "date-time" format .
+  private static final DateTimeFormatter ansicTwoDigitDateTimeParser =
+      DateTimeFormatter.ofPattern("EEE MMM d HH:mm:ss yyyy", Locale.ENGLISH).withZone(ZoneOffset.UTC);
 
   // This is the ordered list of parsers that we will use when trying to parse a particular date-time string.
   private static final List<DateTimeFormatter> dateTimeParsers =
@@ -161,7 +173,10 @@ public class DateUtils {
           dialogDateTimeParser,          // "yyyy-MM-dd HH:mm:ss"                  no tz
           alchemyDateTimeParser,         // "yyyyMMdd'T'HHmmss"                    no tz
           iamIdentityParser,             // "yyyy-MM-dd'T'HH:mmXXX"                no seconds, tz: Z or -0600)
-          rfc2616DateTimeParser          // "EEE, dd MMM yyyy HH:mm:ss z"
+          rfc2616DateTimeParser,         // "EEEE, dd MMM yyyy HH:mm:ss zzz"
+          rfc850DateTimeParser,          // "EEEE, dd-MMM-yyyy HH:mm:ss zzz"
+          ansicOneDigitDateTimeParser,   // "EEE MMM d HH:mm:ss yyyy"              no tz
+          ansicTwoDigitDateTimeParser    // "EEE MMM dd HH:mm:ss yyyy"             no tz
           );
 
   // This regex is used to recognize a datetime expressed as # of milliseconds since epoch time.
