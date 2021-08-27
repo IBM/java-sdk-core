@@ -5,7 +5,13 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 import java.io.IOException;
+import java.time.DateTimeException;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Date;
 import java.util.logging.Logger;
+
+import com.ibm.cloud.sdk.core.util.DateUtils;
 
 /**
  * This interceptor checks the responses and retries the request if it's possible.
@@ -52,7 +58,7 @@ public class RetryInterceptor implements Interceptor {
       int interval = getInterval(response, request);
 
       try {
-        LOG.info("Will retry after: " + interval + "ms");
+        LOG.fine("Will retry after: " + interval + "ms");
         Thread.sleep(interval);
       } catch (InterruptedException e) {
         LOG.fine("Thread was interrupted, likely the call has been cancelled.");
@@ -80,15 +86,22 @@ public class RetryInterceptor implements Interceptor {
     String headerVal = response.header("Retry-After");
 
     if (headerVal != null && !headerVal.equals("")) {
+      int responseInterval = 0;
+      // First, try to parse as an integer (number of seconds to wait).
       try {
-        // TODO: parse as HTTP time, like in Go?
-        int responseInterval = Integer.parseInt(headerVal, 10) * 1000;
-        // Just in case it's a negative number.
-        if (responseInterval > 0) {
-          interval = responseInterval;
-        }
+        responseInterval = Integer.parseInt(headerVal, 10) * 1000;
       } catch (NumberFormatException e) {
-        LOG.info("Response included a non-numeric value for Retry-After");
+        // If we cannot parse it as an integer, let's try to do it as an HTTP date value.
+        try {
+          Date retryTime = DateUtils.parseAsDateTime(headerVal);
+          responseInterval = (int) Instant.now().until(retryTime.toInstant(), ChronoUnit.MILLIS);
+        } catch (DateTimeException dte) {
+          LOG.info("Response included a non numberic and non HTTP Date value for Retry-After: " + headerVal);
+        }
+      }
+      // Just in case it's a negative number.
+      if (responseInterval > 0) {
+        interval = responseInterval;
       }
     }
 

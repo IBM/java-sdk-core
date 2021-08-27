@@ -24,6 +24,12 @@ import static com.ibm.cloud.sdk.core.http.HttpHeaders.CONTENT_TYPE;
 import static com.ibm.cloud.sdk.core.http.HttpHeaders.CONTENT_ENCODING;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
+
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertNotNull;
 
@@ -187,6 +193,33 @@ public class RetryTest extends BaseServiceUnitTest {
 
         assertEquals(200, r.getStatusCode());
         assertEquals("awesome", r.getResult().getSuccess());
+        assertEquals(2, server.getRequestCount());
+    }
+
+    /**
+     * Test the HTTP Time format from the `Retry-After` header in the response.
+     */
+    @Test(timeOut = 4000)
+    public void testHttpTimeRetry() {
+        DateTimeFormatter f = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.ENGLISH).withZone(ZoneOffset.UTC);
+        Instant now = Instant.now().plusSeconds(3);
+        String after = f.format(now);
+
+        server.enqueue(new MockResponse()
+                .setResponseCode(504)
+                .addHeader(CONTENT_TYPE, HttpMediaType.APPLICATION_JSON)
+                .addHeader("Retry-After", after)
+                .setBody("{\"error\": \"Be patient!\"}"));
+        server.enqueue(new MockResponse()
+                .setResponseCode(200)
+                .addHeader(CONTENT_TYPE, HttpMediaType.APPLICATION_JSON)
+                .setBody("{\"success\": \"awesome\"}"));
+
+
+        Response<TestModel> r = service.testMethod().execute();
+
+        assertEquals(200, r.getStatusCode());
+        assertEquals(r.getResult().getSuccess(), "awesome");
         assertEquals(2, server.getRequestCount());
     }
 
