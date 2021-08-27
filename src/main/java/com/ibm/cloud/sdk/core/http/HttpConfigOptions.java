@@ -35,6 +35,7 @@ public class HttpConfigOptions {
 
   private boolean disableSslVerification;
   private Boolean enableGzipCompression;
+  private Boolean enableRetries;
   private int maxRetries;
   private int maxRetryInterval;
   private Proxy proxy;
@@ -50,6 +51,10 @@ public class HttpConfigOptions {
 
   public Boolean getGzipCompression() {
     return this.enableGzipCompression;
+  }
+
+  public Boolean getRetries() {
+    return this.enableRetries;
   }
 
   public int getMaxRetries() {
@@ -87,6 +92,7 @@ public class HttpConfigOptions {
   public static class Builder {
     private boolean disableSslVerification;
     private Boolean enableGzipCompression;
+    private Boolean enableRetries;
     private int maxRetries;
     private int maxRetryInterval;
     private Proxy proxy;
@@ -148,7 +154,9 @@ public class HttpConfigOptions {
      * @param maxRetryInterval if not specified in the response, how long to wait until the next attempt
      * @return the builder
      */
-    public Builder enableRetries(com.ibm.cloud.sdk.core.security.Authenticator authenticator, int maxRetries, int maxRetryInterval) {
+    public Builder enableRetries(com.ibm.cloud.sdk.core.security.Authenticator authenticator, int maxRetries,
+        int maxRetryInterval) {
+      this.enableRetries = true;
       this.authenticator = authenticator;
       this.maxRetries = maxRetries;
       this.maxRetryInterval = maxRetryInterval;
@@ -161,6 +169,7 @@ public class HttpConfigOptions {
      * @return the builder
      */
     public Builder disableRetries() {
+      this.enableRetries = false;
       this.maxRetries = 0;
       this.maxRetryInterval = 0;
       return this;
@@ -203,6 +212,7 @@ public class HttpConfigOptions {
   private HttpConfigOptions(Builder builder) {
     this.disableSslVerification = builder.disableSslVerification;
     this.enableGzipCompression = builder.enableGzipCompression;
+    this.enableRetries = builder.enableRetries;
     this.maxRetries = builder.maxRetries;
     this.maxRetryInterval = builder.maxRetryInterval;
     this.proxy = builder.proxy;

@@ -14,7 +14,6 @@
 package com.ibm.cloud.sdk.core.http;
 
 import com.ibm.cloud.sdk.core.http.HttpConfigOptions.LoggingLevel;
-import com.ibm.cloud.sdk.core.http.ratelimit.RateLimitInterceptor;
 import com.ibm.cloud.sdk.core.http.gzip.GzipRequestInterceptor;
 import com.ibm.cloud.sdk.core.service.BaseService;
 import com.ibm.cloud.sdk.core.service.security.DelegatingSSLSocketFactory;
@@ -363,12 +362,14 @@ public class HttpClientSingleton {
       }
 
       // Configure the retry interceptor.
-      int maxRetries = options.getMaxRetries();
-      int maxRetryInterval = options.getMaxRetryInterval();
-      client = reconfigureClientInterceptors(client, "RetryInterceptor");
-      if (maxRetries > 0 && maxRetryInterval > 0) {
-        client = client.newBuilder()
-            .addInterceptor(new RetryInterceptor(maxRetries, maxRetryInterval, options.getAuthenticator())).build();
+      Boolean enableRetries = options.getRetries();
+      if (enableRetries != null) {
+        client = reconfigureClientInterceptors(client, "RetryInterceptor");
+        if (enableRetries.booleanValue()) {
+          client = client.newBuilder().addInterceptor(
+              new RetryInterceptor(options.getMaxRetries(), options.getMaxRetryInterval(), options.getAuthenticator()))
+              .build();
+        }
       }
 
       // Configure the GZIP interceptor.
