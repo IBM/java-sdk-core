@@ -186,7 +186,7 @@ public abstract class BaseService {
    */
   public void enableRetries(int maxRetries, int maxRetryInterval) {
     HttpConfigOptions options = new HttpConfigOptions.Builder()
-      .enableRetries(maxRetries, maxRetryInterval)
+      .enableRetries(this.authenticator, maxRetries, maxRetryInterval)
       .build();
     this.configureClient(options);
   }

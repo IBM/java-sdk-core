@@ -361,20 +361,17 @@ public class HttpClientSingleton {
       if (options.getLoggingLevel() != null) {
         client = setLoggingLevel(client, options.getLoggingLevel());
       }
-      int maxRetry = options.getMaxRetry();
+
+      // Configure the retry interceptor.
+      int maxRetries = options.getMaxRetries();
       int maxRetryInterval = options.getMaxRetryInterval();
       client = reconfigureClientInterceptors(client, "RetryInterceptor");
-      if (maxRetry > 0 && maxRetryInterval > 0) {
-        client = client.newBuilder().addInterceptor(new RetryInterceptor(maxRetry, maxRetryInterval)).build();
-      }
-      if (options.getDefaultRetryInterval() > 0) {
+      if (maxRetries > 0 && maxRetryInterval > 0) {
         client = client.newBuilder()
-                .addInterceptor(new RateLimitInterceptor(
-                        options.getAuthenticator()
-                        , options.getDefaultRetryInterval()
-                        , options.getMaxRetries()))
-                .build();
+            .addInterceptor(new RetryInterceptor(maxRetries, maxRetryInterval, options.getAuthenticator())).build();
       }
+
+      // Configure the GZIP interceptor.
       Boolean enableGzip = options.getGzipCompression();
       if (enableGzip != null) {
         client = reconfigureClientInterceptors(client, "GzipRequestInterceptor");

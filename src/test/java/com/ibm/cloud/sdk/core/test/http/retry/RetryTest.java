@@ -66,7 +66,7 @@ public class RetryTest extends BaseServiceUnitTest {
         service = new RetryTest.TestService(new NoAuthAuthenticator());
 
         HttpConfigOptions.Builder builder = new HttpConfigOptions.Builder();
-        builder.enableRetries(3, 10);
+        builder.enableRetries(new NoAuthAuthenticator(), 3, 10);
         service.configureClient(builder.build());
         service.setServiceUrl(getMockWebServerUrl());
     }

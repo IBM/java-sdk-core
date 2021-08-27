@@ -126,7 +126,7 @@ public class RateLimitTest extends BaseServiceUnitTest {
     /**
      * Test that we take care of invalid Retry-After headers
      */
-    @Test(timeOut = 500)
+    @Test(timeOut = 1500)
     public void testRetryAfter() {
 
         String message = "The request failed because the moon is full.";

@@ -11,6 +11,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.logging.Logger;
 
+import com.ibm.cloud.sdk.core.security.Authenticator;
 import com.ibm.cloud.sdk.core.util.DateUtils;
 
 /**
@@ -23,6 +24,7 @@ public class RetryInterceptor implements Interceptor {
   // The default "starting" retry interval in milliseconds.
   private static final int DEFAULT_RETRY_INTERVAL = 1000;
 
+  private Authenticator authenticator;
   private int maxRetries;
   private int maxRetryInterval;
 
@@ -42,7 +44,8 @@ public class RetryInterceptor implements Interceptor {
     }
   }
 
-  public RetryInterceptor(int maxRetries, int maxRetryInterval) {
+  public RetryInterceptor(int maxRetries, int maxRetryInterval, Authenticator authenticator) {
+    this.authenticator = authenticator;
     this.maxRetries = maxRetries;
     // Convert the interval from seconds to milliseconds.
     this.maxRetryInterval = maxRetryInterval * 1000;
@@ -69,6 +72,12 @@ public class RetryInterceptor implements Interceptor {
       // If this is the first retry, create the context and attach it to the requests.
       if (request.tag(RetryContext.class) == null) {
         builder.tag(RetryContext.class, new RetryContext());
+      }
+
+      // If we have a valid authenticator authenticate the request.
+      // This is mostly here for backward compatibility.
+      if (authenticator != null) {
+        authenticator.authenticate(builder);
       }
 
       response.close();

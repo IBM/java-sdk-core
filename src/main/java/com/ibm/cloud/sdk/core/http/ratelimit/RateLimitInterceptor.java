@@ -10,7 +10,10 @@ import java.util.logging.Logger;
 
 /**
  * Provides means to retry requests on RateLimiting (429).
+ *
+ * @deprecated As of 9.13.0, use the RetryInterceptor instead.
  */
+@Deprecated
 public class RateLimitInterceptor implements Interceptor {
 
     private static final Logger LOG = Logger.getLogger(RateLimitInterceptor.class.getName());
