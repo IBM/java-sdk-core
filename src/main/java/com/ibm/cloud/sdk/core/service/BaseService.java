@@ -64,6 +64,9 @@ public abstract class BaseService {
   public static final String PROPNAME_URL = "URL";
   public static final String PROPNAME_DISABLE_SSL = "DISABLE_SSL";
   public static final String PROPNAME_ENABLE_GZIP = "ENABLE_GZIP";
+  public static final String PROPNAME_ENABLE_RETRIES = "ENABLE_RETRIES";
+  public static final String PROPNAME_MAX_RETRIES = "MAX_RETRIES";
+  public static final String PROPNAME_RETRY_INTERVAL = "RETRY_INTERVAL";
 
   private static final Logger LOG = Logger.getLogger(BaseService.class.getName());
 
@@ -134,6 +137,30 @@ public abstract class BaseService {
       Boolean enableGzipCompression = Boolean.valueOf(s);
       enableGzipCompression(enableGzipCompression);
     }
+
+    // Check to see if "ENABLE_RETRIES" was set in the service properties.
+    // If it is set to true, then we'll also try to retrieve "MAX_RETRIES" and "RETRY_INTERVAL".
+    Boolean enableRetries = Boolean.valueOf(props.get(PROPNAME_ENABLE_RETRIES));
+    if (enableRetries) {
+      // The default number of the maximum retries is 4.
+      int maxRetries = 4;
+      // Set the max retry interval to 30 seconds.
+      int maxRetryInterval = 30;
+
+      try {
+        maxRetries = Integer.valueOf(props.get(PROPNAME_MAX_RETRIES));
+      } catch (NumberFormatException e) {
+        LOG.warning("Non-numeric MAX_RETRIES value.");
+      }
+
+      try {
+        maxRetryInterval = Integer.valueOf(props.get(PROPNAME_RETRY_INTERVAL));
+      } catch (NumberFormatException e) {
+        LOG.warning("Non-numeric RETRY_INTERVAL value.");
+      }
+
+      enableRetries(maxRetries, maxRetryInterval);
+    }
   }
 
   /**
@@ -147,7 +174,30 @@ public abstract class BaseService {
         .enableGzipCompression(shouldEnableCompression)
         .build();
     this.configureClient(options);
-}
+  }
+
+  /**
+   * Enables the retries for the HTTP requests.
+   *
+   * @param maxRetries the value of the maximum number of retries
+   * @param maxRetryInterval the maximum time to wait between retries in seconds
+   */
+  public void enableRetries(int maxRetries, int maxRetryInterval) {
+    HttpConfigOptions options = new HttpConfigOptions.Builder()
+      .enableRetries(this.authenticator, maxRetries, maxRetryInterval)
+      .build();
+    this.configureClient(options);
+  }
+
+  /**
+   * Disables the retries for the HTTP requests.
+   */
+  public void disableRetries() {
+    HttpConfigOptions options = new HttpConfigOptions.Builder()
+      .disableRetries()
+      .build();
+    this.configureClient(options);
+  }
 
   /**
    * Returns the currently-configured {@link OkHttpClient} instance.

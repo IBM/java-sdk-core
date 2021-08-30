@@ -113,6 +113,20 @@ public class DateUtilsTest {
     _testDateTime("2020-11-10T12:28+0000", "2020-11-10T12:28:00.000Z");
     _testDateTime("2020-11-10T07:28-0500", "2020-11-10T12:28:00.000Z");
     _testDateTime("2020-11-10T12:28Z",     "2020-11-10T12:28:00.000Z");
+
+    // RFC 2616 HTTP Date.
+    _testDateTime("Fri, 27 Aug 2021 13:15:55 GMT", "2021-08-27T13:15:55.000Z");
+    _testDateTime("Fri, 27 Aug 2021 13:15:55 CXT", "2021-08-27T06:15:55.000Z");
+    _testDateTime("Fri, 27 Aug 2021 13:15:55 VLAT", "2021-08-27T03:15:55.000Z");
+
+    // RFC 850 HTTP Date.
+    _testDateTime("Friday, 27-Aug-2021 13:15:55 GMT", "2021-08-27T13:15:55.000Z");
+    _testDateTime("Friday, 27-Aug-2021 13:15:55 CXT", "2021-08-27T06:15:55.000Z");
+    _testDateTime("Friday, 27-Aug-2021 13:15:55 VLAT", "2021-08-27T03:15:55.000Z");
+
+    // ANSIC HTTP Date.
+    _testDateTime("Fri Aug 27 13:15:55 2021", "2021-08-27T13:15:55.000Z");
+    _testDateTime("Fri Aug 6 13:15:55 2021", "2021-08-06T13:15:55.000Z");
   }
 
   @Test(expectedExceptions = DateTimeException.class)

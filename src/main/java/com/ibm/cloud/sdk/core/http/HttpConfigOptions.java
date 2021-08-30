@@ -35,14 +35,15 @@ public class HttpConfigOptions {
 
   private boolean disableSslVerification;
   private Boolean enableGzipCompression;
+  private Boolean enableRetries;
+  private int maxRetries;
+  private int maxRetryInterval;
   private Proxy proxy;
   private Authenticator proxyAuthenticator;
   private LoggingLevel loggingLevel;
 
   // Ratelimiting properties
   private com.ibm.cloud.sdk.core.security.Authenticator authenticator;
-  private int defaultInterval = 0;
-  private int maxRetries = 0;
 
   public boolean shouldDisableSslVerification() {
     return this.disableSslVerification;
@@ -50,6 +51,18 @@ public class HttpConfigOptions {
 
   public Boolean getGzipCompression() {
     return this.enableGzipCompression;
+  }
+
+  public Boolean getRetries() {
+    return this.enableRetries;
+  }
+
+  public int getMaxRetries() {
+    return this.maxRetries;
+  }
+
+  public int getMaxRetryInterval() {
+    return this.maxRetryInterval;
   }
 
   public Proxy getProxy() {
@@ -68,25 +81,26 @@ public class HttpConfigOptions {
     return authenticator;
   }
 
+  /**
+   * @deprecated As of 9.13.0, use HttpConfigOptions.getMaxRetryInterval() instead.
+   */
+  @Deprecated
   public int getDefaultRetryInterval() {
-    return defaultInterval;
-  }
-
-  public int getMaxRetries() {
-    return maxRetries;
+    return getMaxRetryInterval();
   }
 
   public static class Builder {
     private boolean disableSslVerification;
     private Boolean enableGzipCompression;
+    private Boolean enableRetries;
+    private int maxRetries;
+    private int maxRetryInterval;
     private Proxy proxy;
     private Authenticator proxyAuthenticator;
     private LoggingLevel loggingLevel;
 
     // Ratelimiting properties
     private com.ibm.cloud.sdk.core.security.Authenticator authenticator;
-    private int defaultInterval = 0;
-    private int maxRetries = 0;
 
     public HttpConfigOptions build() {
       return new HttpConfigOptions(this);
@@ -123,12 +137,41 @@ public class HttpConfigOptions {
      * @param defaultInterval if not specified in the response, how long to wait until the next attempt
      * @param maxRetries the maximum amount of retries for an request
      * @return the builder
+     *
+     * @deprecated As of 9.13.0, use the HttpConfigOptions.enableRetries() instead.
      */
+    @Deprecated
     public Builder enableRateLimitRetry(com.ibm.cloud.sdk.core.security.Authenticator authenticator
             , int defaultInterval, int maxRetries) {
+      return enableRetries(authenticator, maxRetries, defaultInterval);
+    }
+
+    /**
+     * Sets retry specific parameters to enable it.
+     *
+     * @param authenticator to use for retries, the {@link Authenticator} used by the client
+     * @param maxRetries the maximum amount of retries for a request
+     * @param maxRetryInterval if not specified in the response, how long to wait until the next attempt
+     * @return the builder
+     */
+    public Builder enableRetries(com.ibm.cloud.sdk.core.security.Authenticator authenticator, int maxRetries,
+        int maxRetryInterval) {
+      this.enableRetries = true;
       this.authenticator = authenticator;
-      this.defaultInterval = defaultInterval;
       this.maxRetries = maxRetries;
+      this.maxRetryInterval = maxRetryInterval;
+      return this;
+    }
+
+    /**
+     * Sets the retry specific parameter to zero to disable the retry functionality.
+     *
+     * @return the builder
+     */
+    public Builder disableRetries() {
+      this.enableRetries = false;
+      this.maxRetries = 0;
+      this.maxRetryInterval = 0;
       return this;
     }
 
@@ -169,12 +212,13 @@ public class HttpConfigOptions {
   private HttpConfigOptions(Builder builder) {
     this.disableSslVerification = builder.disableSslVerification;
     this.enableGzipCompression = builder.enableGzipCompression;
+    this.enableRetries = builder.enableRetries;
+    this.maxRetries = builder.maxRetries;
+    this.maxRetryInterval = builder.maxRetryInterval;
     this.proxy = builder.proxy;
     this.proxyAuthenticator = builder.proxyAuthenticator;
     this.loggingLevel = builder.loggingLevel;
     // rate limiting related
     this.authenticator = builder.authenticator;
-    this.defaultInterval = builder.defaultInterval;
-    this.maxRetries = builder.maxRetries;
   }
 }
