@@ -1,3 +1,10 @@
+# [9.13.0](https://github.com/IBM/java-sdk-core/compare/9.12.1...9.13.0) (2021-08-30)
+
+
+### Features
+
+* improve retry functionality ([#143](https://github.com/IBM/java-sdk-core/issues/143)) ([7bd64be](https://github.com/IBM/java-sdk-core/commit/7bd64be2e2da010f3561a426b0baef6d30ddeac9))
+
 ## [9.12.1](https://github.com/IBM/java-sdk-core/compare/9.12.0...9.12.1) (2021-08-13)
 
 
