@@ -1,6 +1,18 @@
+/**
+ * (C) Copyright IBM Corp. 2021.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ */
+
 package com.ibm.cloud.sdk.core.test.http.retry;
 
-import com.ibm.cloud.sdk.core.http.HttpConfigOptions;
 import com.ibm.cloud.sdk.core.http.HttpMediaType;
 import com.ibm.cloud.sdk.core.http.RequestBuilder;
 import com.ibm.cloud.sdk.core.http.Response;
@@ -22,16 +34,15 @@ import org.testng.annotations.Test;
 
 import static com.ibm.cloud.sdk.core.http.HttpHeaders.CONTENT_TYPE;
 import static com.ibm.cloud.sdk.core.http.HttpHeaders.CONTENT_ENCODING;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertTrue;
 
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
-
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertNotNull;
 
 public class RetryTest extends BaseServiceUnitTest {
 
@@ -64,10 +75,7 @@ public class RetryTest extends BaseServiceUnitTest {
     public void setUp() throws Exception {
         super.setUp();
         service = new RetryTest.TestService(new NoAuthAuthenticator());
-
-        HttpConfigOptions.Builder builder = new HttpConfigOptions.Builder();
-        builder.enableRetries(new NoAuthAuthenticator(), 3, 10);
-        service.configureClient(builder.build());
+        service.enableRetries(3, 10);
         service.setServiceUrl(getMockWebServerUrl());
     }
 
@@ -138,11 +146,11 @@ public class RetryTest extends BaseServiceUnitTest {
         try {
             service.testMethod().execute();
         } catch (Exception e) {
-        assertTrue(e instanceof ServiceResponseException);
-        ServiceResponseException ex  = (ServiceResponseException) e;
-        assertEquals(501, ex.getStatusCode());
-        assertEquals(ex.getMessage(), message);
-        assertEquals(1, server.getRequestCount());
+            assertTrue(e instanceof ServiceResponseException);
+            ServiceResponseException ex  = (ServiceResponseException) e;
+            assertEquals(501, ex.getStatusCode());
+            assertEquals(ex.getMessage(), message);
+            assertEquals(1, server.getRequestCount());
         }
     }
 

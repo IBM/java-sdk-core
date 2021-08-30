@@ -139,9 +139,7 @@ public abstract class BaseService {
     }
 
     // Check to see if "ENABLE_RETRIES" was set in the service properties.
-    // If it is set to true, then we'll also try to retrieve "MAX_RETRIES" and
-    // "RETRY_INTERVAL". If those are not specified, we'll use 0 to trigger a
-    // default value for each.
+    // If it is set to true, then we'll also try to retrieve "MAX_RETRIES" and "RETRY_INTERVAL".
     Boolean enableRetries = Boolean.valueOf(props.get(PROPNAME_ENABLE_RETRIES));
     if (enableRetries) {
       // The default number of the maximum retries is 4.
@@ -152,13 +150,13 @@ public abstract class BaseService {
       try {
         maxRetries = Integer.valueOf(props.get(PROPNAME_MAX_RETRIES));
       } catch (NumberFormatException e) {
-        LOG.info("Non-numeric MAX_RETRIES value.");
+        LOG.warning("Non-numeric MAX_RETRIES value.");
       }
 
       try {
         maxRetryInterval = Integer.valueOf(props.get(PROPNAME_RETRY_INTERVAL));
       } catch (NumberFormatException e) {
-        LOG.info("Non-numeric RETRY_INTERVAL value.");
+        LOG.warning("Non-numeric RETRY_INTERVAL value.");
       }
 
       enableRetries(maxRetries, maxRetryInterval);

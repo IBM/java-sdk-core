@@ -1,3 +1,16 @@
+/**
+ * (C) Copyright IBM Corp. 2021.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ */
+
 package com.ibm.cloud.sdk.core.http;
 
 import okhttp3.Interceptor;
@@ -13,6 +26,8 @@ import java.util.logging.Logger;
 
 import com.ibm.cloud.sdk.core.security.Authenticator;
 import com.ibm.cloud.sdk.core.util.DateUtils;
+
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * This interceptor checks the responses and retries the request if it's possible.
@@ -94,7 +109,7 @@ public class RetryInterceptor implements Interceptor {
 
     String headerVal = response.header("Retry-After");
 
-    if (headerVal != null && !headerVal.equals("")) {
+    if (StringUtils.isNotEmpty(headerVal)) {
       int responseInterval = 0;
       // First, try to parse as an integer (number of seconds to wait).
       try {
@@ -105,7 +120,7 @@ public class RetryInterceptor implements Interceptor {
           Date retryTime = DateUtils.parseAsDateTime(headerVal);
           responseInterval = (int) Instant.now().until(retryTime.toInstant(), ChronoUnit.MILLIS);
         } catch (DateTimeException dte) {
-          LOG.info("Response included a non numberic and non HTTP Date value for Retry-After: " + headerVal);
+          LOG.warning("Response included a non numberic and non HTTP Date value for Retry-After: " + headerVal);
         }
       }
       // Just in case it's a negative number.
@@ -120,7 +135,7 @@ public class RetryInterceptor implements Interceptor {
       if (context != null) {
         interval = calculateBackoff(context.getRetryCount());
       } else {
-        // There is RetryContext tag in the request, which means this is the first retry.
+        // There is no RetryContext tag in the request, which means this is the first retry.
         interval = calculateBackoff(0);
       }
     }
