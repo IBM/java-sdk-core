@@ -13,10 +13,11 @@
 
 package com.ibm.cloud.sdk.core.http;
 
-import com.ibm.cloud.sdk.core.http.ratelimit.RateLimitConstants;
-import okhttp3.Authenticator;
-
 import java.net.Proxy;
+
+import com.ibm.cloud.sdk.core.http.ratelimit.RateLimitConstants;
+
+import okhttp3.Authenticator;
 
 /**
  * Options class for configuring the HTTP client.
@@ -82,6 +83,8 @@ public class HttpConfigOptions {
   }
 
   /**
+   * @return the default retry interval
+   *
    * @deprecated As of 9.13.0, use HttpConfigOptions.getMaxRetryInterval() instead.
    */
   @Deprecated
