@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/IBM/java-sdk-core.svg?branch=main)](https://travis-ci.com/IBM/java-sdk-core)
+[![Build Status](https://app.travis-ci.com/IBM/java-sdk-core.svg?branch=main)](https://app.travis-ci.com/IBM/java-sdk-core)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.ibm.cloud/sdk-core/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.ibm.cloud/sdk-core)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![codecov](https://codecov.io/gh/IBM/java-sdk-core/branch/main/graph/badge.svg)](https://codecov.io/gh/IBM/java-sdk-core)
