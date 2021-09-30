@@ -49,7 +49,7 @@ public class ContainerAuthenticator extends IamRequestBasedAuthenticator impleme
   private String iamProfileId;
 
   /**
-   * This Builder class is used to construct IamAuthenticator instances.
+   * This Builder class is used to construct ContainerAuthenticator instances.
    */
   public static class Builder {
     private String crTokenFilename;
@@ -84,9 +84,9 @@ public class ContainerAuthenticator extends IamRequestBasedAuthenticator impleme
     }
 
     /**
-     * Constructs a new instance of IamAuthenticator from the builder's configuration.
+     * Constructs a new instance of ContainerAuthenticator from the builder's configuration.
      *
-     * @return the IamAuthenticator instance
+     * @return the ContainerAuthenticator instance
      */
     public ContainerAuthenticator build() {
       return new ContainerAuthenticator(this);
@@ -215,7 +215,7 @@ public class ContainerAuthenticator extends IamRequestBasedAuthenticator impleme
   }
 
   /**
-   * Constructs an IamAuthenticator instance from the configuration
+   * Constructs a ContainerAuthenticator instance from the configuration
    * contained in "builder".
    *
    * @param builder the Builder instance containing the configuration to be used
