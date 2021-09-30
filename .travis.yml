@@ -1,6 +1,6 @@
 ---
 language: java
-dist: xenial
+dist: bionic
 
 jdk:
 - openjdk8
@@ -51,10 +51,9 @@ jobs:
     - stage: Semantic-Release
       jdk: openjdk8
       install:
-        - sudo apt-get install python
-        - nvm install 12
+        - nvm install 14
         - npm install -g npm@6.x
-        - pip install --user bump2version
+        - pip3 install --user bump2version
         - npm install @semantic-release/changelog
         - npm install @semantic-release/exec
         - npm install @semantic-release/git
