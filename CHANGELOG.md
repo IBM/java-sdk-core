@@ -1,3 +1,10 @@
+## [9.13.1](https://github.com/IBM/java-sdk-core/compare/9.13.0...9.13.1) (2021-09-30)
+
+
+### Bug Fixes
+
+* **ContainerAuthenticator:** fix some javadoc comments ([#145](https://github.com/IBM/java-sdk-core/issues/145)) ([ac8aecb](https://github.com/IBM/java-sdk-core/commit/ac8aecb417470e7b5929976bbfd4182d8537c8be))
+
 # [9.13.0](https://github.com/IBM/java-sdk-core/compare/9.12.1...9.13.0) (2021-08-30)
 
 
