@@ -1,3 +1,10 @@
+## [9.13.2](https://github.com/IBM/java-sdk-core/compare/9.13.1...9.13.2) (2021-10-02)
+
+
+### Bug Fixes
+
+* **build:** fix gpg signing step on travis bionic image ([#149](https://github.com/IBM/java-sdk-core/issues/149)) ([9f19ff8](https://github.com/IBM/java-sdk-core/commit/9f19ff8a051933159a040a7292328c862dc1a735))
+
 ## [9.13.1](https://github.com/IBM/java-sdk-core/compare/9.13.0...9.13.1) (2021-09-30)
 
 
