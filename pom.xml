@@ -56,7 +56,7 @@
         <powermock-version>2.0.9</powermock-version>
         <maven-deploy-plugin-version>3.0.0-M1</maven-deploy-plugin-version>
         <nexus-staging-plugin-version>1.6.8</nexus-staging-plugin-version>
-        <maven-gpg-plugin-version>1.6</maven-gpg-plugin-version>
+        <maven-gpg-plugin-version>3.0.1</maven-gpg-plugin-version>
 
         <!-- Configure the gpg plugin to use the env vars defined in the Travis build settings -->
         <gpg.keyname>${env.GPG_KEYNAME}</gpg.keyname>
@@ -200,9 +200,9 @@
                 </executions>
                 <configuration>
                     <gpgArguments>
-                        <gpgArgument>--batch</gpgArgument>
-                        <gpgArgument>--yes</gpgArgument>
-                        <gpgArgument>--no-tty</gpgArgument>
+			<arg>--batch</arg>
+			<arg>--pinentry-mode</arg>
+			<arg>loopback</arg>
                     </gpgArguments>
                 </configuration>
             </plugin>
