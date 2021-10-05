@@ -30,6 +30,7 @@ public interface Authenticator {
   String AUTHTYPE_CP4D_SERVICE = "cp4dService";
   String AUTHTYPE_BEARER_TOKEN = "bearerToken";
   String AUTHTYPE_CONTAINER = "container";
+  String AUTHTYPE_VPC = "vpc";
 
   /**
    * Constants which define the names of external config propreties (credential file, environment variable, etc.).
@@ -50,6 +51,7 @@ public interface Authenticator {
   String PROPNAME_EXPIRATION_TIME = "EXPIRATION_TIME";
   String PROPNAME_SERVICE_BROKER_SECRET = "SERVICE_BROKER_SECRET";
   String PROPNAME_CR_TOKEN_FILENAME = "CR_TOKEN_FILENAME";
+  String PROPNAME_IAM_PROFILE_CRN = "IAM_PROFILE_CRN";
   String PROPNAME_IAM_PROFILE_ID = "IAM_PROFILE_ID";
   String PROPNAME_IAM_PROFILE_NAME = "IAM_PROFILE_NAME";
 

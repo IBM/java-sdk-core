@@ -4,15 +4,23 @@ The java-sdk-core project supports the following types of authentication:
 - Bearer Token Authentication
 - Identity and Access Management (IAM) Authentication
 - Container Authentication
+- VPC Instance Authentication
 - Cloud Pak for Data Authentication
 - No Authentication
 
 The SDK user configures the appropriate type of authentication for use with service instances.  
-The authentication types that are appropriate for a particular service may vary from service to service, so it is important for the SDK user to consult with the appropriate service documentation to understand which authenticators are supported for that service.
+The authentication types that are appropriate for a particular service may vary from service to service,
+so it is important for the SDK user to consult with the appropriate service documentation to understand
+which authenticators are supported for that service.
 
 The java-sdk-core allows an authenticator to be specified in one of two ways:
-1. programmatically - the SDK user constructs an instance of the desired authenticator using the appropriate Builder class or constructor, and then passes the authenticator instance when constructing an instance of the service.
-2. configuration - the SDK user provides external configuration information (in the form of environment variables or a credentials file) to indicate the type of authenticator along with the configuration of the necessary properties for that authenticator.  The SDK user then invokes the configuration-based authenticator factory to construct an instance of the authenticator that is described in the external configuration information.
+1. programmatically - the SDK user constructs an instance of the desired authenticator using the appropriate Builder class or constructor,
+and then passes the authenticator instance when constructing an instance of the service.
+2. configuration - the SDK user provides external configuration information (in the form of environment variables
+or a credentials file) to indicate the type of authenticator, along with the configuration of the necessary properties
+for that authenticator.
+The SDK user then invokes the configuration-based service client constructor method
+to construct an instance of the authenticator and service client that reflect the external configuration information.
 
 The sections below will provide detailed information for each authenticator
 which will include the following:
@@ -50,7 +58,7 @@ BasicAuthenticator authenticator = new BasicAuthenticator.Builder()
     .build();
 
 // Create the service instance.
-ExampleService service = new ExampleService(authenticator);
+ExampleService service = new ExampleService(ExampleService.DEFAULT_SERVICE_NAME, authenticator);
 
 // 'service' can now be used to invoke operations.
 ```
@@ -64,14 +72,11 @@ export EXAMPLE_SERVICE_PASSWORD=mypassword
 ```
 Application code:
 ```java
-import com.ibm.cloud.sdk.core.security.ConfigBaseAuthenticatorFactory;
 import <sdk_base_package>.ExampleService.v1.ExampleService;
 ...
-// Create the authenticator.
-Authenticator authenticator = ConfigBasedAuthenticatorFactory.getAuthenticator("example_service");
 
-// Create the service instance.
-ExampleService service = new ExampleService(authenticator);
+// Create the service instance from configuration properties.
+ExampleService service = ExampleService.newInstance("example_service");
 
 // 'service' can now be used to invoke operations.
 ```
@@ -99,7 +104,7 @@ String bearerToken = // ... obtain bearer token value ...
 BearerTokenAuthenticator authenticator = new BearerTokenAuthenticator(bearerToken);
 
 // Create the service instance.
-ExampleService service = new ExampleService(authenticator);
+ExampleService service = new ExampleService(ExampleService.DEFAULT_SERVICE_NAME, authenticator);
 
 // 'service' can now be used to invoke operations.
 ...
@@ -116,21 +121,13 @@ export EXAMPLE_SERVICE_BEARER_TOKEN=<the bearer token value>
 ```
 Application code:
 ```java
-import com.ibm.cloud.sdk.core.security.ConfigBaseAuthenticatorFactory;
-import com.ibm.cloud.sdk.core.security.BearerTokenAuthenticator;
 import <sdk_base_package>.ExampleService.v1.ExampleService;
 ...
-// Create the authenticator.
-Authenticator authenticator = ConfigBasedAuthenticatorFactory.getAuthenticator("example_service");
 
 // Create the service instance.
-ExampleService service = new ExampleService(authenticator);
+ExampleService service = ExampleService.newInstance("example_service");
 
 // 'service' can now be used to invoke operations.
-...
-// Later, if your bearer token value expires, you can set a new one like this:
-newToken = // ... obtain new bearer token value
-((BearerTokenAuthenticator) authenticator).setBearerToken(newToken);
 ```
 
 Note that the use of external configuration is not as useful with the `BearerTokenAuthenticator` as it
@@ -155,13 +152,17 @@ form:
 
 - apikey: (required) the IAM api key
 
-- url: (optional) The URL representing the IAM token service endpoint.  If not specified, a suitable
-default value is used.
+- url: (optional) The base endpoint URL of the IAM token service.
+The default value of this property is the "prod" IAM token service endpoint
+(`https://iam.cloud.ibm.com`).
 
 - clientId/clientSecret: (optional) The `clientId` and `clientSecret` fields are used to form a 
 "basic auth" Authorization header for interactions with the IAM token server. If neither field 
 is specified, then no Authorization header will be sent with token server requests.  These fields 
 are optional, but must be specified together.
+
+- scope: (optional) the scope to be associated with the IAM access token.
+If not specified, then no scope will be associated with the access token.
 
 - disableSSLVerification: (optional) A flag that indicates whether verificaton of the server's SSL 
 certificate should be disabled or not. The default value is `false`.
@@ -180,7 +181,7 @@ IamAuthenticator authenticator = new IamAuthenticator.Builder()
     .build();
 
 // Create the service instance.
-ExampleService service = new ExampleService(authenticator);
+ExampleService service = new ExampleService(ExampleService.DEFAULT_SERVICE_NAME, authenticator);
 
 // 'service' can now be used to invoke operations.
 ```
@@ -193,14 +194,11 @@ export EXAMPLE_SERVICE_APIKEY=myapikey
 ```
 Application code:
 ```java
-import com.ibm.cloud.sdk.core.security.ConfigBaseAuthenticatorFactory;
 import <sdk_base_package>.ExampleService.v1.ExampleService;
 ...
-// Create the authenticator.
-Authenticator authenticator = ConfigBasedAuthenticatorFactory.getAuthenticator("example_service");
 
 // Create the service instance.
-ExampleService service = new ExampleService(authenticator);
+ExampleService service = ExampleService.newInstance("example_service");
 
 // 'service' can now be used to invoke operations.
 ```
@@ -271,7 +269,7 @@ ContainerAuthenticator authenticator = new ContainerAuthenticator.Builder()
     .build();
 
 // Create the service instance.
-ExampleService service = new ExampleService(authenticator);
+ExampleService service = new ExampleService(ExampleService.DEFAULT_SERVICE_NAME, authenticator);
 
 // 'service' can now be used to invoke operations.
 ```
@@ -284,21 +282,93 @@ export EXAMPLE_SERVICE_IAM_PROFILE_NAME=iam-user123
 ```
 Application code:
 ```java
-import com.ibm.cloud.sdk.core.security.ConfigBaseAuthenticatorFactory;
+import <sdk_base_package>.ExampleService.v1.ExampleService;
+...
+
+// Create the service instance.
+ExampleService service = ExampleService.newInstance("example_service");
+
+// 'service' can now be used to invoke operations.
+```
+
+
+## VPC Instance Authentication
+The `VpcInstanceAuthenticator` is intended to be used by application code
+running inside a VPC-managed compute resource (virtual server instance) that has been configured
+to use the "compute resource identity" feature.
+The compute resource identity feature allows you to assign a trusted IAM profile to the compute resource as its "identity".
+This, in turn, allows applications running within the compute resource to take on this identity when interacting with
+IAM-secured IBM Cloud services.
+This results in a simplified security model that allows the application developer to:
+- avoid storing credentials in application code, configuraton files or a password vault
+- avoid managing or rotating credentials
+
+The `VpcInstanceAuthenticator` will invoke the appropriate operations on the compute resource's locally-available
+VPC Instance Metadata Service to (1) retrieve an instance identity token
+and then (2) exchange that instance identity token for an IAM access token.
+The authenticator will repeat these steps to obtain a new IAM access token whenever the current access token expires.
+The IAM access token is added to each outbound request in the `Authorization` header in the form:
+```
+   Authorization: Bearer <IAM-access-token>
+```
+
+### Properties
+
+- iamProfileCrn: (optional) the crn of the linked trusted IAM profile to be used when obtaining the IAM access token. 
+
+- iamProfileId: (optional) the id of the linked trusted IAM profile to be used when obtaining the IAM access token.
+
+- url: (optional) The base endpoint URL of the VPC Instance Metadata Service.  
+The default value of this property is `http://169.254.169.254`, and should not need to be specified in normal situations.
+
+Usage Notes:
+1. At most one of `iamProfileCrn` or `iamProfileId` may be specified.  The specified value must map
+to a trusted IAM profile that has been linked to the compute resource (virtual server instance).
+
+2. If both `iamProfileCrn` and `iamProfileId` are specified, then an error occurs.
+
+3. If neither `iamProfileCrn` nor `iamProfileId` are specified, then the default trusted profile linked to the 
+compute resource will be used to perform the IAM token exchange.
+If no default trusted profile is defined for the compute resource, then an error occurs.
+
+
+### Programming example
+```java
+import com.ibm.cloud.sdk.core.security.VpcInstanceAuthenticator;
 import <sdk_base_package>.ExampleService.v1.ExampleService;
 ...
 // Create the authenticator.
-Authenticator authenticator = ConfigBasedAuthenticatorFactory.getAuthenticator("example_service");
+VpcInstanceAuthenticator authenticator = new VpcInstanceAuthenticator.Builder()
+    .iamProfileCrn("crn:iam-profile-123")
+    .build();
 
 // Create the service instance.
-ExampleService service = new ExampleService(authenticator);
+ExampleService service = new ExampleService(ExampleService.DEFAULT_SERVICE_NAME, authenticator);
+
+// 'service' can now be used to invoke operations.
+```
+
+### Configuration example
+External configuration:
+```
+export EXAMPLE_SERVICE_AUTH_TYPE=vpc
+export EXAMPLE_SERVICE_IAM_PROFILE_CRN=crn:iam-profile-123
+```
+Application code:
+```java
+import <sdk_base_package>.ExampleService.v1.ExampleService;
+...
+
+// Create the service instance.
+ExampleService service = ExampleService.newInstance("example_service");
 
 // 'service' can now be used to invoke operations.
 ```
 
 
 ##  Cloud Pak for Data Authentication
-The `CloudPakForDataAuthenticator` will accept user-supplied values for the username and either a password or apikey, and will 
+The `CloudPakForDataAuthenticator` will accept a user-supplied username value, along with either a
+password or apikey, and will 
 perform the necessary interactions with the Cloud Pak for Data token service to obtain a suitable
 bearer token.  The authenticator will also obtain a new bearer token when the current token expires.
 The bearer token is then added to each outbound request in the `Authorization` header in the
@@ -328,44 +398,49 @@ made to the IAM token service.
 import com.ibm.cloud.sdk.core.security.CloudPakForDataAuthenticator;
 import <sdk_base_package>.ExampleService.v1.ExampleService;
 ...
+
 // Create the authenticator.
 CloudPakForDataAuthenticator authenticator = new CloudPakForDataAuthenticator.Builder()
-    .url("https://mycp4dhost.com/")
+    .url("https://mycp4dhost.com")
     .username("myuser")
-    .password("mypassword")
+    .apikey("myapikey")
     .build();
 
 // Create the service instance.
-ExampleService service = new ExampleService(authenticator);
+ExampleService service = new ExampleService(ExampleService.DEFAULT_SERVICE_NAME, authenticator);
 
 // 'service' can now be used to invoke operations.
 ```
+
 ### Configuration example
 External configuration:
 ```
+# Configure "example_service" with username/apikey.
 export EXAMPLE_SERVICE_AUTH_TYPE=cp4d
 export EXAMPLE_SERVICE_USERNAME=myuser
-export EXAMPLE_SERVICE_PASSWORD=mypassword
-export EXAMPLE_SERVICE_URL=https://mycp4dhost.com/
+export EXAMPLE_SERVICE_APIKEY=myapikey
+export EXAMPLE_SERVICE_URL=https://mycp4dhost.com
 ```
 Application code:
 ```java
-import com.ibm.cloud.sdk.core.security.ConfigBaseAuthenticatorFactory;
 import <sdk_base_package>.ExampleService.v1.ExampleService;
 ...
-// Create the authenticator.
-Authenticator authenticator = ConfigBasedAuthenticatorFactory.getAuthenticator("example_service");
 
 // Create the service instance.
-ExampleService service = new ExampleService(authenticator);
+ExampleService service = ExampleService.newInstance("example_service");
 
 // 'service' can now be used to invoke operations.
 ```
 
+
 ## No Auth Authentication
-The `NoAuthAuthenticator` is a placeholder authenticator which performs no actual authentication function.   It can be used in situations where authentication needs to be bypassed, perhaps while developing or debugging an application or service.
+The `NoAuthAuthenticator` is a placeholder authenticator which performs no actual authentication function.
+It can be used in situations where authentication needs to be bypassed, perhaps while developing
+or debugging an application or service.
+
 ### Properties
 None
+
 ### Programming example
 ```java
 import com.ibm.cloud.sdk.core.security.NoAuthAuthenticator;
@@ -375,10 +450,11 @@ import <sdk_base_package>.ExampleService.v1.ExampleService;
 NoAuthAuthenticator authenticator = new NoAuthAuthenticator();
 
 // Create the service instance.
-ExampleService service = new ExampleService(authenticator);
+ExampleService service = new ExampleService(ExampleService.DEFAULT_SERVICE_NAME, authenticator);
 
 // 'service' can now be used to invoke operations.
 ```
+
 ### Configuration example
 External configuration:
 ```
@@ -386,14 +462,11 @@ export EXAMPLE_SERVICE_AUTH_TYPE=noauth
 ```
 Application code:
 ```java
-import com.ibm.cloud.sdk.core.security.ConfigBaseAuthenticatorFactory;
 import <sdk_base_package>.ExampleService.v1.ExampleService;
 ...
-// Create the authenticator.
-Authenticator authenticator = ConfigBasedAuthenticatorFactory.getAuthenticator("example_service");
 
 // Create the service instance.
-ExampleService service = new ExampleService(authenticator);
+ExampleService service = ExampleService.newInstance("example_service");
 
 // 'service' can now be used to invoke operations.
 ```

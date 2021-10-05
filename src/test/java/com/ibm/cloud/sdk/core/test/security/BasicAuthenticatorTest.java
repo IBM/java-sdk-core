@@ -52,56 +52,66 @@ public class BasicAuthenticatorTest {
 
 
   //
-  // Tests involving the Builder class and fromConfiguration() method.deprecated ctors.
+  // Tests involving the Builder class and fromConfiguration() method.
   //
 
+  @Test()
+  public void testBuilderSuccess() {
+    BasicAuthenticator auth = new BasicAuthenticator.Builder()
+      .username("good-user")
+      .password("good-password")
+      .build();
+    assertNotNull(auth);
+    assertEquals(auth.getUsername(), "good-user");
+    assertEquals(auth.getPassword(), "good-password");
+  }
 
   @Test(expectedExceptions = IllegalArgumentException.class)
   public void testMissingUsername() {
     new BasicAuthenticator.Builder()
-    .username(null)
-    .password("good-password")
-    .build();
+      .username(null)
+      .password("good-password")
+      .build();
   }
 
   @Test(expectedExceptions = IllegalArgumentException.class)
   public void testEmptyUsername() {
     new BasicAuthenticator.Builder()
-    .username("")
-    .password("good-password")
-    .build();
+      .username("")
+      .password("good-password")
+      .build();
   }
 
   @Test(expectedExceptions = IllegalArgumentException.class)
   public void testInvalidUsername() {
     new BasicAuthenticator.Builder()
-    .username("{bad-username}")
-    .password("good-password")
-    .build();
+      .username("{bad-username}")
+      .password("good-password")
+      .build();
   }
 
   @Test(expectedExceptions = IllegalArgumentException.class)
   public void testMissingPassword() {
     new BasicAuthenticator.Builder()
-    .username("good-username")
-    .password(null)
-    .build();
+      .username("good-username")
+      .password(null)
+      .build();
   }
 
   @Test(expectedExceptions = IllegalArgumentException.class)
   public void testEmptyPassword() {
     new BasicAuthenticator.Builder()
-    .username("good-username")
-    .password("")
-    .build();
+      .username("good-username")
+      .password("")
+      .build();
   }
 
   @Test(expectedExceptions = IllegalArgumentException.class)
   public void testInvalidPassword() {
     new BasicAuthenticator.Builder()
-    .username("good-username")
-    .password("{bad-password}")
-    .build();
+      .username("good-username")
+      .password("{bad-password}")
+      .build();
   }
 
   @Test(expectedExceptions = IllegalArgumentException.class)

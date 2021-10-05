@@ -34,6 +34,7 @@ import com.ibm.cloud.sdk.core.security.CloudPakForDataServiceAuthenticator;
 import com.ibm.cloud.sdk.core.security.ConfigBasedAuthenticatorFactory;
 import com.ibm.cloud.sdk.core.security.ContainerAuthenticator;
 import com.ibm.cloud.sdk.core.security.IamAuthenticator;
+import com.ibm.cloud.sdk.core.security.VpcInstanceAuthenticator;
 import com.ibm.cloud.sdk.core.util.EnvironmentUtils;
 
 /**
@@ -92,6 +93,10 @@ public class ConfigBasedAuthenticatorFactoryTest extends PowerMockTestCase {
     env.put("SERVICE7_CLIENT_ID", "my-client-id");
     env.put("SERVICE7_CLIENT_SECRET", "my-client-secret");
     env.put("SERVICE7_SCOPE", "admin user viewer");
+
+    env.put("SERVICE8_AUTH_TYPE", Authenticator.AUTHTYPE_VPC);
+    env.put("SERVICE8_AUTH_URL", "https://vpc.imds.com/api");
+    env.put("SERVICE8_IAM_PROFILE_CRN", "crn:iam-profile-1");
 
     env.put("ERROR1_AUTH_TYPE", Authenticator.AUTHTYPE_CP4D);
     env.put("ERROR2_AUTH_TYPE", "BAD_AUTH_TYPE");
@@ -218,6 +223,34 @@ public class ConfigBasedAuthenticatorFactoryTest extends PowerMockTestCase {
   }
 
   @Test
+  public void testFileCredentialsService15() {
+    PowerMockito.spy(EnvironmentUtils.class);
+    PowerMockito.when(EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
+
+    Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service_15");
+    assertNotNull(auth);
+    assertEquals(auth.authenticationType(), Authenticator.AUTHTYPE_VPC);
+    VpcInstanceAuthenticator containerAuth = (VpcInstanceAuthenticator) auth;
+    assertEquals(containerAuth.getIamProfileCrn(), "crn:iam-profile-1");
+    assertNull(containerAuth.getIamProfileId());
+    assertEquals(containerAuth.getURL(), "https://vpc.imds.com/api");
+  }
+
+  @Test
+  public void testFileCredentialsService16() {
+    PowerMockito.spy(EnvironmentUtils.class);
+    PowerMockito.when(EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
+
+    Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service_16");
+    assertNotNull(auth);
+    assertEquals(auth.authenticationType(), Authenticator.AUTHTYPE_VPC);
+    VpcInstanceAuthenticator containerAuth = (VpcInstanceAuthenticator) auth;
+    assertNull(containerAuth.getIamProfileCrn());
+    assertEquals(containerAuth.getIamProfileId(), "iam-profile-1-id");
+    assertNull(containerAuth.getURL());
+  }
+
+  @Test
   public void testFileCredentialsService5() {
     PowerMockito.spy(EnvironmentUtils.class);
     PowerMockito.when(EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
@@ -317,6 +350,20 @@ public class ConfigBasedAuthenticatorFactoryTest extends PowerMockTestCase {
     assertEquals(containerAuth.getClientSecret(), "my-client-secret");
     assertEquals(containerAuth.getScope(), "admin user viewer");
     assertFalse(containerAuth.getDisableSSLVerification());
+  }
+
+  @Test
+  public void testEnvCredentialsService8() {
+    PowerMockito.spy(EnvironmentUtils.class);
+    PowerMockito.when(EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
+
+    Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service8");
+    assertNotNull(auth);
+    assertEquals(Authenticator.AUTHTYPE_VPC, auth.authenticationType());
+    VpcInstanceAuthenticator containerAuth = (VpcInstanceAuthenticator) auth;
+    assertEquals(containerAuth.getIamProfileCrn(), "crn:iam-profile-1");
+    assertNull(containerAuth.getIamProfileId());
+    assertEquals(containerAuth.getURL(), "https://vpc.imds.com/api");
   }
 
   @Test(expectedExceptions = IllegalArgumentException.class)

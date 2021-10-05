@@ -75,23 +75,35 @@ public class BaseServiceUnitTest extends PowerMockTestCase {
   }
 
   /**
-   * Create a MockResponse with JSON content type and the object serialized to JSON as body.
+   * Create a MockResponse with JSON content type and "body" serialized to JSON as the response body.
    *
    * @param body the body
-   * @return the mock response
+   * @return the MockResponse
    */
   protected static MockResponse jsonResponse(Object body) {
     return new MockResponse().addHeader(CONTENT_TYPE, HttpMediaType.APPLICATION_JSON).setBody(GSON.toJson(body));
   }
 
   /**
-   * Create a MockResponse with JSON content type and the object serialized to JSON as body.
-   *
-   * @param body the body
-   * @return the mock response
+   * Create a MockResponse with the specified status code and an empty response body.
+   * @param statusCode the status code to set in the response
+   * @return the MockResponse
    */
   protected static MockResponse errorResponse(int statusCode) {
     return new MockResponse().setResponseCode(statusCode);
+  }
+
+  /**
+   * Create a MockResponse with the specified status code and response body.
+   * @param statusCode the status code to set in the response
+   * @param responseBody the response body to include in the response
+   * @return the MockResponse
+   */
+  protected static MockResponse errorResponse(int statusCode, String responseBody) {
+    return new MockResponse()
+        .setResponseCode(statusCode)
+        .addHeader(CONTENT_TYPE, HttpMediaType.APPLICATION_JSON)
+        .setBody(responseBody);
   }
 
   /**
