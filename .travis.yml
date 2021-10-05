@@ -81,6 +81,6 @@ jobs:
       script:
         - build/setupSigning.sh
         - build/setMavenVersion.sh
-        - mvn deploy $MVN_ARGS -DskipTests
+        - mvn deploy $MVN_ARGS -DskipTests -P central
       after_success:
         - echo "Maven artifacts successfully published to Maven Central!"
