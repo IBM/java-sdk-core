@@ -30,10 +30,12 @@ import org.powermock.modules.testng.PowerMockTestCase;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import static com.ibm.cloud.sdk.core.http.HttpHeaders.CONTENT_TYPE;
+import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
@@ -126,7 +128,9 @@ public class BaseServiceUnitTest extends PowerMockTestCase {
   // Verify the Authorization header in the specified request builder.
   protected void verifyAuthHeader(Request.Builder builder, String expectedPrefix) {
     Request request = builder.build();
-    String actualValue = request.header(HttpHeaders.AUTHORIZATION);
+    List<String> authHeaders = request.headers(HttpHeaders.AUTHORIZATION);
+    assertEquals(authHeaders.size(), 1);
+    String actualValue = authHeaders.get(0);
     assertNotNull(actualValue);
 
     assertTrue(actualValue.startsWith(expectedPrefix));

@@ -159,7 +159,7 @@ public abstract class TokenRequestBasedAuthenticator<T extends AbstractToken, R 
   public void authenticate(Builder builder) {
     String headerValue = constructBearerTokenAuthHeader(getToken());
     if (headerValue != null) {
-      builder.addHeader(HttpHeaders.AUTHORIZATION, headerValue);
+      builder.header(HttpHeaders.AUTHORIZATION, headerValue);
     }
   }
 
