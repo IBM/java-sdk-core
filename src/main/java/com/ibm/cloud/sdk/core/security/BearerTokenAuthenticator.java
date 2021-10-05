@@ -107,6 +107,6 @@ public class BearerTokenAuthenticator extends AuthenticatorBase implements Authe
    */
   @Override
   public void authenticate(Builder builder) {
-    builder.addHeader(HttpHeaders.AUTHORIZATION, this.cachedAuthHeader);
+    builder.header(HttpHeaders.AUTHORIZATION, this.cachedAuthHeader);
   }
 }

@@ -200,6 +200,6 @@ public class BasicAuthenticator extends AuthenticatorBase implements Authenticat
    */
   @Override
   public void authenticate(okhttp3.Request.Builder builder) {
-    builder.addHeader(HttpHeaders.AUTHORIZATION, this.authHeader);
+    builder.header(HttpHeaders.AUTHORIZATION, this.authHeader);
   }
 }

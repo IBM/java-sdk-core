@@ -17,6 +17,7 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.testng.annotations.Test;
@@ -107,5 +108,21 @@ public class BearerTokenAuthenticatorTest {
     BearerTokenAuthenticator authenticator = BearerTokenAuthenticator.fromConfiguration(props);
     assertEquals(Authenticator.AUTHTYPE_BEARER_TOKEN, authenticator.authenticationType());
     assertEquals("my-access-token", authenticator.getBearerToken());
+  }
+
+  @Test
+  public void testSingleAuthHeader() {
+    Map<String, String> props = new HashMap<>();
+    props.put(Authenticator.PROPNAME_BEARER_TOKEN, "my-access-token");
+    BearerTokenAuthenticator auth = BearerTokenAuthenticator.fromConfiguration(props);
+
+    Request.Builder requestBuilder = new Request.Builder().url("https://test.com");
+    auth.authenticate(requestBuilder);
+    // call authenticate twice on the same request
+    auth.authenticate(requestBuilder);
+    Request request = requestBuilder.build();
+
+    List<String> authHeaders = request.headers(HttpHeaders.AUTHORIZATION);
+    assertEquals(authHeaders.size(), 1);
   }
 }

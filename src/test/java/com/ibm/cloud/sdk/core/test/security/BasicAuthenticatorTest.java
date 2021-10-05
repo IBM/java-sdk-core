@@ -25,6 +25,7 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @SuppressWarnings("deprecation")
@@ -223,5 +224,23 @@ public class BasicAuthenticatorTest {
     assertEquals(Authenticator.AUTHTYPE_BASIC, authenticator.authenticationType());
     assertEquals("good-username", authenticator.getUsername());
     assertEquals("good-password", authenticator.getPassword());
+  }
+
+  @Test
+  public void testSingleAuthHeader() {
+    String username = "good-username";
+    Map<String, String> props = new HashMap<>();
+    props.put(Authenticator.PROPNAME_USERNAME, "good-username");
+    props.put(Authenticator.PROPNAME_PASSWORD, "good-password");
+    BasicAuthenticator auth = new BasicAuthenticator(props);
+
+    Request.Builder requestBuilder = new Request.Builder().url("https://test.com");
+    auth.authenticate(requestBuilder);
+    // call authenticate twice on the same request
+    auth.authenticate(requestBuilder);
+    Request request = requestBuilder.build();
+
+    List<String> authHeaders = request.headers(HttpHeaders.AUTHORIZATION);
+    assertEquals(authHeaders.size(), 1);
   }
 }
