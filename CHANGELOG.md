@@ -1,3 +1,10 @@
+## [9.13.3](https://github.com/IBM/java-sdk-core/compare/9.13.2...9.13.3) (2021-10-05)
+
+
+### Bug Fixes
+
+* ensure single-valued Authorization header ([#150](https://github.com/IBM/java-sdk-core/issues/150)) ([88601fa](https://github.com/IBM/java-sdk-core/commit/88601fa4d17ca2e9b199d1fed7b37d5bc4ebf34e))
+
 ## [9.13.2](https://github.com/IBM/java-sdk-core/compare/9.13.1...9.13.2) (2021-10-02)
 
 
