@@ -1,0 +1,6 @@
+[
+  {
+    "cve": "SNYK-JAVA-CHQOSLOGBACK-1726923",
+    "untilRemediationAvailable": true
+  }
+]
