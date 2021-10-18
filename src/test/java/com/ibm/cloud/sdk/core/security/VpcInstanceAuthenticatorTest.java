@@ -80,7 +80,12 @@ public class VpcInstanceAuthenticatorTest extends BaseServiceUnitTest {
     // Set up java.util.logging to display messages on the console.
     ConsoleHandler handler = new ConsoleHandler();
     handler.setLevel(logLevel);
-    Logger logger = Logger.getLogger(VpcInstanceAuthenticator.class.getName());
+    Logger logger;
+    logger = Logger.getLogger(VpcInstanceAuthenticator.class.getName());
+    logger.setLevel(logLevel);
+    logger.addHandler(handler);
+
+    logger = Logger.getLogger(TokenRequestBasedAuthenticator.class.getName());
     logger.setLevel(logLevel);
     logger.addHandler(handler);
   }

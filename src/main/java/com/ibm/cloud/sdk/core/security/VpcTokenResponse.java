@@ -21,7 +21,7 @@ import com.google.gson.annotations.SerializedName;
  * This class models the response received from the VPC "create_access_token" and
  * "create_iam_token" operations.
  */
-public class VpcTokenResponse {
+public class VpcTokenResponse implements TokenServerResponse {
 
   @SerializedName("access_token")
   protected String accessToken;

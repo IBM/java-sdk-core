@@ -19,19 +19,9 @@ import java.util.logging.Logger;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.ibm.cloud.sdk.core.http.HttpClientSingleton;
-import com.ibm.cloud.sdk.core.http.HttpConfigOptions;
-import com.ibm.cloud.sdk.core.http.HttpConfigOptions.LoggingLevel;
 import com.ibm.cloud.sdk.core.http.HttpHeaders;
 import com.ibm.cloud.sdk.core.http.HttpMediaType;
 import com.ibm.cloud.sdk.core.http.RequestBuilder;
-import com.ibm.cloud.sdk.core.http.ResponseConverter;
-import com.ibm.cloud.sdk.core.service.exception.ServiceResponseException;
-import com.ibm.cloud.sdk.core.util.ResponseConverterUtils;
-
-import okhttp3.Call;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
 
 /**
  * VpcInstanceAuthenticator implements an authentication scheme in which it
@@ -43,7 +33,10 @@ import okhttp3.Request;
  * <p>The resulting IAM access token is then added to outbound
  * requests in an Authorization header of the form: "Authorization: Bearer &lt;access-token&gt;"
  */
-public class VpcInstanceAuthenticator extends AuthenticatorBase implements Authenticator {
+public class VpcInstanceAuthenticator
+  extends TokenRequestBasedAuthenticator<IamToken, VpcTokenResponse>
+  implements Authenticator {
+
   private static final Logger LOG = Logger.getLogger(VpcInstanceAuthenticator.class.getName());
   private static final String defaultIMSEndpoint = "http://169.254.169.254";
   private static final String operationPathCreateAccessToken = "/instance_identity/v1/token";
@@ -57,8 +50,6 @@ public class VpcInstanceAuthenticator extends AuthenticatorBase implements Authe
   private String iamProfileId;
   private String url;
 
-  // The cached IAM access token and its expiration time.
-  private IamToken tokenData;
 
   /**
    * This Builder class is used to construct IamAuthenticator instances.
@@ -170,6 +161,9 @@ public class VpcInstanceAuthenticator extends AuthenticatorBase implements Authe
         .iamProfileId(config.get(PROPNAME_IAM_PROFILE_ID)).url(config.get(PROPNAME_URL)).build();
   }
 
+  /**
+   * Validates the configuration of the authenticator and throws an exception if validation fails.
+   */
   @Override
   public void validate() {
     // At most one of iamProfileCrn or iamProfileId may be specified.
@@ -179,6 +173,10 @@ public class VpcInstanceAuthenticator extends AuthenticatorBase implements Authe
     }
   }
 
+  /**
+   * Returns the authentication type associated with this Authenticator.
+   * @return the authentication type ("vpc")
+   */
   @Override
   public String authenticationType() {
     return Authenticator.AUTHTYPE_VPC;
@@ -237,82 +235,6 @@ public class VpcInstanceAuthenticator extends AuthenticatorBase implements Authe
 
   private String getImdsEndpoint() {
     return (StringUtils.isEmpty(this.url) ? defaultIMSEndpoint : this.url);
-  }
-
-  protected void setTokenData(IamToken tokenData) {
-    this.tokenData = tokenData;
-  }
-
-  /**
-   * Authenticate the specified request by adding an Authorization header
-   * containing a "Bearer" access token.
-   */
-  @Override
-  public void authenticate(okhttp3.Request.Builder builder) {
-    String headerValue = constructBearerTokenAuthHeader(getToken());
-    if (headerValue != null) {
-      builder.header(HttpHeaders.AUTHORIZATION, headerValue);
-    }
-  }
-
-  /**
-   * This function returns an IAM access token to be used in an Authorization
-   * header. Whenever a new IAM access token is needed (when a token doesn't yet
-   * exist or the existing token has expired), a new IAM access token is fetched
-   * from the VPC Instance Metadata Service.
-   *
-   * @return the IAM access token
-   */
-  public String getToken() {
-
-    if (this.tokenData == null || !this.tokenData.isTokenValid()) {
-      setTokenData(synchronizedRequestToken());
-    } else if (this.tokenData.needsRefresh()) {
-
-      // Kick off background task to refresh token.
-      Thread updateTokenCall = new Thread(new Runnable() {
-        @Override
-        public void run() {
-          setTokenData(requestToken());
-        }
-      });
-      updateTokenCall.start();
-    }
-
-    // Make sure we have a non-null tokenData object.
-    // This should not occur, but just in case it does... :)
-    if (this.tokenData == null) {
-      throw new RuntimeException(ERRORMSG_REQ_FAILED + " illegal state: token object not available");
-    }
-
-    // Check to see if an exception occurred during our last interaction with the
-    // token service.
-    if (this.tokenData.getException() != null) {
-      Throwable t = tokenData.getException();
-      if (t instanceof RuntimeException) {
-        throw (RuntimeException) t;
-      } else {
-        throw new RuntimeException(ERRORMSG_REQ_FAILED, tokenData.getException());
-      }
-    }
-
-    // Return the access token from our stored tokenData object.
-    return tokenData.getAccessToken();
-  }
-
-  /**
-   * Calls the extending class' requestToken implementation in a synchronized way.
-   * The requestToken implementation will not be called if the stored token has
-   * been made valid since this method's initial call.
-   *
-   * @return the token object
-   */
-  protected synchronized IamToken synchronizedRequestToken() {
-    if (this.tokenData != null && this.tokenData.isTokenValid()) {
-      return this.tokenData;
-    }
-
-    return requestToken();
   }
 
   /**
@@ -418,73 +340,5 @@ public class VpcInstanceAuthenticator extends AuthenticatorBase implements Authe
     }
 
     return iamToken;
-  }
-
-  /**
-   * Invokes the specified request and returns the response object.
-   *
-   * @param requestBuilder the partially-built request for fetching a token from
-   *                       the token service
-   * @param responseClass  a Class object which represents the token service
-   *                       response structure
-   * @return an instance of the response class R
-   * @throws Throwable an error occurred when invoking the request
-   */
-  @SuppressWarnings("unchecked")
-  protected <R> R invokeRequest(final RequestBuilder requestBuilder, final Class<? extends R> responseClass)
-      throws Throwable {
-
-    // Allocate the response.
-    final Object[] responseObj = new Object[1];
-
-    // Set up the Client we'll use to invoke the request.
-    final HttpConfigOptions.Builder clientOptions = new HttpConfigOptions.Builder();
-    if (LOG.isLoggable(Level.FINE)) {
-      clientOptions.loggingLevel(LoggingLevel.BODY);
-    }
-
-    final OkHttpClient client = HttpClientSingleton.getInstance().configureClient(clientOptions.build());
-
-    // Create the request.
-    final Request request = requestBuilder.build();
-
-    Thread restCall = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        Call call = client.newCall(request);
-        ResponseConverter<R> converter = ResponseConverterUtils.getObject(responseClass);
-
-        try {
-          okhttp3.Response response = call.execute();
-
-          // handle possible errors
-          if (response.code() < 200 || response.code() >= 300) {
-            throw new ServiceResponseException(response.code(), response);
-          }
-
-          // Store the API response so that we can pass it back to the main thread.
-          responseObj[0] = converter.convert(response);
-        } catch (Throwable t) {
-
-          // Store the exception so that we can pass it back to the main thread.
-          responseObj[0] = t;
-        }
-      }
-    });
-
-    restCall.start();
-    try {
-      restCall.join();
-    } catch (Throwable t) {
-      responseObj[0] = t;
-    }
-
-    // Check to see if we need to throw an exception now that we're back on the main
-    // thread.
-    if (responseObj[0] instanceof Throwable) {
-      throw (Throwable) responseObj[0];
-    }
-
-    return (R) responseObj[0];
   }
 }

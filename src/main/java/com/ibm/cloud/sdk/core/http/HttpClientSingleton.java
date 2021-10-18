@@ -247,6 +247,10 @@ public class HttpClientSingleton {
     OkHttpClient updatedClient = client;
     if (loggingInterceptor == null) {
       loggingInterceptor = new HttpLoggingInterceptor();
+      loggingInterceptor.redactHeader(HttpHeaders.AUTHORIZATION);
+      loggingInterceptor.redactHeader(HttpHeaders.WWW_AUTHENTICATE);
+      loggingInterceptor.redactHeader("Proxy-Authenticate");
+      loggingInterceptor.redactHeader("Proxy-Authorization");
       OkHttpClient.Builder builder = client.newBuilder().addNetworkInterceptor(loggingInterceptor);
       updatedClient = builder.build();
     }
