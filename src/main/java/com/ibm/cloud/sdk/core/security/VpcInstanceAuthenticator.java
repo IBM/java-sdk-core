@@ -233,7 +233,7 @@ public class VpcInstanceAuthenticator
     this.url = url;
   }
 
-  private String getImdsEndpoint() {
+  private String getImsEndpoint() {
     return (StringUtils.isEmpty(this.url) ? defaultIMSEndpoint : this.url);
   }
 
@@ -267,7 +267,7 @@ public class VpcInstanceAuthenticator
     try {
       // Create a PUT request to retrieve the instance identity token.
       RequestBuilder builder = RequestBuilder
-          .put(RequestBuilder.resolveRequestUrl(getImdsEndpoint(), operationPathCreateAccessToken));
+          .put(RequestBuilder.resolveRequestUrl(getImsEndpoint(), operationPathCreateAccessToken));
 
       // Set the params and request body.
       builder.query("version", metadataServiceVersion);
@@ -302,7 +302,7 @@ public class VpcInstanceAuthenticator
     try {
       // Create a POST request to retrieve the IAM access token.
       RequestBuilder builder =
-          RequestBuilder.post(RequestBuilder.resolveRequestUrl(getImdsEndpoint(), operationPathCreateIamToken));
+          RequestBuilder.post(RequestBuilder.resolveRequestUrl(getImsEndpoint(), operationPathCreateIamToken));
 
       // Set the params and request body.
       builder.query("version", metadataServiceVersion);
