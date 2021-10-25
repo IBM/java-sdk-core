@@ -169,7 +169,7 @@ public class VpcInstanceAuthenticator
     // At most one of iamProfileCrn or iamProfileId may be specified.
     if (StringUtils.isNotEmpty(getIamProfileCrn()) && StringUtils.isNotEmpty(getIamProfileId())) {
       throw new IllegalArgumentException(
-          String.format(ERRORMSG_ATMOST_ONE_PROP_ERROR, "iamProfileName", "iamProfileId"));
+          String.format(ERRORMSG_ATMOST_ONE_PROP_ERROR, "iamProfileCrn", "iamProfileId"));
     }
   }
 
