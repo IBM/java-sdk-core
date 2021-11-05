@@ -13,12 +13,18 @@
 
 package com.ibm.cloud.sdk.core.util;
 
+import java.io.IOException;
 import java.util.Date;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonSyntaxException;
+import com.google.gson.ToNumberPolicy;
+import com.google.gson.TypeAdapter;
 import com.google.gson.internal.LazilyParsedNumber;
-import com.google.gson.internal.bind.TypeAdapters;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
+import com.google.gson.stream.JsonWriter;
 
 /**
  * Gson singleton to be use when transforming from JSON to Java Objects and vise versa. It handles date formatting and
@@ -40,7 +46,9 @@ public final class GsonSingleton {
    * @return the {@link Gson}
    */
   private static Gson createGson(boolean prettyPrint, boolean serializeNulls) {
-    GsonBuilder builder = new GsonBuilder();
+    GsonBuilder builder = new GsonBuilder()
+        .setObjectToNumberStrategy(ToNumberPolicy.LAZILY_PARSED_NUMBER)
+        .setNumberToNumberStrategy(ToNumberPolicy.LAZILY_PARSED_NUMBER);
 
     registerTypeAdapters(builder);
 
@@ -63,7 +71,7 @@ public final class GsonSingleton {
     builder.registerTypeAdapter(byte[].class, new ByteArrayTypeAdapter());
 
     // Make sure we serialize LazilyParsedNumber properly to avoid unnecessary decimal places in serialized integers.
-    builder.registerTypeAdapter(LazilyParsedNumber.class, TypeAdapters.NUMBER);
+    builder.registerTypeAdapter(LazilyParsedNumber.class, LAZILY_PARSED_NUMBER_ADAPTER);
 
     // Type adapter factory for DynamicModel subclasses.
     builder.registerTypeAdapterFactory(new DynamicModelTypeAdapterFactory());
@@ -103,4 +111,27 @@ public final class GsonSingleton {
   public static Gson getGsonWithSerializeNulls() {
     return createGson(false, true);
   }
+
+
+  public static final TypeAdapter<Number> LAZILY_PARSED_NUMBER_ADAPTER = new TypeAdapter<Number>() {
+    @Override
+    public Number read(JsonReader in) throws IOException {
+      JsonToken jsonToken = in.peek();
+      switch (jsonToken) {
+      case NULL:
+        in.nextNull();
+        return null;
+      case NUMBER:
+      case STRING:
+        return new LazilyParsedNumber(in.nextString());
+      default:
+        throw new JsonSyntaxException("Expecting number, got: " + jsonToken);
+      }
+    }
+    @Override
+    public void write(JsonWriter out, Number value) throws IOException {
+      out.value(value);
+    }
+  };
+
 }
