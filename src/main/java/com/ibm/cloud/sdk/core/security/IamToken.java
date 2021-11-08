@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2019.
+ * (C) Copyright IBM Corp. 2015, 2021.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -21,15 +21,23 @@ import com.ibm.cloud.sdk.core.util.Clock;
  * Represents response from IAM API.
  */
 public class IamToken extends AbstractToken implements ObjectModel, TokenServerResponse {
+
+  // These fields are obtained from the IAM token service "getToken" operation response body.
   @SerializedName("access_token")
   private String accessToken;
+
   @SerializedName("refresh_token")
   private String refreshToken;
+
   @SerializedName("token_type")
   private String tokenType;
+
   @SerializedName("expires_in")
   private Long expiresIn;
+
   private Long expiration;
+
+  // The remaining fields are computed rather than obtained from operation response.
   private Long refreshTime;
 
   public IamToken() {
@@ -38,6 +46,16 @@ public class IamToken extends AbstractToken implements ObjectModel, TokenServerR
 
   public IamToken(Throwable t) {
     super(t);
+  }
+
+  /**
+   * Converts a VpcTokenResponse instance to an IamToken instance.
+   * @param vpcResponse the VpcTokenResponse instance to be converted.
+   */
+  public IamToken(VpcTokenResponse vpcResponse) {
+    accessToken = vpcResponse.getAccessToken();
+    expiresIn = vpcResponse.getExpiresIn();
+    expiration = vpcResponse.getExpiresAt().getTime() / 1000;
   }
 
   @Override

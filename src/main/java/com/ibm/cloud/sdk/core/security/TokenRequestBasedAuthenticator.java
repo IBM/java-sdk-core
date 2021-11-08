@@ -15,6 +15,7 @@ package com.ibm.cloud.sdk.core.security;
 
 import com.ibm.cloud.sdk.core.http.HttpClientSingleton;
 import com.ibm.cloud.sdk.core.http.HttpConfigOptions;
+import com.ibm.cloud.sdk.core.http.HttpConfigOptions.LoggingLevel;
 import com.ibm.cloud.sdk.core.http.HttpHeaders;
 import com.ibm.cloud.sdk.core.http.RequestBuilder;
 import com.ibm.cloud.sdk.core.http.ResponseConverter;
@@ -29,6 +30,8 @@ import java.net.Proxy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This class serves as a common base class for Authenticator implementations that interact with a token service
@@ -44,6 +47,8 @@ import java.util.Map;
  */
 public abstract class TokenRequestBasedAuthenticator<T extends AbstractToken, R extends TokenServerResponse>
   extends AuthenticatorBase implements Authenticator {
+
+  private static final Logger logger = Logger.getLogger(TokenRequestBasedAuthenticator.class.getName());
 
   // Configuration properties that are common to all subclasses.
   private boolean disableSSLVerification;
@@ -252,12 +257,17 @@ public abstract class TokenRequestBasedAuthenticator<T extends AbstractToken, R 
     final Object[] responseObj = new Object[1];
 
     // Set up the Client we'll use to invoke the request.
-    final HttpConfigOptions options = new HttpConfigOptions.Builder()
+    final HttpConfigOptions.Builder clientOptions = new HttpConfigOptions.Builder()
         .disableSslVerification(this.disableSSLVerification)
         .proxy(this.proxy)
-        .proxyAuthenticator(this.proxyAuthenticator)
-        .build();
-    final OkHttpClient client = HttpClientSingleton.getInstance().configureClient(options);
+        .proxyAuthenticator(this.proxyAuthenticator);
+
+    // Enable request/response logging.
+    if (logger.isLoggable(Level.FINE)) {
+      clientOptions.loggingLevel(LoggingLevel.BODY);
+    }
+
+    final OkHttpClient client = HttpClientSingleton.getInstance().configureClient(clientOptions.build());
 
     final Request request = requestBuilder.build();
 

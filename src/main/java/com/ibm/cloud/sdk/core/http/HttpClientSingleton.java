@@ -235,7 +235,25 @@ public class HttpClientSingleton {
    * @return the new {@link OkHttpClient} instance with the logging configured
    */
   private OkHttpClient setLoggingLevel(OkHttpClient client, LoggingLevel loggingLevel) {
-    HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
+    // First check to see if the client already has the http logging interceptor registered.
+    // If not, then we'll register a new instance of one.
+    HttpLoggingInterceptor loggingInterceptor = null;
+    for (Interceptor i : client.networkInterceptors()) {
+      if (i instanceof HttpLoggingInterceptor) {
+        loggingInterceptor = (HttpLoggingInterceptor) i;
+      }
+    }
+
+    OkHttpClient updatedClient = client;
+    if (loggingInterceptor == null) {
+      loggingInterceptor = new HttpLoggingInterceptor();
+      loggingInterceptor.redactHeader(HttpHeaders.AUTHORIZATION);
+      loggingInterceptor.redactHeader(HttpHeaders.WWW_AUTHENTICATE);
+      loggingInterceptor.redactHeader("Proxy-Authenticate");
+      loggingInterceptor.redactHeader("Proxy-Authorization");
+      OkHttpClient.Builder builder = client.newBuilder().addNetworkInterceptor(loggingInterceptor);
+      updatedClient = builder.build();
+    }
 
     switch (loggingLevel) {
       case BODY:
@@ -250,9 +268,8 @@ public class HttpClientSingleton {
       default:
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.NONE);
     }
-    OkHttpClient.Builder builder = client.newBuilder().addNetworkInterceptor(loggingInterceptor);
 
-    return builder.build();
+    return updatedClient;
   }
 
   /**
