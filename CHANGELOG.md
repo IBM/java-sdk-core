@@ -1,3 +1,10 @@
+# [9.14.0](https://github.com/IBM/java-sdk-core/compare/9.13.4...9.14.0) (2021-11-08)
+
+
+### Features
+
+* **VpcInstanceAuthenticator:** add support for new VPC authentication flow ([#153](https://github.com/IBM/java-sdk-core/issues/153)) ([815031d](https://github.com/IBM/java-sdk-core/commit/815031dec92691025462feb6da52a1c10c24b765))
+
 ## [9.13.4](https://github.com/IBM/java-sdk-core/compare/9.13.3...9.13.4) (2021-11-05)
 
 
