@@ -1,3 +1,10 @@
+## [9.14.1](https://github.com/IBM/java-sdk-core/compare/9.14.0...9.14.1) (2021-11-09)
+
+
+### Bug Fixes
+
+* set gson's objectToNumber policy to DOUBLE ([#155](https://github.com/IBM/java-sdk-core/issues/155)) ([3b5d8b4](https://github.com/IBM/java-sdk-core/commit/3b5d8b42b1806ba63149785ab56e96e4bf37de2a))
+
 # [9.14.0](https://github.com/IBM/java-sdk-core/compare/9.13.4...9.14.0) (2021-11-08)
 
 
