@@ -36,13 +36,10 @@ jobs:
   include:
     - stage: Build-Test
       jdk: openjdk8
-      install:
-        - curl -s https://codecov.io/bash > $HOME/codecov-bash.sh && chmod +x $HOME/codecov-bash.sh
+      install: skip
       script:
         - build/setMavenVersion.sh
         - mvn clean package $MVN_ARGS
-      after_success:
-        - build/publishCodeCoverage.sh
 
     - jdk: openjdk11
       install: skip
