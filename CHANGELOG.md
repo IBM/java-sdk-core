@@ -1,3 +1,10 @@
+# [9.15.0](https://github.com/IBM/java-sdk-core/compare/9.14.1...9.15.0) (2021-11-17)
+
+
+### Features
+
+* **CloudPakForDataServiceInstanceAuthenticator:** add new cp4d service instance authenticator ([#156](https://github.com/IBM/java-sdk-core/issues/156)) ([9913071](https://github.com/IBM/java-sdk-core/commit/99130718933d618c9fb0236a9f35ff1f041e8779))
+
 ## [9.14.1](https://github.com/IBM/java-sdk-core/compare/9.14.0...9.14.1) (2021-11-09)
 
 
