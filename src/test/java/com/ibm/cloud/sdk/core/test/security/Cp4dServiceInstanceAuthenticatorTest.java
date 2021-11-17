@@ -33,7 +33,6 @@ import org.testng.annotations.Test;
 
 import com.ibm.cloud.sdk.core.security.Authenticator;
 import com.ibm.cloud.sdk.core.security.CloudPakForDataServiceInstanceAuthenticator;
-import com.ibm.cloud.sdk.core.security.CloudPakForDataServiceInstanceAuthenticator;
 import com.ibm.cloud.sdk.core.security.Cp4dServiceInstanceTokenResponse;
 import com.ibm.cloud.sdk.core.service.exception.ServiceResponseException;
 import com.ibm.cloud.sdk.core.test.BaseServiceUnitTest;
