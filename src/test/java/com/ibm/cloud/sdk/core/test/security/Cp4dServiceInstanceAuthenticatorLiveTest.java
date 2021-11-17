@@ -30,10 +30,10 @@ import okhttp3.Request;
 // This test is normally @Ignored to avoid trying to run this during automated builds because
 // the CP4D test environment might not be available at all times.
 //
-// In order to test with a live CP4D server, create file "cp4dtest.env" in the project root.
+// In order to test with a live CP4D server, create file "cp4d_service_instance.env" in the project root.
 // It should look like this:
 //
-// CP4DTEST1_AUTH_URL=<url>   e.g. https://cpd350-cpd-cpd350.apps.wml-kf-cluster.os.fyre.ibm.com
+// CP4DTEST1_AUTH_URL=<url>   e.g. https://cpd350-cpd-cpd350.apps.wml-kf-cluster.os.fyre.ibm.com/zen-data
 // CP4DTEST1_AUTH_TYPE=cp4dServiceInstance
 // CP4DTEST1_USERNAME=<username>
 // CP4DTEST1_API_KEY=<apikey>
@@ -47,7 +47,7 @@ public class Cp4dServiceInstanceAuthenticatorLiveTest {
   @Ignore
   @Test
   public void testCp4dLiveTokenServer() {
-	System.setProperty("IBM_CREDENTIALS_FILE", "cp4dtest.env");
+	System.setProperty("IBM_CREDENTIALS_FILE", "cp4d_service_instance.env");
 
     Authenticator auth1 = ConfigBasedAuthenticatorFactory.getAuthenticator("cp4dtest1");
     assertNotNull(auth1);

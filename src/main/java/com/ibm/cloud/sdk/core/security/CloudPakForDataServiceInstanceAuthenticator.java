@@ -14,7 +14,7 @@
 package com.ibm.cloud.sdk.core.security;
 
 import java.net.Proxy;
-import java.util.Base64;
+import java.util.Collections;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
@@ -25,12 +25,11 @@ import com.ibm.cloud.sdk.core.http.RequestBuilder;
 /**
  * This class provides an Authenticator implementation for the "CloudPakForData" environment.
  * This authenticator will use the configured url and other properties to automatically fetch
- * a service instance id access token from the CloudPakForData token service.
+ * a service instance access token from the CloudPakForData token service.
  * When the access token expires, a new access token will be fetched.
  *
- * This authenticator uses the "GET /zen-data/v3/service_instances/serviceInstanceId/token" operation
+ * This authenticator uses the "GET /v3/service_instances/{service_instance_id}/token" operation
  * supported by the CloudPakForData token service.
- * As such, you can configure either the username, apikey, and serviceInstanceId properties.
  * The url, username, apikey, and serviceInstanceId properties are required.
  */
 public class CloudPakForDataServiceInstanceAuthenticator
@@ -217,35 +216,6 @@ extends TokenRequestBasedAuthenticator<Cp4dToken, Cp4dServiceInstanceTokenRespon
   }
 
   /**
-   * Initializes the authenticator with all the specified properties.
-   * @param url
-   *          the base URL associated with the token service.
-   *          The path "/zen-data/v3/service_instances/instanceid/token" will be appended to
-   *          this value automatically.
-   * @param username
-   *          the username to be used when retrieving the access token
-   * @param apikey
-   *          the apikey to be used when retrieving the access token
-   * @param serviceInstanceId
-   *          the serviceInstanceId to be used when retrieving the access token
-   * @param disableSSLVerification
-   *          a flag indicating whether SSL hostname verification should be disabled
-   * @param headers
-   *          a set of user-supplied headers to be included in token service interactions
-   */
-  protected void init(String url, String username, String apikey, String serviceInstanceId,
-    boolean disableSSLVerification, Map<String, String> headers) {
-    this.url = url;
-    this.username = username;
-    this.apikey = apikey;
-    this.serviceInstanceId = serviceInstanceId;
-    setDisableSSLVerification(disableSSLVerification);
-    setHeaders(headers);
-
-    this.validate();
-  }
-
-  /**
    * Returns the authentication type associated with this Authenticator.
    * @return the authentication type
    */
@@ -311,14 +281,15 @@ extends TokenRequestBasedAuthenticator<Cp4dToken, Cp4dServiceInstanceTokenRespon
    */
   @Override
   public Cp4dToken requestToken() {
-    // Generate the authentication url
-    String authUrl = String.format("/zen-data/v3/service_instances/%s/token", this.serviceInstanceId);
 
-    // Form a POST request to retrieve the access token.
-    RequestBuilder builder = RequestBuilder.get(RequestBuilder.resolveRequestUrl(this.url, authUrl));
+    Map<String, String> pathParams = Collections.singletonMap("service_instance_id", this.serviceInstanceId);
 
-    // Add the Content-Type header.
-    builder.header(HttpHeaders.AUTHORIZATION, String.join("", "Basic ", getEncodedCredentials()));
+    // Form a GET request to retrieve the access token.
+    RequestBuilder builder = RequestBuilder.get(RequestBuilder.resolveRequestUrl(this.url,
+        "/v3/service_instances/{service_instance_id}/token", pathParams));
+
+    // Add the Authorization header
+    builder.header(HttpHeaders.AUTHORIZATION, constructBasicAuthHeader(this.username, this.apikey));
 
     // Invoke the POST request.
     Cp4dToken token;
@@ -331,10 +302,5 @@ extends TokenRequestBasedAuthenticator<Cp4dToken, Cp4dServiceInstanceTokenRespon
 
     // Construct a new Cp4dToken object from the response and return it.
     return token;
-  }
-
-  private String getEncodedCredentials() {
-      byte[] credentials = String.join("", this.username, ":", this.apikey).getBytes();
-      return Base64.getEncoder().encodeToString(credentials);
   }
 }

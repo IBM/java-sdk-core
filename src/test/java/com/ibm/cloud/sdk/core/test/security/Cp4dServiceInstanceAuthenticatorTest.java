@@ -32,7 +32,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import com.ibm.cloud.sdk.core.security.Authenticator;
-import com.ibm.cloud.sdk.core.security.CloudPakForDataAuthenticator;
+import com.ibm.cloud.sdk.core.security.CloudPakForDataServiceInstanceAuthenticator;
 import com.ibm.cloud.sdk.core.security.CloudPakForDataServiceInstanceAuthenticator;
 import com.ibm.cloud.sdk.core.security.Cp4dServiceInstanceTokenResponse;
 import com.ibm.cloud.sdk.core.service.exception.ServiceResponseException;
@@ -75,7 +75,7 @@ public class Cp4dServiceInstanceAuthenticatorTest extends BaseServiceUnitTest {
 
 
   //
-  // Tests involving the new Builder class and fromConfiguration() method.
+  // Tests involving the Builder class and fromConfiguration() method.
   //
 
   @Test(expectedExceptions = IllegalArgumentException.class)
@@ -138,13 +138,43 @@ public class Cp4dServiceInstanceAuthenticatorTest extends BaseServiceUnitTest {
   }
 
   @Test(expectedExceptions = IllegalArgumentException.class)
+  public void testBuilderMissingServiceInstanceId() {
+    new CloudPakForDataServiceInstanceAuthenticator.Builder()
+      .url("https://good-url")
+      .username(testUsername)
+      .apikey(testApikey)
+      .serviceInstanceId(null)
+      .build();
+  }
+
+  @Test(expectedExceptions = IllegalArgumentException.class)
+  public void testBuilderEmptyServiceInstanceId() {
+    new CloudPakForDataServiceInstanceAuthenticator.Builder()
+      .url("https://good-url")
+      .username(testUsername)
+      .apikey("")
+      .serviceInstanceId("")
+      .build();
+  }
+
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testConfigMissingUrl() {
     Map<String, String> props = new HashMap<>();
     props.put(Authenticator.PROPNAME_URL, null);
     props.put(Authenticator.PROPNAME_USERNAME, "testUsername");
     props.put(Authenticator.PROPNAME_APIKEY, testApikey);
     props.put(Authenticator.PROPNAME_SERVICE_INSTANCE_ID, testServiceInstanceId);
-    CloudPakForDataAuthenticator.fromConfiguration(props);
+    CloudPakForDataServiceInstanceAuthenticator.fromConfiguration(props);
+  }
+
+  @Test(expectedExceptions = IllegalArgumentException.class)
+  public void testConfigEmptyUrl() {
+    Map<String, String> props = new HashMap<>();
+    props.put(Authenticator.PROPNAME_URL, "");
+    props.put(Authenticator.PROPNAME_USERNAME, "testUsername");
+    props.put(Authenticator.PROPNAME_APIKEY, testApikey);
+    props.put(Authenticator.PROPNAME_SERVICE_INSTANCE_ID, testServiceInstanceId);
+    CloudPakForDataServiceInstanceAuthenticator.fromConfiguration(props);
   }
 
   @Test(expectedExceptions = IllegalArgumentException.class)
@@ -152,8 +182,19 @@ public class Cp4dServiceInstanceAuthenticatorTest extends BaseServiceUnitTest {
     Map<String, String> props = new HashMap<>();
     props.put(Authenticator.PROPNAME_URL, "https://good-url");
     props.put(Authenticator.PROPNAME_USERNAME, null);
+    props.put(Authenticator.PROPNAME_APIKEY, testApikey);
     props.put(Authenticator.PROPNAME_SERVICE_INSTANCE_ID, testServiceInstanceId);
-    CloudPakForDataAuthenticator.fromConfiguration(props);
+    CloudPakForDataServiceInstanceAuthenticator.fromConfiguration(props);
+  }
+
+  @Test(expectedExceptions = IllegalArgumentException.class)
+  public void testConfigEmptyUsername() {
+    Map<String, String> props = new HashMap<>();
+    props.put(Authenticator.PROPNAME_URL, "https://good-url");
+    props.put(Authenticator.PROPNAME_USERNAME, "");
+    props.put(Authenticator.PROPNAME_APIKEY, testApikey);
+    props.put(Authenticator.PROPNAME_SERVICE_INSTANCE_ID, testServiceInstanceId);
+    CloudPakForDataServiceInstanceAuthenticator.fromConfiguration(props);
   }
 
   @Test(expectedExceptions = IllegalArgumentException.class)
@@ -163,7 +204,37 @@ public class Cp4dServiceInstanceAuthenticatorTest extends BaseServiceUnitTest {
     props.put(Authenticator.PROPNAME_USERNAME, testUsername);
     props.put(Authenticator.PROPNAME_APIKEY, null);
     props.put(Authenticator.PROPNAME_SERVICE_INSTANCE_ID, testServiceInstanceId);
-    CloudPakForDataAuthenticator.fromConfiguration(props);
+    CloudPakForDataServiceInstanceAuthenticator.fromConfiguration(props);
+  }
+
+  @Test(expectedExceptions = IllegalArgumentException.class)
+  public void testConfigEmptyApikey() {
+    Map<String, String> props = new HashMap<>();
+    props.put(Authenticator.PROPNAME_URL, "https://good-url");
+    props.put(Authenticator.PROPNAME_USERNAME, testUsername);
+    props.put(Authenticator.PROPNAME_APIKEY, "");
+    props.put(Authenticator.PROPNAME_SERVICE_INSTANCE_ID, testServiceInstanceId);
+    CloudPakForDataServiceInstanceAuthenticator.fromConfiguration(props);
+  }
+
+  @Test(expectedExceptions = IllegalArgumentException.class)
+  public void testConfigMissingServiceInstanceId() {
+    Map<String, String> props = new HashMap<>();
+    props.put(Authenticator.PROPNAME_URL, "https://good-url");
+    props.put(Authenticator.PROPNAME_USERNAME, testUsername);
+    props.put(Authenticator.PROPNAME_APIKEY, testApikey);
+    props.put(Authenticator.PROPNAME_SERVICE_INSTANCE_ID, null);
+    CloudPakForDataServiceInstanceAuthenticator.fromConfiguration(props);
+  }
+
+  @Test(expectedExceptions = IllegalArgumentException.class)
+  public void testConfigEmptyServiceInstanceId() {
+    Map<String, String> props = new HashMap<>();
+    props.put(Authenticator.PROPNAME_URL, "https://good-url");
+    props.put(Authenticator.PROPNAME_USERNAME, testUsername);
+    props.put(Authenticator.PROPNAME_APIKEY, testApikey);
+    props.put(Authenticator.PROPNAME_SERVICE_INSTANCE_ID, "");
+    CloudPakForDataServiceInstanceAuthenticator.fromConfiguration(props);
   }
 
   @Test
@@ -260,7 +331,8 @@ public class Cp4dServiceInstanceAuthenticatorTest extends BaseServiceUnitTest {
     PowerMockito.mockStatic(Clock.class);
     PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
 
-    CloudPakForDataServiceInstanceAuthenticator authenticator = new CloudPakForDataServiceInstanceAuthenticator.Builder()
+    CloudPakForDataServiceInstanceAuthenticator authenticator =
+        new CloudPakForDataServiceInstanceAuthenticator.Builder()
         .url(url)
         .username(testUsername)
         .apikey(testApikey)
@@ -288,7 +360,8 @@ public class Cp4dServiceInstanceAuthenticatorTest extends BaseServiceUnitTest {
     PowerMockito.mockStatic(Clock.class);
     PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn((long) 1800000000);
 
-    CloudPakForDataServiceInstanceAuthenticator authenticator = new CloudPakForDataServiceInstanceAuthenticator.Builder()
+    CloudPakForDataServiceInstanceAuthenticator authenticator =
+        new CloudPakForDataServiceInstanceAuthenticator.Builder()
         .url(url)
         .username(testUsername)
         .apikey(testApikey)
@@ -317,7 +390,8 @@ public class Cp4dServiceInstanceAuthenticatorTest extends BaseServiceUnitTest {
     PowerMockito.mockStatic(Clock.class);
     PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn((long) 1574453700);
 
-    CloudPakForDataServiceInstanceAuthenticator authenticator = new CloudPakForDataServiceInstanceAuthenticator.Builder()
+    CloudPakForDataServiceInstanceAuthenticator authenticator =
+        new CloudPakForDataServiceInstanceAuthenticator.Builder()
         .url(url)
         .username(testUsername)
         .apikey(testApikey)
@@ -357,7 +431,8 @@ public class Cp4dServiceInstanceAuthenticatorTest extends BaseServiceUnitTest {
     PowerMockito.mockStatic(Clock.class);
     PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
 
-    CloudPakForDataServiceInstanceAuthenticator authenticator = new CloudPakForDataServiceInstanceAuthenticator.Builder()
+    CloudPakForDataServiceInstanceAuthenticator authenticator =
+        new CloudPakForDataServiceInstanceAuthenticator.Builder()
         .url(url)
         .username(testUsername)
         .apikey(testApikey)
@@ -399,7 +474,8 @@ public class Cp4dServiceInstanceAuthenticatorTest extends BaseServiceUnitTest {
     PowerMockito.mockStatic(Clock.class);
     PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
 
-    CloudPakForDataServiceInstanceAuthenticator authenticator = new CloudPakForDataServiceInstanceAuthenticator.Builder()
+    CloudPakForDataServiceInstanceAuthenticator authenticator =
+        new CloudPakForDataServiceInstanceAuthenticator.Builder()
         .url(url)
         .username(testUsername)
         .apikey(testApikey)
@@ -427,7 +503,8 @@ public class Cp4dServiceInstanceAuthenticatorTest extends BaseServiceUnitTest {
     PowerMockito.mockStatic(Clock.class);
     PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
 
-    CloudPakForDataServiceInstanceAuthenticator authenticator = new CloudPakForDataServiceInstanceAuthenticator.Builder()
+    CloudPakForDataServiceInstanceAuthenticator authenticator =
+        new CloudPakForDataServiceInstanceAuthenticator.Builder()
         .url(url)
         .username(testUsername)
         .apikey(testApikey)
@@ -447,61 +524,5 @@ public class Cp4dServiceInstanceAuthenticatorTest extends BaseServiceUnitTest {
     } catch (Throwable t) {
       fail("Expected RuntimeException, not " + t.getClass().getSimpleName());
     }
-  }
-
-  @Test(expectedExceptions =IllegalArgumentException.class)
-  public void testCtorMissingUsernameMap() {
-    Map<String, String> props = new HashMap<>();
-    props.put(Authenticator.PROPNAME_URL, "https://good-url");
-    props.put(Authenticator.PROPNAME_APIKEY, testApikey);
-    props.put(Authenticator.PROPNAME_SERVICE_INSTANCE_ID, testServiceInstanceId);
-    CloudPakForDataServiceInstanceAuthenticator.fromConfiguration(props);
-  }
-
-  @Test(expectedExceptions =IllegalArgumentException.class)
-  public void testCtorEmptyUsernameMap() {
-    Map<String, String> props = new HashMap<>();
-    props.put(Authenticator.PROPNAME_URL, "https://good-url");
-    props.put(Authenticator.PROPNAME_APIKEY, testApikey);
-    props.put(Authenticator.PROPNAME_SERVICE_INSTANCE_ID, testServiceInstanceId);
-    props.put(Authenticator.PROPNAME_USERNAME, "");
-    CloudPakForDataServiceInstanceAuthenticator.fromConfiguration(props);
-  }
-
-  @Test
-  public void testCtorCorrectConfig() {
-    CloudPakForDataServiceInstanceAuthenticator authenticator =
-    		new CloudPakForDataServiceInstanceAuthenticator.Builder()
-            .url(url)
-            .username(testUsername)
-            .apikey(testApikey)
-            .serviceInstanceId(testServiceInstanceId)
-            .build();
-    assertEquals(Authenticator.AUTHTYPE_CP4D_SERVICE_INSTANCE, authenticator.authenticationType());
-    assertEquals(url, authenticator.getURL());
-    assertEquals(testUsername, authenticator.getUsername());
-    assertEquals(testApikey, authenticator.getApikey());
-    assertEquals(testServiceInstanceId, authenticator.getServiceInstanceId());
-    assertFalse(authenticator.getDisableSSLVerification());
-    assertNull(authenticator.getHeaders());
-  }
-
-  @Test
-  public void testCtorCorrectConfigMap() {
-    Map<String, String> props = new HashMap<>();
-    props.put(Authenticator.PROPNAME_URL, url);
-    props.put(Authenticator.PROPNAME_APIKEY, testApikey);
-    props.put(Authenticator.PROPNAME_SERVICE_INSTANCE_ID, testServiceInstanceId);
-    props.put(Authenticator.PROPNAME_USERNAME, testUsername);
-    props.put(Authenticator.PROPNAME_DISABLE_SSL, "true");
-
-    CloudPakForDataServiceInstanceAuthenticator authenticator = CloudPakForDataServiceInstanceAuthenticator.fromConfiguration(props);
-    assertEquals(Authenticator.AUTHTYPE_CP4D_SERVICE_INSTANCE, authenticator.authenticationType());
-    assertEquals(url, authenticator.getURL());
-    assertEquals(testUsername, authenticator.getUsername());
-    assertEquals(testApikey, authenticator.getApikey());
-    assertEquals(testServiceInstanceId, authenticator.getServiceInstanceId());
-    assertTrue(authenticator.getDisableSSLVerification());
-    assertNull(authenticator.getHeaders());
   }
 }
