@@ -28,6 +28,7 @@ public interface Authenticator {
   String AUTHTYPE_IAM = "iam";
   String AUTHTYPE_CP4D = "cp4d";
   String AUTHTYPE_CP4D_SERVICE = "cp4dService";
+  String AUTHTYPE_CP4D_SERVICE_INSTANCE = "cp4dServiceInstance";
   String AUTHTYPE_BEARER_TOKEN = "bearerToken";
   String AUTHTYPE_CONTAINER = "container";
   String AUTHTYPE_VPC = "vpc";
@@ -42,6 +43,7 @@ public interface Authenticator {
   String PROPNAME_URL = "AUTH_URL";
   String PROPNAME_DISABLE_SSL = "AUTH_DISABLE_SSL";
   String PROPNAME_APIKEY = "APIKEY";
+  String PROPNAME_SERVICE_INSTANCE_ID = "SERVICE_INSTANCE_ID";
   String PROPNAME_CLIENT_ID = "CLIENT_ID";
   String PROPNAME_CLIENT_SECRET = "CLIENT_SECRET";
   String PROPNAME_SCOPE = "SCOPE";

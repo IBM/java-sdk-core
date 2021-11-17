@@ -31,6 +31,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 
 import com.ibm.cloud.sdk.core.security.Authenticator;
 import com.ibm.cloud.sdk.core.security.CloudPakForDataServiceAuthenticator;
+import com.ibm.cloud.sdk.core.security.CloudPakForDataServiceInstanceAuthenticator;
 import com.ibm.cloud.sdk.core.security.ConfigBasedAuthenticatorFactory;
 import com.ibm.cloud.sdk.core.security.ContainerAuthenticator;
 import com.ibm.cloud.sdk.core.security.IamAuthenticator;
@@ -97,6 +98,14 @@ public class ConfigBasedAuthenticatorFactoryTest extends PowerMockTestCase {
     env.put("SERVICE8_AUTH_TYPE", Authenticator.AUTHTYPE_VPC);
     env.put("SERVICE8_AUTH_URL", "https://vpc.imds.com/api");
     env.put("SERVICE8_IAM_PROFILE_CRN", "crn:iam-profile-1");
+
+    env.put("SERVICE9_AUTH_URL", "https://service9/zen-data/v3/service_instances/serviceInstanceId/token");
+    env.put("SERVICE9_DISABLE_SSL", "false");
+    env.put("SERVICE9_AUTHTYPE", "Cp4DServiceInstance");
+    env.put("SERVICE9_USERNAME", "my-cp4d-user");
+    env.put("SERVICE9_APIKEY", "my-cp4d-apikey");
+    env.put("SERVICE9_SERVICE_INSTANCE_ID", "my-cp4d-service-instance-id");
+    env.put("SERVICE9_AUTH_DISABLE_SSL", "false");
 
     env.put("ERROR1_AUTH_TYPE", Authenticator.AUTHTYPE_CP4D);
     env.put("ERROR2_AUTH_TYPE", "BAD_AUTH_TYPE");
@@ -364,6 +373,22 @@ public class ConfigBasedAuthenticatorFactoryTest extends PowerMockTestCase {
     assertEquals(containerAuth.getIamProfileCrn(), "crn:iam-profile-1");
     assertNull(containerAuth.getIamProfileId());
     assertEquals(containerAuth.getURL(), "https://vpc.imds.com/api");
+  }
+
+  @Test
+  public void testEnvCredentialsService9() {
+    PowerMockito.spy(EnvironmentUtils.class);
+    PowerMockito.when(EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
+
+    Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service9");
+    assertNotNull(auth);
+    assertEquals(auth.authenticationType(), Authenticator.AUTHTYPE_CP4D_SERVICE_INSTANCE);
+    CloudPakForDataServiceInstanceAuthenticator cp4dAuth = (CloudPakForDataServiceInstanceAuthenticator) auth;
+    assertEquals(cp4dAuth.getURL(), "https://service9/zen-data/v3/service_instances/serviceInstanceId/token");
+    assertEquals(cp4dAuth.getUsername(), "my-cp4d-user");
+    assertEquals(cp4dAuth.getApikey(), "my-cp4d-apikey");
+    assertEquals(cp4dAuth.getServiceInstanceId(), "my-cp4d-service-instance-id");
+    assertFalse(cp4dAuth.getDisableSSLVerification());
   }
 
   @Test(expectedExceptions = IllegalArgumentException.class)
