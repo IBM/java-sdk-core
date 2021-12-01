@@ -1,3 +1,10 @@
+## [9.15.1](https://github.com/IBM/java-sdk-core/compare/9.15.0...9.15.1) (2021-12-01)
+
+
+### Bug Fixes
+
+* update logback version to fix vulnerability ([#158](https://github.com/IBM/java-sdk-core/issues/158)) ([b9f3cb3](https://github.com/IBM/java-sdk-core/commit/b9f3cb3a6c115bc8da87f67618ef913eee9a0b95))
+
 # [9.15.0](https://github.com/IBM/java-sdk-core/compare/9.14.1...9.15.0) (2021-11-17)
 
 
