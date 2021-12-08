@@ -69,8 +69,10 @@ public class RequestUtilsTest {
   public void testOmitWithNulls() {
     final Map<String, Object> params = createMap();
 
-    assertEquals(params.keySet().toArray(), RequestUtils.omit(params).keySet().toArray());
-    assertEquals(params.values().toArray(), RequestUtils.omit(params).values().toArray());
+    Map<String, Object> omitted = RequestUtils.omit(params);
+
+    assertTrue(omitted.keySet().containsAll(Lists.newArrayList("A", "B", "C", "D")));
+    assertTrue(omitted.values().containsAll(Lists.newArrayList(1, 2, 3, 4)));
 
     assertNull(RequestUtils.omit(null));
   }
@@ -97,9 +99,11 @@ public class RequestUtilsTest {
   @Test
   public void testPickWithNulls() {
     final Map<String, Object> params = createMap();
+    
+    Map<String, Object> omitted = RequestUtils.omit(params);
 
-    assertEquals(params.keySet().toArray(), RequestUtils.pick(params).keySet().toArray());
-    assertEquals(params.values().toArray(), RequestUtils.pick(params).values().toArray());
+    assertTrue(omitted.keySet().containsAll(Lists.newArrayList("A", "B", "C", "D")));
+    assertTrue(omitted.values().containsAll(Lists.newArrayList(1, 2, 3, 4)));
 
     assertNull(RequestUtils.pick(null));
   }
