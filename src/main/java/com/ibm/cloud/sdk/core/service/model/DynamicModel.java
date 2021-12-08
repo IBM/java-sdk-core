@@ -13,7 +13,7 @@
 
 package com.ibm.cloud.sdk.core.service.model;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -27,7 +27,7 @@ public abstract class DynamicModel<T> implements ObjectModel {
   private TypeToken<T> additionalPropertyTypeToken;
 
   // The set of dynamic properties associated with this object.
-  private Map<String, T> dynamicProperties = new HashMap<>();
+  private Map<String, T> dynamicProperties = new LinkedHashMap<>();
 
   /**
    * Force use of 1-arg ctor.
@@ -85,7 +85,7 @@ public abstract class DynamicModel<T> implements ObjectModel {
    *         a map containing arbitrary properties to set on this object
    */
   public void setProperties(Map<String, T> properties) {
-    this.dynamicProperties = new HashMap<String, T>();
+    this.dynamicProperties = new LinkedHashMap<String, T>();
     if (properties != null) {
       this.dynamicProperties.putAll(properties);
     }
@@ -97,7 +97,7 @@ public abstract class DynamicModel<T> implements ObjectModel {
    * @return a copy of the map containing arbitrary properties set on this object
    */
   public Map<String, T> getProperties() {
-    return new HashMap<String, T>(this.dynamicProperties);
+    return new LinkedHashMap<String, T>(this.dynamicProperties);
   }
 
   /**
