@@ -1,3 +1,10 @@
+## [9.15.2](https://github.com/IBM/java-sdk-core/compare/9.15.1...9.15.2) (2021-12-16)
+
+
+### Bug Fixes
+
+* remove unnecessary logback dependency ([#160](https://github.com/IBM/java-sdk-core/issues/160)) ([2e02a0e](https://github.com/IBM/java-sdk-core/commit/2e02a0e0cfd7d5258911bf98ebe5b5820b9fe432))
+
 ## [9.15.1](https://github.com/IBM/java-sdk-core/compare/9.15.0...9.15.1) (2021-12-01)
 
 
