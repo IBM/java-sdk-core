@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2020.
+ * (C) Copyright IBM Corp. 2015, 2022.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -75,7 +75,7 @@ public class DateTimeSerializationTest {
 
     log("Serialized JSON: " + outputJson);
 
-    assertEquals(expectedOutputJson, outputJson);
+    assertEquals(outputJson, expectedOutputJson);
   }
 
   // Perform the round trip test using the model that interprets java.util.Date as a date-time.
@@ -185,6 +185,12 @@ public class DateTimeSerializationTest {
     // Input is null
     roundTripTestDate("{\"ws_victory\": null}", "{}");
     roundTripTestDate("{}", "{}");
+  }
+
+  @Test
+  public void testNullValues() {
+    roundTripTestDateTime("{\"ws_victory\":null}", "{}");
+    roundTripTestDate("{\"ws_victory\":null}", "{}");
   }
 
   @Test(expectedExceptions = DateTimeException.class)

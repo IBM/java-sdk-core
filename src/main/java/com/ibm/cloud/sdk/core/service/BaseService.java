@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2021.
+ * (C) Copyright IBM Corp. 2015, 2022.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -36,6 +36,7 @@ import com.ibm.cloud.sdk.core.service.exception.ConflictException;
 import com.ibm.cloud.sdk.core.service.exception.ForbiddenException;
 import com.ibm.cloud.sdk.core.service.exception.InternalServerErrorException;
 import com.ibm.cloud.sdk.core.service.exception.InvalidServiceResponseException;
+import com.ibm.cloud.sdk.core.service.exception.NotAcceptableException;
 import com.ibm.cloud.sdk.core.service.exception.NotFoundException;
 import com.ibm.cloud.sdk.core.service.exception.RequestTooLargeException;
 import com.ibm.cloud.sdk.core.service.exception.ServiceResponseException;
@@ -440,6 +441,14 @@ public abstract class BaseService {
   }
 
   /**
+   * Returns the set of default headers current set on this BaseService instance.
+   * @return the Headers object containing the default headers.
+   */
+  public Headers getDefaultHeaders() {
+    return defaultHeaders;
+  }
+
+  /**
    * Set the default headers to be used on every HTTP request.
    *
    * @param headers name value pairs of headers
@@ -526,7 +535,7 @@ public abstract class BaseService {
       case HttpStatus.NOT_FOUND: // HTTP 404
         throw new NotFoundException(response);
       case HttpStatus.NOT_ACCEPTABLE: // HTTP 406
-        throw new ForbiddenException(response);
+        throw new NotAcceptableException(response);
       case HttpStatus.CONFLICT: // HTTP 409
         throw new ConflictException(response);
       case HttpStatus.REQUEST_TOO_LONG: // HTTP 413

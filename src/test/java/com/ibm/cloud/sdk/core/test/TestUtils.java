@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2019.
+ * (C) Copyright IBM Corp. 2015, 2022.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -42,6 +42,9 @@ public final class TestUtils {
 
   /** The Constant PUT. */
   public static final String PUT = "PUT";
+
+  /** The Constant PATCH. */
+  public static final String PATCH = "PATCH";
 
   /**
    * Private constructor.

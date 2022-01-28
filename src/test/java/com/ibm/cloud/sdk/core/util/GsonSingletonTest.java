@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2019.
+ * (C) Copyright IBM Corp. 2015, 2022.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -13,6 +13,10 @@
 
 package com.ibm.cloud.sdk.core.util;
 
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertNull;
+
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Date;
@@ -21,6 +25,9 @@ import java.util.List;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
+import com.google.gson.internal.LazilyParsedNumber;
 import com.google.gson.reflect.TypeToken;
 
 /**
@@ -28,8 +35,14 @@ import com.google.gson.reflect.TypeToken;
  */
 public class GsonSingletonTest {
 
+  public static class FooModel {
+    public LazilyParsedNumber foo;
+    public LazilyParsedNumber bar;
+  }
+
   /** The list type. */
   private Type listType = new TypeToken<ArrayList<Date>>() { }.getType();
+  private Type modelType = new TypeToken<FooModel>() { }.getType();
 
   /**
    * Test the date serializer and deserializer.
@@ -51,4 +64,40 @@ public class GsonSingletonTest {
         GsonSingleton.getGsonWithoutPrettyPrinting().toJson(dates));
   }
 
+  @Test
+  public void testLazilyParsedNumber1() {
+    String jsonString = "{\"foo\":38,\"bar\":28}";
+
+    Gson gson = GsonSingleton.getGsonWithoutPrettyPrinting();
+
+    FooModel model = gson.fromJson(jsonString, modelType);
+    assertNotNull(model);
+    assertEquals(model.foo.longValue(), new LazilyParsedNumber("38").longValue());
+    assertEquals(model.bar.longValue(), new LazilyParsedNumber("28").longValue());
+
+    String s = gson.toJson(model);
+    assertEquals(s, jsonString);
+  }
+
+  @Test
+  public void testLazilyParsedNumber2() {
+    String jsonString = "{\"foo\":null,\"bar\":null}";
+
+    Gson gson = GsonSingleton.getGsonWithSerializeNulls();
+
+    FooModel model = gson.fromJson(jsonString, modelType);
+    assertNotNull(model);
+    assertNull(model.foo);
+    assertNull(model.bar);
+
+    String s = gson.toJson(model);
+    assertEquals(s, jsonString);
+  }
+
+  @Test(expectedExceptions = { JsonSyntaxException.class })
+  public void testLazilyParsedNumber3() {
+    String jsonString = "{\"foo\":[\"numberlist\"]}";
+    Gson gson = GsonSingleton.getGsonWithSerializeNulls();
+    gson.fromJson(jsonString, modelType);
+  }
 }

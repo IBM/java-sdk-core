@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2019.
+ * (C) Copyright IBM Corp. 2015, 2022.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -84,6 +84,7 @@ public class RequestTest extends BaseServiceUnitTest {
     super.setUp();
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void testRequestIncludeAuthGzipEnabled() throws Throwable {
     // setup the service & configure it with compression enabled
@@ -122,6 +123,7 @@ public class RequestTest extends BaseServiceUnitTest {
     assertEquals(request.getMethod(), "POST");
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void testRequestIncludeAuthGzipDisabled() throws Throwable {
     // first, setup the service & configure it with compression enabled

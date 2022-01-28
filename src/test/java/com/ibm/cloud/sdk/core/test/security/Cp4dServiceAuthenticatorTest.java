@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2021.
+ * (C) Copyright IBM Corp. 2022.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -180,6 +180,9 @@ public class Cp4dServiceAuthenticatorTest extends BaseServiceUnitTest {
         .username(testUsername)
         .uid(testUid)
         .serviceBrokerSecret(testServiceBrokerSecret)
+        .headers(null)
+        .proxy(null)
+        .proxyAuthenticator(null)
         .build();
     assertEquals(Authenticator.AUTHTYPE_CP4D_SERVICE, authenticator.authenticationType());
     assertEquals(url, authenticator.getURL());
@@ -190,6 +193,11 @@ public class Cp4dServiceAuthenticatorTest extends BaseServiceUnitTest {
     assertNull(authenticator.getDisplayName());
     assertFalse(authenticator.getDisableSSLVerification());
     assertNull(authenticator.getHeaders());
+    assertNull(authenticator.getProxy());
+    assertNull(authenticator.getProxyAuthenticator());
+
+    CloudPakForDataServiceAuthenticator auth2 = authenticator.newBuilder().build();
+    assertNotNull(auth2);
   }
 
   @Test
@@ -425,6 +433,11 @@ public class Cp4dServiceAuthenticatorTest extends BaseServiceUnitTest {
         .url(url)
         .serviceBrokerSecret(testServiceBrokerSecret)
         .disableSSLVerification(true)
+        .username(testUsername)
+        .uid(testUid)
+        .displayName(testDisplayName)
+        .permissions(testPermissions)
+        .expirationTime(testExpirationTime)
         .build();
     Request.Builder requestBuilder;
 

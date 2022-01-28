@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2019.
+ * (C) Copyright IBM Corp. 2015, 2022.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -111,6 +111,13 @@ public class RequestBuilderTest {
     assertEquals(urlWithQuery, request.url().toString());
   }
 
+  @Test
+  public void testPatch() {
+    final Request request = RequestBuilder.patch(HttpUrl.parse(urlWithQuery)).build();
+    assertEquals(TestUtils.PATCH, request.method());
+    assertEquals(urlWithQuery, request.url().toString());
+  }
+
   /**
    * Test illegal argument exception.
    */
@@ -153,6 +160,7 @@ public class RequestBuilderTest {
    *
    * @throws IOException Signals that an I/O exception has occurred.
    */
+  @SuppressWarnings("deprecation")
   @Test
   public void testWithBody() throws IOException {
     final File test = new File("src/test/resources/car.png");
@@ -456,7 +464,7 @@ public class RequestBuilderTest {
       put("param_2", "param2");
     }};
 
-    HttpUrl url = RequestBuilder.resolveRequestUrl(
+    RequestBuilder.resolveRequestUrl(
         "https://myserver.com/testservice/api",
         "v1/seg1/{param_1}/seg2/{param_2}/seg3",
         pathParameters);
@@ -524,4 +532,36 @@ public class RequestBuilderTest {
     assertEquals(HttpMediaType.JSON, requestedBody.contentType());
   }
 
+
+  /**
+   * Test bodyContent() with a Map for the "json patch content".
+   * @throws IOException
+   */
+  @Test
+  public void testBodyContent4() throws IOException {
+    Map<String, Object> map = new HashMap<>();
+    map.put("make", "Ford");
+    final Request request = RequestBuilder.patch(HttpUrl.parse(urlWithQuery))
+        .bodyContent("application/json-patch+json", null, map, (InputStream) null).build();
+    final RequestBody requestedBody = request.body();
+    final Buffer buffer = new Buffer();
+    requestedBody.writeTo(buffer);
+
+    MediaType expectedMediaType = MediaType.parse("application/json-patch+json; charset=utf-8");
+    assertEquals(GsonSingleton.getGsonWithoutPrettyPrinting().toJson(map), buffer.readUtf8());
+    assertEquals(expectedMediaType, requestedBody.contentType());
+  }
+
+  @Test
+  public void testBodyContent5() throws IOException {
+    JsonObject emptyObj = new JsonObject();
+    final Request request = RequestBuilder.post(HttpUrl.parse(urlWithQuery))
+        .bodyJson(emptyObj, "application/json").build();
+    final RequestBody requestedBody = request.body();
+    final Buffer buffer = new Buffer();
+    requestedBody.writeTo(buffer);
+
+    assertEquals(GsonSingleton.getGsonWithoutPrettyPrinting().toJson(emptyObj), buffer.readUtf8());
+    assertEquals(HttpMediaType.JSON, requestedBody.contentType());
+  }
 }

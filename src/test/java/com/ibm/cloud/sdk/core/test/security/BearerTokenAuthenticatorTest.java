@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2021.
+ * (C) Copyright IBM Corp. 2015, 2022.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -96,16 +96,27 @@ public class BearerTokenAuthenticatorTest {
     BearerTokenAuthenticator.fromConfiguration(props);
   }
 
+  @Test
   public void testCtorCorrectConfig() {
     BearerTokenAuthenticator authenticator = new BearerTokenAuthenticator("my-access-token");
     assertEquals(Authenticator.AUTHTYPE_BEARER_TOKEN, authenticator.authenticationType());
     assertEquals("my-access-token", authenticator.getBearerToken());
   }
 
-  public void testConfigCorrectConfig() {
+  @Test
+  public void testConfigCorrectConfig1() {
     Map<String, String> props = new HashMap<>();
     props.put(Authenticator.PROPNAME_BEARER_TOKEN, "my-access-token");
     BearerTokenAuthenticator authenticator = BearerTokenAuthenticator.fromConfiguration(props);
+    assertEquals(Authenticator.AUTHTYPE_BEARER_TOKEN, authenticator.authenticationType());
+    assertEquals("my-access-token", authenticator.getBearerToken());
+  }
+
+  @Test
+  public void testConfigCorrectConfig2() {
+    Map<String, String> props = new HashMap<>();
+    props.put(Authenticator.PROPNAME_BEARER_TOKEN, "my-access-token");
+    BearerTokenAuthenticator authenticator = new BearerTokenAuthenticator(props);
     assertEquals(Authenticator.AUTHTYPE_BEARER_TOKEN, authenticator.authenticationType());
     assertEquals("my-access-token", authenticator.getBearerToken());
   }

@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2019.
+ * (C) Copyright IBM Corp. 2015, 2022.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -143,6 +143,12 @@ public final class CredentialUtils {
 
     // Retrieve the environment variable's value.
     String vcapValue = EnvironmentUtils.getenv(VCAP_SERVICES);
+
+    // If no env var, then look for a system property (helps in testing).
+    if (StringUtils.isEmpty(vcapValue)) {
+      vcapValue = System.getProperty(VCAP_SERVICES);
+    }
+
     if (StringUtils.isNotEmpty(vcapValue)) {
       Gson gson = GsonSingleton.getGson();
       // Parse it into a map of VcapService lists keyed by service name.

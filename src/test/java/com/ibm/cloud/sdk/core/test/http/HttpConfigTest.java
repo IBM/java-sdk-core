@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2019.
+ * (C) Copyright IBM Corp. 2015, 2022.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -13,26 +13,34 @@
 
 package com.ibm.cloud.sdk.core.test.http;
 
-import okhttp3.Authenticator;
-import okhttp3.Request;
-import okhttp3.Response;
-import okhttp3.Route;
-import org.testng.annotations.Test;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertTrue;
 
-import com.ibm.cloud.sdk.core.http.HttpConfigOptions;
-
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNull;
-import static org.testng.Assert.assertTrue;
+import javax.annotation.Nullable;
+
+import org.testng.annotations.Test;
+
+import com.ibm.cloud.sdk.core.http.HttpClientSingleton;
+import com.ibm.cloud.sdk.core.http.HttpConfigOptions;
+import com.ibm.cloud.sdk.core.util.HttpLogging;
+
+import okhttp3.Authenticator;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.Route;
+import okhttp3.logging.HttpLoggingInterceptor;
 
 /**
  * Unit tests for the HttpConfigOptions object.
  */
+@SuppressWarnings("deprecation")
 public class HttpConfigTest {
 
   @Test
@@ -58,5 +66,23 @@ public class HttpConfigTest {
     assertNull(configOptions.getGzipCompression());
     assertEquals(proxy, configOptions.getProxy());
     assertEquals(HttpConfigOptions.LoggingLevel.HEADERS, configOptions.getLoggingLevel());
+
+    OkHttpClient client = HttpClientSingleton.getInstance().configureClient(configOptions);
+    assertNotNull(client);
+
+    // Call configureClient to cover some additional statements.
+    client = HttpClientSingleton.getInstance().configureClient(configOptions);
+    assertNotNull(client);
+
+    client = HttpClientSingleton.getInstance().configureClient(null);
+    assertNotNull(client);
   }
+
+
+  @Test
+  public void testHttpLogging() {
+    HttpLoggingInterceptor interceptor = HttpLogging.getLoggingInterceptor();
+    assertNotNull(interceptor);
+  }
+
 }
