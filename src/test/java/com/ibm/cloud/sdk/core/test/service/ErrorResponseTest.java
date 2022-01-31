@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2019.
+ * (C) Copyright IBM Corp. 2015, 2022.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -23,6 +23,7 @@ import com.ibm.cloud.sdk.core.service.exception.BadRequestException;
 import com.ibm.cloud.sdk.core.service.exception.ConflictException;
 import com.ibm.cloud.sdk.core.service.exception.ForbiddenException;
 import com.ibm.cloud.sdk.core.service.exception.InternalServerErrorException;
+import com.ibm.cloud.sdk.core.service.exception.NotAcceptableException;
 import com.ibm.cloud.sdk.core.service.exception.NotFoundException;
 import com.ibm.cloud.sdk.core.service.exception.RequestTooLargeException;
 import com.ibm.cloud.sdk.core.service.exception.ServiceUnavailableException;
@@ -134,6 +135,28 @@ public class ErrorResponseTest extends BaseServiceUnitTest {
       assertTrue(e instanceof ForbiddenException);
       ForbiddenException ex = (ForbiddenException) e;
       assertEquals(403, ex.getStatusCode());
+      assertEquals(message, ex.getMessage());
+    }
+  }
+
+  /**
+   * Test HTTP status code 406 (NotAcceptable) error response.
+   */
+  @Test
+  public void testNotAcceptable() {
+
+    String message = "The request failed because the moon is full.";
+    server.enqueue(new MockResponse()
+        .setResponseCode(406)
+        .addHeader(CONTENT_TYPE, HttpMediaType.APPLICATION_JSON)
+        .setBody("{\"error\": \"" + message + "\"}"));
+
+    try {
+      service.testMethod().execute();
+    } catch (Exception e) {
+      assertTrue(e instanceof NotAcceptableException);
+      NotAcceptableException ex = (NotAcceptableException) e;
+      assertEquals(ex.getStatusCode(), 406);
       assertEquals(message, ex.getMessage());
     }
   }

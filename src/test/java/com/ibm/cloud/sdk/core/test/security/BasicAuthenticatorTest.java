@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2021.
+ * (C) Copyright IBM Corp. 2015, 2022.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -36,7 +36,10 @@ public class BasicAuthenticatorTest {
     String username = "good-username";
     String password = "good-password";
 
-    BasicAuthenticator auth = new BasicAuthenticator(username, password);
+    BasicAuthenticator auth = new BasicAuthenticator.Builder()
+        .username(username)
+        .password(password)
+        .build();
     assertEquals(Authenticator.AUTHTYPE_BASIC, auth.authenticationType());
     assertEquals(username, auth.getUsername());
     assertEquals(password, auth.getPassword());
@@ -64,6 +67,9 @@ public class BasicAuthenticatorTest {
     assertNotNull(auth);
     assertEquals(auth.getUsername(), "good-user");
     assertEquals(auth.getPassword(), "good-password");
+
+    BasicAuthenticator auth2 = auth.newBuilder().build();
+    assertNotNull(auth2);
   }
 
   @Test(expectedExceptions = IllegalArgumentException.class)

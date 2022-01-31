@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2021.
+ * (C) Copyright IBM Corp. 2015, 2022.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -20,7 +20,9 @@ import static org.testng.Assert.assertNotEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.testng.annotations.Test;
@@ -33,6 +35,8 @@ import com.ibm.cloud.sdk.core.http.gzip.GzipRequestInterceptor;
 import com.ibm.cloud.sdk.core.security.NoAuthAuthenticator;
 import com.ibm.cloud.sdk.core.service.BaseService;
 import com.ibm.cloud.sdk.core.util.ResponseConverterUtils;
+
+import okhttp3.Headers;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -73,6 +77,8 @@ public class BaseServiceTest {
 
   @Test
   public void testMimeTypes() {
+    assertFalse(BaseService.isJsonMimeType(null));
+    assertFalse(BaseService.isJsonPatchMimeType(null));
     assertTrue(BaseService.isJsonMimeType("application/json"));
     assertTrue(BaseService.isJsonMimeType("application/json; charset=utf-8"));
     assertTrue(BaseService.isJsonMimeType("application/json;charset=utf-8"));
@@ -211,5 +217,51 @@ public class BaseServiceTest {
     ServiceCall<String> testCall = extendingService.testOperation();
     // Assert that the override was in place
     assertNull(testCall, "The service call should have been overridden to return null.");
+  }
+
+  @Test
+  public void testToString() {
+    TestService svc = new TestService("test");
+    assertNotNull(svc.toString());
+  }
+
+  @Test(expectedExceptions = { IllegalArgumentException.class })
+  public void testSetServiceUrlError() {
+    TestService svc = new TestService("test");
+    svc.setServiceUrl("{https://badurl}");
+  }
+
+  @SuppressWarnings("deprecation")
+  @Test
+  public void testSetServiceUrl() {
+    String mockUrl = "https://myservice.com/api";
+    TestService svc = new TestService("test");
+    svc.setServiceUrl(mockUrl);
+    assertEquals(svc.getServiceUrl(), mockUrl);
+
+    svc.setEndPoint(mockUrl);
+    assertEquals(svc.getEndPoint(), mockUrl);
+  }
+
+  @Test
+  public void testSetClient() {
+    TestService svc = new TestService("test");
+    OkHttpClient client = HttpClientSingleton.getInstance().createHttpClient();
+    svc.setClient(client);
+    assertEquals(svc.getClient(), client);
+  }
+
+  @Test
+  public void testSetDefaultHeaders() {
+    Map<String, String> rawHeaders = new HashMap<>();
+    rawHeaders.put("header1", "value1");
+    Headers expectedHeaders = Headers.of(rawHeaders);
+
+    TestService svc = new TestService("test");
+    assertNull(svc.getDefaultHeaders());
+
+    svc.setDefaultHeaders(rawHeaders);
+    assertNotNull(svc.getDefaultHeaders());
+    assertEquals(svc.getDefaultHeaders(), expectedHeaders);
   }
 }

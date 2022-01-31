@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2021.
+ * (C) Copyright IBM Corp. 2015, 2022.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -88,6 +88,13 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
   }
 
   @Test(expectedExceptions = IllegalArgumentException.class)
+  public void testInvalidApiKey() {
+    new IamAuthenticator.Builder()
+      .apikey("{apikey}")
+      .build();
+  }
+
+  @Test(expectedExceptions = IllegalArgumentException.class)
   public void testMissingClientId() {
     new IamAuthenticator.Builder()
       .apikey(API_KEY)
@@ -137,6 +144,8 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
         .scope("scope1")
         .disableSSLVerification(true)
         .headers(expectedHeaders)
+        .proxy(null)
+        .proxyAuthenticator(null)
         .build();
     assertEquals(Authenticator.AUTHTYPE_IAM, authenticator.authenticationType());
     assertEquals(API_KEY, authenticator.getApiKey());
@@ -146,6 +155,22 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
     assertEquals("scope1", authenticator.getScope());
     assertTrue(authenticator.getDisableSSLVerification());
     assertEquals(expectedHeaders, authenticator.getHeaders());
+    assertNull(authenticator.getProxy());
+    assertNull(authenticator.getProxyAuthenticator());
+
+    IamAuthenticator auth2 = authenticator.newBuilder().build();
+    assertNotNull(auth2);
+
+    auth2 = new IamAuthenticator.Builder()
+        .apikey(API_KEY)
+        .url(null)
+        .build();
+    assertNotNull(auth2.getURL());
+    auth2.setBasicAuthInfo("user", "pw");
+    assertEquals("user", auth2.getClientId());
+    assertEquals("user", auth2.getUsername());
+    assertEquals("pw", auth2.getPassword());
+    assertEquals("pw", auth2.getClientSecret());
   }
 
   @Test

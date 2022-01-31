@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2019, 2021.
+ * (C) Copyright IBM Corp. 2019, 2022.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -33,6 +33,7 @@ import org.testng.annotations.Test;
 
 import com.ibm.cloud.sdk.core.security.Authenticator;
 import com.ibm.cloud.sdk.core.security.CloudPakForDataAuthenticator;
+import com.ibm.cloud.sdk.core.security.Cp4dToken;
 import com.ibm.cloud.sdk.core.security.Cp4dTokenResponse;
 import com.ibm.cloud.sdk.core.service.exception.ServiceResponseException;
 import com.ibm.cloud.sdk.core.test.BaseServiceUnitTest;
@@ -70,7 +71,6 @@ public class Cp4dAuthenticatorTest extends BaseServiceUnitTest {
     tokenData = loadFixture("src/test/resources/cp4d_token.json", Cp4dTokenResponse.class);
     refreshedTokenData = loadFixture("src/test/resources/refreshed_cp4d_token.json", Cp4dTokenResponse.class);
   }
-
 
   //
   // Tests involving the new Builder class and fromConfiguration() method.
@@ -228,6 +228,8 @@ public class Cp4dAuthenticatorTest extends BaseServiceUnitTest {
         .apikey(testApikey)
         .disableSSLVerification(true)
         .headers(expectedHeaders)
+        .proxy(null)
+        .proxyAuthenticator(null)
         .build();
     assertEquals(Authenticator.AUTHTYPE_CP4D, authenticator.authenticationType());
     assertEquals(url, authenticator.getURL());
@@ -236,6 +238,11 @@ public class Cp4dAuthenticatorTest extends BaseServiceUnitTest {
     assertEquals(testApikey, authenticator.getApikey());
     assertTrue(authenticator.getDisableSSLVerification());
     assertEquals(expectedHeaders, authenticator.getHeaders());
+    assertNull(authenticator.getProxy());
+    assertNull(authenticator.getProxyAuthenticator());
+
+    CloudPakForDataAuthenticator auth2 = authenticator.newBuilder().build();
+    assertNotNull(auth2);
   }
 
   @Test
@@ -274,6 +281,18 @@ public class Cp4dAuthenticatorTest extends BaseServiceUnitTest {
     assertNull(authenticator.getHeaders());
   }
 
+  @Test
+  public void testCtorCorrectConfig1() {
+    CloudPakForDataAuthenticator authenticator =
+        new CloudPakForDataAuthenticator(url, testUsername, testPassword, false, null);
+    assertEquals(Authenticator.AUTHTYPE_CP4D, authenticator.authenticationType());
+    assertEquals(url, authenticator.getURL());
+    assertEquals(testUsername, authenticator.getUsername());
+    assertNull(authenticator.getApikey());
+    assertEquals(testPassword, authenticator.getPassword());
+    assertFalse(authenticator.getDisableSSLVerification());
+    assertNull(authenticator.getHeaders());
+  }
 
   //
   // Tests involving interactions with a mocked token service.
@@ -463,7 +482,6 @@ public class Cp4dAuthenticatorTest extends BaseServiceUnitTest {
     }
   }
 
-
   //
   // Tests involving the deprecated ctors.
   //
@@ -541,5 +559,20 @@ public class Cp4dAuthenticatorTest extends BaseServiceUnitTest {
     assertEquals(testPassword, authenticator.getPassword());
     assertTrue(authenticator.getDisableSSLVerification());
     assertNull(authenticator.getHeaders());
+  }
+
+  @Test
+  public void testCp4dToken() {
+    Cp4dToken token = new Cp4dToken("token");
+    assertEquals("token", token.getAccessToken());
+    assertFalse(token.isTokenValid());
+
+    token = new Cp4dToken();
+    assertNull(token.getAccessToken());
+
+    token = new Cp4dToken();
+    token.setException(new Throwable());
+    assertTrue(token.needsRefresh());
+    assertFalse(token.isTokenValid());
   }
 }

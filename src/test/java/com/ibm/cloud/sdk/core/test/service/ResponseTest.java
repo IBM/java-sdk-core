@@ -18,6 +18,9 @@ import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -45,6 +48,8 @@ import io.reactivex.schedulers.Schedulers;
 import okhttp3.Headers;
 import okhttp3.HttpUrl;
 import okhttp3.mockwebserver.MockResponse;
+
+import org.apache.commons.io.IOUtils;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -131,6 +136,13 @@ public class ResponseTest extends BaseServiceUnitTest {
       return createServiceCall(builder.build(), responseConverter);
     }
 
+    ServiceCall<String> getStringByResponseConverterUtilsGetValue2() {
+      RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getServiceUrl() + "/v1/test"));
+      ResponseConverter<String> responseConverter =
+          ResponseConverterUtils.getValue(String.class);
+      return createServiceCall(builder.build(), responseConverter);
+    }
+
     ServiceCall<List<String>> getListOfStringsByResponseConverterUtilsGetValue() {
       RequestBuilder builder = RequestBuilder.get(HttpUrl.parse(getServiceUrl() + "/v1/test"));
       ResponseConverter<List<String>> responseConverter =
@@ -179,6 +191,11 @@ public class ResponseTest extends BaseServiceUnitTest {
     ServiceCall<String> getStringRepresentationOfResponseBodyByResponseConverterUtilsGetString() {
       RequestBuilder builder = RequestBuilder.get(HttpUrl.get(getServiceUrl() + "/v1/test"));
       return createServiceCall(builder.build(), ResponseConverterUtils.getString());
+    }
+
+    ServiceCall<InputStream> getStreamOfResponseBodyByResponseConverterUtilsGetInputStream() {
+      RequestBuilder builder = RequestBuilder.get(HttpUrl.get(getServiceUrl() + "/v1/test"));
+      return createServiceCall(builder.build(), ResponseConverterUtils.getInputStream());
     }
 
   }
@@ -431,6 +448,7 @@ public class ResponseTest extends BaseServiceUnitTest {
     String expectedResult = "string response";
     String responseBody = String.format("\"%s\"", expectedResult);
     server.enqueue(new MockResponse().setBody(responseBody));
+    server.enqueue(new MockResponse().setBody(responseBody));
 
     // Act
     Response<String> response = service.getStringByResponseConverterUtilsGetValue().execute();
@@ -440,6 +458,29 @@ public class ResponseTest extends BaseServiceUnitTest {
     assertNotNull(result);
     assertEquals(expectedResult, result);
     assertNotNull(response.getHeaders());
+
+    response = service.getStringByResponseConverterUtilsGetValue2().execute();
+    result = response.getResult();
+    assertNotNull(result);
+    assertEquals(expectedResult, result);
+  }
+
+  @Test
+  public void testGetInputStream() throws Exception {
+    // Arrange
+    String expectedResult = "input stream response";
+    server.enqueue(new MockResponse().setBody(expectedResult));
+
+    // Act
+    Response<InputStream> response = service.getStreamOfResponseBodyByResponseConverterUtilsGetInputStream().execute();
+
+    // Assert
+    InputStream resultStream = response.getResult();
+    assertNotNull(resultStream);
+    StringWriter writer = new StringWriter();
+    IOUtils.copy(resultStream, writer, Charset.defaultCharset());
+    String result = writer.toString();
+    assertEquals(result, expectedResult);
   }
 
   @DataProvider(name = "testGetValueShouldReturnString")

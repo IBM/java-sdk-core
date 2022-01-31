@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2021.
+ * (C) Copyright IBM Corp. 2022.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -13,21 +13,23 @@
 
 package com.ibm.cloud.sdk.core.test.http;
 
+import static org.testng.Assert.assertTrue;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import javax.net.ssl.SSLSocket;
+
+import org.testng.annotations.Test;
+
 import com.ibm.cloud.sdk.core.http.HttpClientSingleton;
 import com.ibm.cloud.sdk.core.http.HttpConfigOptions;
+
 import okhttp3.ConnectionSpec;
 import okhttp3.OkHttpClient;
 import okhttp3.TlsVersion;
-import org.testng.annotations.Ignore;
-import org.testng.annotations.Test;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.ArrayList;
-import java.util.List;
-import javax.net.ssl.SSLSocket;
-
-import static org.testng.Assert.assertTrue;
 
 /**
  * Unit tests for the HttpClientSingleton object.

@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2019.
+ * (C) Copyright IBM Corp. 2015, 2022.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -14,8 +14,13 @@
 package com.ibm.cloud.sdk.core.util;
 
 import com.google.common.collect.Lists;
+import com.ibm.cloud.sdk.core.http.HttpMediaType;
+
 import org.testng.annotations.Test;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -75,6 +80,20 @@ public class RequestUtilsTest {
     assertNull(RequestUtils.omit(null));
   }
 
+  @Test
+  public void testEncode() {
+    assertEquals(RequestUtils.encode("foo"), "foo");
+    assertEquals(RequestUtils.encode("foo#3%3"), "foo%233%253");
+  }
+
+  @Test
+  public void testJoin() {
+    String[] strings = { "foo", "bar" };
+    Integer[] ints = { 38, 28, 36 };
+    assertEquals(RequestUtils.join(strings, ","), "foo,bar");
+    assertEquals(RequestUtils.join(ints, ":"), "38:28:36");
+  }
+
   /**
    * Test pick.
    */
@@ -111,5 +130,29 @@ public class RequestUtilsTest {
   public void testUserAgent() {
     assertNotNull(RequestUtils.getUserAgent());
     assertTrue(RequestUtils.getUserAgent().startsWith("ibm-java-sdk-core-"));
+  }
+
+  @Test
+  public void testFileBody() {
+    File f = new File("src/test/resources/cr-token.txt");
+    okhttp3.RequestBody body = RequestUtils.fileBody(f, null);
+    assertNotNull(body);
+    assertEquals(HttpMediaType.BINARY_FILE, body.contentType());
+
+    body = RequestUtils.fileBody(f, "application/octet-stream");
+    assertNotNull(body);
+    assertEquals(HttpMediaType.BINARY_FILE, body.contentType());
+  }
+
+  @Test
+  public void testInputStreamBody() throws Exception {
+    InputStream is = new FileInputStream("src/test/resources/cr-token.txt");
+    okhttp3.RequestBody body = RequestUtils.inputStreamBody(is, null);
+    assertNotNull(body);
+    assertEquals(HttpMediaType.BINARY_FILE, body.contentType());
+
+    body = RequestUtils.inputStreamBody(is, "application/octet-stream");
+    assertNotNull(body);
+    assertEquals(HttpMediaType.BINARY_FILE, body.contentType());
   }
 }
