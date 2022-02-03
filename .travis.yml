@@ -23,9 +23,9 @@ env:
 stages:
   - name: Build-Test
   - name: Semantic-Release
-    if: branch = main AND type = push AND fork = false
+    if: (branch = main) AND (type IN (push, api)) AND (fork = false)
   - name: Publish-Release
-    if: tag IS present
+    if: (tag IS present) AND (fork = false)
 
 before_install:
   - sudo apt-get update
