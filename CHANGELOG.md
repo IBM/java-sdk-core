@@ -1,3 +1,10 @@
+## [9.15.3](https://github.com/IBM/java-sdk-core/compare/9.15.2...9.15.3) (2022-02-03)
+
+
+### Bug Fixes
+
+* change 'removing interceptor' message to 'FINE' ([#163](https://github.com/IBM/java-sdk-core/issues/163)) ([247dc40](https://github.com/IBM/java-sdk-core/commit/247dc400b84066e401fff115a04458e6821e6a74))
+
 ## [9.15.2](https://github.com/IBM/java-sdk-core/compare/9.15.1...9.15.2) (2021-12-16)
 
 
