@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2019, 2021.
+ * (C) Copyright IBM Corp. 2019, 2022.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -58,7 +58,7 @@ public class ConfigBasedAuthenticatorFactory {
    * @param props a Map containing configuration properties
    * @return an Authenticator instance
    */
-  private static Authenticator createAuthenticator(Map<String, String> props) {
+  protected static Authenticator createAuthenticator(Map<String, String> props) {
     Authenticator authenticator = null;
 
     // If auth type was not specified, we'll use "iam" as the default if the "apikey" property
