@@ -133,15 +133,43 @@ public class ConfigBasedAuthenticatorFactoryTest extends PowerMockTestCase {
     assertNull(auth);
   }
 
+  /**
+   * This class is a subclass of our authenticator factory and is
+   * simply a test to make sure that the subclass usecase works as expected.
+   */
+  public static class TestAuthFactorySubclass extends ConfigBasedAuthenticatorFactory {
+
+    public static Authenticator getAuthenticator(String serviceName) {
+      // For testing purposes, just hard-code the service properties
+      // so we can simulate an alternate config source.
+      Map<String, String> authProps = new HashMap<>();
+      authProps.put(Authenticator.PROPNAME_AUTH_TYPE, "basic");
+      authProps.put(Authenticator.PROPNAME_USERNAME, "myuser");
+      authProps.put(Authenticator.PROPNAME_PASSWORD, "mypassword");
+
+      Authenticator authenticator = createAuthenticator(authProps);
+
+      return authenticator;
+    }
+  }
+
+  @Test
+  public void testFactorySubclass() {
+
+    Authenticator auth = TestAuthFactorySubclass.getAuthenticator("dont_care");
+    assertNotNull(auth);
+    assertEquals(auth.authenticationType(), Authenticator.AUTHTYPE_BASIC);
+  }
+
   @Test
   public void testFileCredentialsService1() {
     PowerMockito.spy(EnvironmentUtils.class);
     PowerMockito.when(EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
-    assertEquals(ALTERNATE_CRED_FILENAME, EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE"));
+    assertEquals(EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE"), ALTERNATE_CRED_FILENAME);
 
     Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service-1");
     assertNotNull(auth);
-    assertEquals(Authenticator.AUTHTYPE_IAM, auth.authenticationType());
+    assertEquals(auth.authenticationType(), Authenticator.AUTHTYPE_IAM);
   }
 
   @Test
@@ -151,7 +179,7 @@ public class ConfigBasedAuthenticatorFactoryTest extends PowerMockTestCase {
 
     Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service2");
     assertNotNull(auth);
-    assertEquals(Authenticator.AUTHTYPE_BASIC, auth.authenticationType());
+    assertEquals(auth.authenticationType(), Authenticator.AUTHTYPE_BASIC);
   }
 
   @Test
@@ -161,7 +189,7 @@ public class ConfigBasedAuthenticatorFactoryTest extends PowerMockTestCase {
 
     Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service3");
     assertNotNull(auth);
-    assertEquals(Authenticator.AUTHTYPE_CP4D, auth.authenticationType());
+    assertEquals(auth.authenticationType(), Authenticator.AUTHTYPE_CP4D);
   }
 
   @Test
@@ -171,7 +199,7 @@ public class ConfigBasedAuthenticatorFactoryTest extends PowerMockTestCase {
 
     Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service4");
     assertNotNull(auth);
-    assertEquals(Authenticator.AUTHTYPE_NOAUTH, auth.authenticationType());
+    assertEquals(auth.authenticationType(), Authenticator.AUTHTYPE_NOAUTH);
   }
 
   @Test
@@ -266,7 +294,7 @@ public class ConfigBasedAuthenticatorFactoryTest extends PowerMockTestCase {
 
     Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service5");
     assertNotNull(auth);
-    assertEquals(Authenticator.AUTHTYPE_BEARER_TOKEN, auth.authenticationType());
+    assertEquals(auth.authenticationType(), Authenticator.AUTHTYPE_BEARER_TOKEN);
   }
 
   @Test(expectedExceptions = IllegalArgumentException.class)
@@ -304,11 +332,11 @@ public class ConfigBasedAuthenticatorFactoryTest extends PowerMockTestCase {
   @Test
   public void testFileCredentialsSystemPropService1() {
     System.setProperty("IBM_CREDENTIALS_FILE", ALTERNATE_CRED_FILENAME);
-    assertEquals(ALTERNATE_CRED_FILENAME, System.getProperty("IBM_CREDENTIALS_FILE"));
+    assertEquals(System.getProperty("IBM_CREDENTIALS_FILE"), ALTERNATE_CRED_FILENAME);
 
     Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service-1");
     assertNotNull(auth);
-    assertEquals(Authenticator.AUTHTYPE_IAM, auth.authenticationType());
+    assertEquals(auth.authenticationType(), Authenticator.AUTHTYPE_IAM);
     System.clearProperty("IBM_CREDENTIALS_FILE");
   }
 
@@ -319,7 +347,7 @@ public class ConfigBasedAuthenticatorFactoryTest extends PowerMockTestCase {
 
     Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service-1");
     assertNotNull(auth);
-    assertEquals(Authenticator.AUTHTYPE_IAM, auth.authenticationType());
+    assertEquals(auth.authenticationType(), Authenticator.AUTHTYPE_IAM);
     IamAuthenticator iamAuth = (IamAuthenticator) auth;
     assertEquals(iamAuth.getApiKey(), "my-api-key");
     assertEquals(iamAuth.getClientId(), "my-client-id");
@@ -335,7 +363,7 @@ public class ConfigBasedAuthenticatorFactoryTest extends PowerMockTestCase {
 
     Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service6");
     assertNotNull(auth);
-    assertEquals(Authenticator.AUTHTYPE_CP4D_SERVICE, auth.authenticationType());
+    assertEquals(auth.authenticationType(), Authenticator.AUTHTYPE_CP4D_SERVICE);
     CloudPakForDataServiceAuthenticator cp4dAuth = (CloudPakForDataServiceAuthenticator) auth;
     assertEquals(cp4dAuth.getURL(), "https://service1/zen-data/internal");
     assertEquals(cp4dAuth.getServiceBrokerSecret(), "f8b7czjt701wy6253be5q8ad8f07kd08");
@@ -349,7 +377,7 @@ public class ConfigBasedAuthenticatorFactoryTest extends PowerMockTestCase {
 
     Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service7");
     assertNotNull(auth);
-    assertEquals(Authenticator.AUTHTYPE_CONTAINER, auth.authenticationType());
+    assertEquals(auth.authenticationType(), Authenticator.AUTHTYPE_CONTAINER);
     ContainerAuthenticator containerAuth = (ContainerAuthenticator) auth;
     assertEquals(containerAuth.getURL(), "https://iam.com/api");
     assertEquals(containerAuth.getCrTokenFilename(), "cr-token.txt");
@@ -368,7 +396,7 @@ public class ConfigBasedAuthenticatorFactoryTest extends PowerMockTestCase {
 
     Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service8");
     assertNotNull(auth);
-    assertEquals(Authenticator.AUTHTYPE_VPC, auth.authenticationType());
+    assertEquals(auth.authenticationType(), Authenticator.AUTHTYPE_VPC);
     VpcInstanceAuthenticator containerAuth = (VpcInstanceAuthenticator) auth;
     assertEquals(containerAuth.getIamProfileCrn(), "crn:iam-profile-1");
     assertNull(containerAuth.getIamProfileId());
@@ -413,7 +441,7 @@ public class ConfigBasedAuthenticatorFactoryTest extends PowerMockTestCase {
 
     Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("discovery");
     assertNotNull(auth);
-    assertEquals(Authenticator.AUTHTYPE_BASIC, auth.authenticationType());
+    assertEquals(auth.authenticationType(), Authenticator.AUTHTYPE_BASIC);
   }
 
   @Test
@@ -422,6 +450,6 @@ public class ConfigBasedAuthenticatorFactoryTest extends PowerMockTestCase {
 
     Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("language_translator");
     assertNotNull(auth);
-    assertEquals(Authenticator.AUTHTYPE_IAM, auth.authenticationType());
+    assertEquals(auth.authenticationType(), Authenticator.AUTHTYPE_IAM);
   }
 }

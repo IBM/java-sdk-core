@@ -244,7 +244,6 @@ public class BasicAuthenticatorTest {
 
   @Test
   public void testSingleAuthHeader() {
-    String username = "good-username";
     Map<String, String> props = new HashMap<>();
     props.put(Authenticator.PROPNAME_USERNAME, "good-username");
     props.put(Authenticator.PROPNAME_PASSWORD, "good-password");
