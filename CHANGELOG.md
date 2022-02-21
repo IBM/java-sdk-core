@@ -1,3 +1,10 @@
+## [9.15.4](https://github.com/IBM/java-sdk-core/compare/9.15.3...9.15.4) (2022-02-21)
+
+
+### Bug Fixes
+
+* set visibility of ConfigBasedAuthenticatorFactory.createAuthenticator to protected ([#165](https://github.com/IBM/java-sdk-core/issues/165)) ([ef1ef9a](https://github.com/IBM/java-sdk-core/commit/ef1ef9affb8c2f118a15a29dc1c0c532ffa5a235))
+
 ## [9.15.3](https://github.com/IBM/java-sdk-core/compare/9.15.2...9.15.3) (2022-02-03)
 
 
