@@ -1,2 +1,7 @@
 [
+    {
+        "cve": "SNYK-JAVA-ORGJETBRAINSKOTLIN-2393744",
+        "alwaysOmit": true,
+        "comment": "The dependencies of this project that use kotlin-stdlib (the okhttp-related dependencies) do not invoke the two kotlin-stdlib vulnerable methods"
+    }
 ]
