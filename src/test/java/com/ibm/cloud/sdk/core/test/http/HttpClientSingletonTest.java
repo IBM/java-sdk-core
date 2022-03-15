@@ -13,11 +13,13 @@
 
 package com.ibm.cloud.sdk.core.test.http;
 
+import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.net.ssl.SSLSocket;
@@ -26,13 +28,19 @@ import org.testng.annotations.Test;
 
 import com.ibm.cloud.sdk.core.http.HttpClientSingleton;
 import com.ibm.cloud.sdk.core.http.HttpConfigOptions;
+import com.ibm.cloud.sdk.core.http.IRetryInterceptor;
+import com.ibm.cloud.sdk.core.http.IRetryStrategy;
+import com.ibm.cloud.sdk.core.http.RetryInterceptor;
+import com.ibm.cloud.sdk.core.security.Authenticator;
+import com.ibm.cloud.sdk.core.security.NoAuthAuthenticator;
 
 import okhttp3.ConnectionSpec;
+import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.TlsVersion;
 
 /**
- * Unit tests for the HttpClientSingleton object.
+ * Unit tests for the HttpClientSingleton class.
  */
 public class HttpClientSingletonTest {
 
@@ -75,4 +83,47 @@ public class HttpClientSingletonTest {
         getAndAssertEnabledProtocols(client);
     }
 
-}
+    // Simulated user-defined retry interceptor implementation.
+    public static class TestRetryInterceptor extends RetryInterceptor {
+      public TestRetryInterceptor(int maxRetries, int maxRetryInterval, Authenticator authenticator) {
+        super(maxRetries, maxRetryInterval, authenticator);
+      }
+    }
+
+    // Simulated user-defined retry interceptor factory.
+    public static class TestRetryStrategy implements IRetryStrategy {
+      @Override
+      public IRetryInterceptor createRetryInterceptor(int maxRetries, int maxRetryInterval,
+          Authenticator authenticator) {
+        return new TestRetryInterceptor(maxRetries, maxRetryInterval, authenticator);
+      }
+    }
+
+    @Test
+    public void testSetRetryStrategy() {
+      // Register our factory.
+      HttpClientSingleton.setRetryStrategy(new TestRetryStrategy());
+
+      // Create a client with retries enabled.
+      HttpConfigOptions options = new HttpConfigOptions.Builder().enableRetries(new NoAuthAuthenticator(), 5, 60)
+          .build();
+      OkHttpClient client = HttpClientSingleton.getInstance().configureClient(options);
+
+      // Now verify that our retry interceptor is registered on the client instance.
+      int testRetryInterceptors = 0;
+      int otherRetryInterceptors = 0;
+      OkHttpClient.Builder builder = client.newBuilder();
+      if (!builder.interceptors().isEmpty()) {
+        for (Iterator<Interceptor> iter = builder.interceptors().iterator(); iter.hasNext();) {
+          Interceptor element = iter.next();
+          if (element instanceof TestRetryInterceptor) {
+            testRetryInterceptors++;
+          } else if (IRetryInterceptor.class.isAssignableFrom(element.getClass())) {
+            otherRetryInterceptors++;
+          }
+        }
+      }
+      assertEquals(testRetryInterceptors, 1);
+      assertEquals(otherRetryInterceptors, 0);
+    }
+  }
