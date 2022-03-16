@@ -1,3 +1,10 @@
+## [9.15.5](https://github.com/IBM/java-sdk-core/compare/9.15.4...9.15.5) (2022-03-16)
+
+
+### Bug Fixes
+
+* bump gson to 2.9.0 ([#170](https://github.com/IBM/java-sdk-core/issues/170)) ([84af366](https://github.com/IBM/java-sdk-core/commit/84af366208827b6ccde9ede9704b106113a25fdc))
+
 ## [9.15.4](https://github.com/IBM/java-sdk-core/compare/9.15.3...9.15.4) (2022-02-21)
 
 
