@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2019, 2020.
+ * (C) Copyright IBM Corp. 2019, 2022.
  * Copyright (C) 2011 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
@@ -15,6 +15,7 @@
 package com.ibm.cloud.sdk.core.util;
 
 import java.io.IOException;
+import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -34,7 +35,6 @@ import com.google.gson.TypeAdapterFactory;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.internal.$Gson$Types;
 import com.google.gson.internal.Primitives;
-import com.google.gson.internal.reflect.ReflectionAccessor;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
@@ -74,7 +74,6 @@ import com.ibm.cloud.sdk.core.service.model.DynamicModel;
  */
 public class DynamicModelTypeAdapterFactory implements TypeAdapterFactory {
   private static final Logger LOGGER = Logger.getLogger(DynamicModelTypeAdapterFactory.class.getName());
-  private ReflectionAccessor accessor = ReflectionAccessor.getInstance();
 
   public DynamicModelTypeAdapterFactory() {
   }
@@ -119,9 +118,7 @@ public class DynamicModelTypeAdapterFactory implements TypeAdapterFactory {
     for (int i = 0; i < allCtors.length; i++) {
       Constructor<?> ctor = allCtors[i];
       if (ctor.getParameterTypes().length == 0) {
-        if (!ctor.isAccessible()) {
-          accessor.makeAccessible(ctor);
-        }
+        suppressAccessChecks(ctor);
         return ctor;
       }
     }
@@ -157,7 +154,7 @@ public class DynamicModelTypeAdapterFactory implements TypeAdapterFactory {
         boolean serialize = true;
         boolean deserialize = true;
 
-        accessor.makeAccessible(field);
+        suppressAccessChecks(field);
 
         Type fieldType = $Gson$Types.resolve(type.getType(), raw, field.getGenericType());
         BoundField previous = null;
@@ -184,6 +181,28 @@ public class DynamicModelTypeAdapterFactory implements TypeAdapterFactory {
       raw = type.getRawType();
     }
     return result;
+  }
+
+  /**
+   * This method will try to suppress the default java language access control checks on the
+   * specified AccessibleObject (ctor, field, method, etc.).
+   * If we're unsuccessful at suppressing the checks, we'll ignore the error and potentially
+   * encounter an error later on when the AccessibleObject is used.
+   *
+   * @param ao the AccessibleObject instance (a Constructor, Field, Method, etc.)
+   */
+  protected void suppressAccessChecks(AccessibleObject ao) {
+    // If access control checks are currently NOT being suppressed,
+    // then try to suppress them.
+    if (!ao.isAccessible()) {
+      try {
+        ao.setAccessible(true);
+      } catch (Throwable t) {
+        // If we couldn't suppress the access control checks, then we'll just ignore this
+        // for now and wait until we run into an actual problem later when trying to use the
+        // reflected object (ctor, field, etc.).
+      }
+    }
   }
 
   /**
