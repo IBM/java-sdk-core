@@ -13,9 +13,30 @@
 
 package com.ibm.cloud.sdk.core.test.http.retry;
 
+import static com.ibm.cloud.sdk.core.http.HttpHeaders.CONTENT_ENCODING;
+import static com.ibm.cloud.sdk.core.http.HttpHeaders.CONTENT_TYPE;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertTrue;
+
+import java.io.IOException;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
+import java.util.logging.Logger;
+
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+
+import com.ibm.cloud.sdk.core.http.HttpClientSingleton;
 import com.ibm.cloud.sdk.core.http.HttpMediaType;
+import com.ibm.cloud.sdk.core.http.IRetryInterceptor;
+import com.ibm.cloud.sdk.core.http.IRetryStrategy;
 import com.ibm.cloud.sdk.core.http.RequestBuilder;
 import com.ibm.cloud.sdk.core.http.Response;
+import com.ibm.cloud.sdk.core.http.RetryInterceptor;
 import com.ibm.cloud.sdk.core.http.ServiceCall;
 import com.ibm.cloud.sdk.core.security.Authenticator;
 import com.ibm.cloud.sdk.core.security.NoAuthAuthenticator;
@@ -25,26 +46,14 @@ import com.ibm.cloud.sdk.core.service.exception.TooManyRequestsException;
 import com.ibm.cloud.sdk.core.service.model.GenericModel;
 import com.ibm.cloud.sdk.core.test.BaseServiceUnitTest;
 import com.ibm.cloud.sdk.core.util.ResponseConverterUtils;
+
 import okhttp3.HttpUrl;
+import okhttp3.Interceptor;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.RecordedRequest;
 
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-
-import static com.ibm.cloud.sdk.core.http.HttpHeaders.CONTENT_TYPE;
-import static com.ibm.cloud.sdk.core.http.HttpHeaders.CONTENT_ENCODING;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertNull;
-import static org.testng.Assert.assertTrue;
-
-import java.time.Instant;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.util.Locale;
-
 public class RetryTest extends BaseServiceUnitTest {
+  private static final Logger LOG = Logger.getLogger(RetryTest.class.getName());
 
   public class TestModel extends GenericModel {
     String success;
@@ -242,5 +251,53 @@ public class RetryTest extends BaseServiceUnitTest {
       assertEquals(message, ex.getMessage());
       assertEquals(1, server.getRequestCount());
     }
+  }
+  
+  // Simulated user-defined retry interceptor implementation.
+  public static class UserRetryInterceptor extends RetryInterceptor {
+    public UserRetryInterceptor(int maxRetries, int maxRetryInterval, Authenticator authenticator) {
+      super(maxRetries, maxRetryInterval, authenticator);
+    }
+    
+    @Override
+    public okhttp3.Response intercept(Interceptor.Chain chain) throws IOException {
+      LOG.info("User-defined retry interceptor invoked!");
+      return super.intercept(chain);
+    }
+  }
+
+  // Simulated user-defined retry interceptor factory.
+  public static class UserRetryStrategy implements IRetryStrategy {
+    @Override
+    public IRetryInterceptor createRetryInterceptor(int maxRetries, int maxRetryInterval,
+        Authenticator authenticator) {
+      return new UserRetryInterceptor(maxRetries, maxRetryInterval, authenticator);
+    }
+  }
+
+  @Test
+  public void testRetryWithStrategy() throws Exception {
+    // Set our retry strategy.
+    IRetryStrategy prevStrategy = HttpClientSingleton.setRetryStrategy(new UserRetryStrategy());
+    
+    // Re-enable retries on our service client.
+    service.enableRetries(10, 1);
+
+    String message = "phew";
+    for (int i = 0; i < 4; i++) {
+      server.enqueue(new MockResponse().setResponseCode(429).addHeader(CONTENT_TYPE, HttpMediaType.APPLICATION_JSON)
+          .setBody("{\"error\": \"too fast\"}"));
+    }
+    server.enqueue(new MockResponse().setResponseCode(200).addHeader(CONTENT_TYPE, HttpMediaType.APPLICATION_JSON)
+        .setBody("{\"success\": \"" + message + "\"}"));
+
+    Response<TestModel> r = service.testMethod().execute();
+
+    assertEquals(200, r.getStatusCode());
+    assertEquals(message, r.getResult().getSuccess());
+    assertEquals(5, server.getRequestCount());
+    
+    // Reset the retry strategy to the default.
+    HttpClientSingleton.setRetryStrategy(prevStrategy);
   }
 }

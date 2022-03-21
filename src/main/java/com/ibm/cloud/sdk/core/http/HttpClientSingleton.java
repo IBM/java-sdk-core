@@ -15,7 +15,6 @@ package com.ibm.cloud.sdk.core.http;
 
 import com.ibm.cloud.sdk.core.http.HttpConfigOptions.LoggingLevel;
 import com.ibm.cloud.sdk.core.http.gzip.GzipRequestInterceptor;
-import com.ibm.cloud.sdk.core.service.BaseService;
 import com.ibm.cloud.sdk.core.service.security.DelegatingSSLSocketFactory;
 import okhttp3.Authenticator;
 import okhttp3.ConnectionSpec;
@@ -59,7 +58,21 @@ import java.util.logging.Logger;
 public class HttpClientSingleton {
   private static HttpClientSingleton instance = null;
 
-  private static final Logger LOG = Logger.getLogger(BaseService.class.getName());
+  private static final Logger LOG = Logger.getLogger(HttpClientSingleton.class.getName());
+
+  // retryStrategy serves as a factory for creating retry interceptors.
+  private static IRetryStrategy retryStrategy = new DefaultRetryStrategy();
+
+  /**
+   * Sets the factory to be used to construct retry interceptor instances.
+   * @param strategy the IRetryStrategy implementation to be set as the factory
+   * @return the previous factory
+   */
+  public static synchronized IRetryStrategy setRetryStrategy(IRetryStrategy strategy) {
+    IRetryStrategy previousStrategy = retryStrategy;
+    retryStrategy = strategy;
+    return previousStrategy;
+  }
 
   /**
    * TrustManager for disabling SSL verification, which essentially lets everything through.
@@ -310,7 +323,7 @@ public class HttpClientSingleton {
    * Sets a new list of interceptors for the specified {@link OkHttpClient} instance by removing the specified
    * interceptor and returns a new instance with the interceptors configured as requested.
    *
-   * @param client the {@link OkHttpClient} instance to set the proxy authenticator on
+   * @param client the {@link OkHttpClient} instance to remove the interceptors from
    * @param interceptorToRemove the class name of the interceptor to remove
    * @return the new {@link OkHttpClient} instance with the new list of interceptors
    */
@@ -320,9 +333,33 @@ public class HttpClientSingleton {
     if (!builder.interceptors().isEmpty()) {
       for (Iterator<Interceptor> iter = builder.interceptors().iterator(); iter.hasNext(); ) {
         Interceptor element = iter.next();
-        String currentInterceptor = element.getClass().getSimpleName();
-        if (currentInterceptor.equals(interceptorToRemove)) {
-          LOG.log(Level.FINE, "Removing interceptor " + currentInterceptor + " from http client instance.");
+        if (interceptorToRemove.equals(element.getClass().getSimpleName())) {
+          LOG.log(Level.FINE, "Removing interceptor " + element.getClass().getName() + " from http client instance.");
+          iter.remove();
+        }
+      }
+    }
+
+    return builder.build();
+  }
+
+  /**
+   * Sets a new list of interceptors for the specified {@link OkHttpClient} instance by removing any interceptors
+   * that implement "interfaceToRemove".
+   *
+   * @param client the {@link OkHttpClient} instance to remove the interceptors from
+   * @param interfaceToRemove the specific interface for which interceptor instances should be removed
+   * @return the new {@link OkHttpClient} instance with the updated list of interceptors
+   */
+  private OkHttpClient reconfigureClientInterceptors(OkHttpClient client,
+      Class<? extends Interceptor> interfaceToRemove) {
+    OkHttpClient.Builder builder = client.newBuilder();
+
+    if (!builder.interceptors().isEmpty()) {
+      for (Iterator<Interceptor> iter = builder.interceptors().iterator(); iter.hasNext(); ) {
+        Interceptor element = iter.next();
+        if (interfaceToRemove.isAssignableFrom(element.getClass())) {
+          LOG.log(Level.FINE, "Removing interceptor " + element.getClass().getName() + " from http client instance.");
           iter.remove();
         }
       }
@@ -381,11 +418,17 @@ public class HttpClientSingleton {
       // Configure the retry interceptor.
       Boolean enableRetries = options.getRetries();
       if (enableRetries != null) {
-        client = reconfigureClientInterceptors(client, "RetryInterceptor");
+        client = reconfigureClientInterceptors(client, IRetryInterceptor.class);
         if (enableRetries.booleanValue()) {
-          client = client.newBuilder().addInterceptor(
-              new RetryInterceptor(options.getMaxRetries(), options.getMaxRetryInterval(), options.getAuthenticator()))
-              .build();
+          IRetryInterceptor retryInterceptor =
+              retryStrategy.createRetryInterceptor(options.getMaxRetries(), options.getMaxRetryInterval(),
+                  options.getAuthenticator());
+          if (retryInterceptor != null) {
+            client = client.newBuilder().addInterceptor(retryInterceptor).build();
+          } else {
+            LOG.log(Level.WARNING,
+                "The retry interceptor factory returned a null IRetryInterceptor instance. Retries are disabled.");
+          }
         }
       }
 

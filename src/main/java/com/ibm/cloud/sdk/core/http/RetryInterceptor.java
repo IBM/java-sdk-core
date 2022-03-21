@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2021.
+ * (C) Copyright IBM Corp. 2021, 2022.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -30,9 +30,16 @@ import com.ibm.cloud.sdk.core.util.DateUtils;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * This interceptor checks the responses and retries the request if it's possible.
+ * This class is an okhttp Interceptor implementation that will try to automatically retry
+ * failed requests, based on the type of failure that occurred.
+ * This class is configured with the following:
+ * <ul>
+ * <li>the maximum number of retries to attempt for a failed request
+ * <li>the maximum retry interval (in seconds) to wait between retry attempts
+ * <li>the {@link Authenticator} instance to use to authenticate each retry attempt
+ * </ul>
  */
-public class RetryInterceptor implements Interceptor {
+public class RetryInterceptor implements IRetryInterceptor {
 
   private static final Logger LOG = Logger.getLogger(RetryInterceptor.class.getName());
 
@@ -43,7 +50,7 @@ public class RetryInterceptor implements Interceptor {
   private int maxRetries;
   private int maxRetryInterval;
 
-  private class RetryContext {
+  public class RetryContext {
     private int retryCount;
 
     private RetryContext() {
@@ -59,6 +66,16 @@ public class RetryInterceptor implements Interceptor {
     }
   }
 
+  // Hide the default ctor to force the use of the non-default ctor below.
+  protected RetryInterceptor() { }
+
+  /**
+   * This ctor configures the RetryInterceptor instance with the max retries,
+   * retry interval and an authenticator.
+   * @param maxRetries the maximum number of retries to attempt for a failed request
+   * @param maxRetryInterval the maximum retry interval (in seconds) to wait between retry attempts
+   * @param authenticator the {@link Authenticator} instance to use to authenticate retried requests
+   */
   public RetryInterceptor(int maxRetries, int maxRetryInterval, Authenticator authenticator) {
     this.authenticator = authenticator;
     this.maxRetries = maxRetries;
@@ -66,6 +83,19 @@ public class RetryInterceptor implements Interceptor {
     this.maxRetryInterval = maxRetryInterval * 1000;
   }
 
+  /**
+   * The "intercept()" method is the primary method of the interceptor.
+   * The chain of interceptors registered for a particular okhttp Client instance
+   * is in the form of an ordered list.  When a request is invoked, each interceptor's
+   * "intercept" method is invoked and is passed the interceptor chain.
+   * The interceptor can inspect the request to determine how to proceed, and will invoke the interceptor
+   * chain's "proceed()" method to call the next interceptor in the chain.
+   * When the last interceptor invokes the chain's "proceed()" method, the request is sent over the wire
+   * and the response is returned via the return value of the proceed() method.
+   * The interceptor can then inspect the response and determine how to proceed.
+   * Ultimately the response is returned from this intercept() method and is ultimately propagated
+   * back through the chain's "proceed()" methods.
+   */
   @Override
   public Response intercept(Interceptor.Chain chain) throws IOException {
     // Make the first request.
@@ -89,7 +119,7 @@ public class RetryInterceptor implements Interceptor {
         builder.tag(RetryContext.class, new RetryContext());
       }
 
-      // If we have a valid authenticator authenticate the request.
+      // If we have a valid authenticator, then authenticate the request.
       // This is mostly here for backward compatibility.
       if (authenticator != null) {
         authenticator.authenticate(builder);
@@ -103,8 +133,13 @@ public class RetryInterceptor implements Interceptor {
     return response;
   }
 
-  // Get the time we should wait before fire the next request in milliseconds.
-  private int getInterval(Response response, Request request) {
+  /**
+   * Determine the retry interval to wait before attempting the next retry.
+   * @param response the response from the previously attempted request
+   * @param request the previously attempted request
+   * @return the retry interval in milliseconds
+   */
+  protected int getInterval(Response response, Request request) {
     Integer interval = null;
 
     String headerVal = response.header("Retry-After");
@@ -143,9 +178,13 @@ public class RetryInterceptor implements Interceptor {
     return interval;
   }
 
-  // Check the response and the retry context then decide should we have make
-  // another request.
-  private boolean shouldRetry(Response response, Request request) {
+  /**
+   * Determine whether or not to attempt a retry of the specified request.
+   * @param response the response obtained from the previously-attempted request
+   * @param request the previously-attempted request
+   * @return true if the specified request should be retried, false otherwise
+   */
+  protected boolean shouldRetry(Response response, Request request) {
     // First check the response.
     if (response.code() == 429 || (response.code() >= 500 && response.code() != 501)) {
       // Now check if we exhausted the max number of retries or not.
@@ -160,10 +199,13 @@ public class RetryInterceptor implements Interceptor {
     return false;
   }
 
-  // Calculate the back off time in milliseconds based on the retry count.
-  // This calculation is based on what the go-retryablehttp package does in its
-  // DefaultBackoff function.
-  private int calculateBackoff(int retryCount) {
+  /**
+   * Compute the "backoff" time (retry interval) in milleseconds based on the retry count.
+   * This calculation is based on the go-retryablehttp package's "DefaultBackoff()" function.
+   * @param retryCount the retry count for which we need to compute the backoff time
+   * @return the retry interval to use for retry number "retryCount"
+   */
+  protected int calculateBackoff(int retryCount) {
     // Exponential interval calculation based on the number of retries.
     double newInterval = (Math.pow(2, Double.valueOf(retryCount))) * RetryInterceptor.DEFAULT_RETRY_INTERVAL;
     if (newInterval > this.maxRetryInterval) {
