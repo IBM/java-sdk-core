@@ -1,3 +1,10 @@
+# [9.16.0](https://github.com/IBM/java-sdk-core/compare/9.15.5...9.16.0) (2022-03-21)
+
+
+### Features
+
+* support user-defined retry interceptors ([#169](https://github.com/IBM/java-sdk-core/issues/169)) ([f3dcd4b](https://github.com/IBM/java-sdk-core/commit/f3dcd4b3af0ba69fa1e597e738e93dedf2dbe307))
+
 ## [9.15.5](https://github.com/IBM/java-sdk-core/compare/9.15.4...9.15.5) (2022-03-16)
 
 
