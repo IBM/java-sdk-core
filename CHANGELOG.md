@@ -1,3 +1,10 @@
+## [9.16.1](https://github.com/IBM/java-sdk-core/compare/9.16.0...9.16.1) (2022-03-23)
+
+
+### Bug Fixes
+
+* allow java16+ as JRE ([#171](https://github.com/IBM/java-sdk-core/issues/171)) ([95ea237](https://github.com/IBM/java-sdk-core/commit/95ea237307cb4ceb7069268ac55f64fb58330742))
+
 # [9.16.0](https://github.com/IBM/java-sdk-core/compare/9.15.5...9.16.0) (2022-03-21)
 
 
