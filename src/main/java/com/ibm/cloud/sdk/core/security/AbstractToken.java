@@ -23,7 +23,7 @@ public abstract class AbstractToken {
 
   // This field will be used to indicate that the most recent interaction with the token server
   // resulted in an error.
-  private Throwable exception;
+  private transient Throwable exception;
 
   public AbstractToken() {
   }
