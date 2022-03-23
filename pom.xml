@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.ibm.cloud</groupId>
     <artifactId>sdk-core</artifactId>
@@ -15,7 +14,7 @@
         <surefire-version>3.0.0-M5</surefire-version>
         <checkstyle-plugin-version>3.1.2</checkstyle-plugin-version>
         <checkstyle-version>8.41</checkstyle-version>
-        <jacoco-plugin-version>0.8.3</jacoco-plugin-version>
+        <jacoco-plugin-version>0.8.7</jacoco-plugin-version>
         <compiler-plugin-version>3.8.0</compiler-plugin-version>
         <okhttp3-version>4.9.1</okhttp3-version>
         <guava-version>30.1.1-jre</guava-version>
@@ -24,7 +23,7 @@
         <commons-io-version>2.7</commons-io-version>
         <commons-lang3-version>3.8.1</commons-lang3-version>
         <rx-version>2.2.7</rx-version>
-        <mockito-version>3.11.2</mockito-version>
+        <mockito-version>3.12.4</mockito-version>
         <powermock-version>2.0.9</powermock-version>
         <maven-deploy-plugin-version>3.0.0-M1</maven-deploy-plugin-version>
         <nexus-staging-plugin-version>1.6.8</nexus-staging-plugin-version>
@@ -32,9 +31,12 @@
 
         <!-- versions of transitive dependencies we need to override to avoid vulnerability alerts -->
         <junit-version>4.13.2</junit-version>
+
+        <!-- This property should be empty by default. -->
+        <surefireJvmArgs></surefireJvmArgs>
     </properties>
 
-   <licenses>
+    <licenses>
         <license>
             <name>Apache License, Version 2.0</name>
             <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
@@ -65,8 +67,7 @@
     <distributionManagement></distributionManagement>
 
     <!-- we currently don't need any non-public repositories -->
-    <repositories>
-    </repositories>
+    <repositories></repositories>
 
     <dependencies>
         <dependency>
@@ -249,8 +250,6 @@
                         <configuration>
                             <append>true</append>
                             <destFile>${sonar.jacoco.reportPath}</destFile>
-                            <!-- Sets the VM argument line used when unit tests are run. -->
-                            <propertyName>surefireArgLine</propertyName>
                         </configuration>
                     </execution>
                 </executions>
@@ -276,6 +275,7 @@
                 <configuration>
                     <reuseForks>false</reuseForks>
                     <forkCount>1</forkCount>
+                    <argLine>@{argLine} ${surefireJvmArgs}</argLine>
                 </configuration>
             </plugin>
         </plugins>
@@ -319,7 +319,7 @@
                     <plugin>
                         <groupId>org.sonatype.plugins</groupId>
                         <artifactId>nexus-staging-maven-plugin</artifactId>
-			<version>${nexus-staging-plugin-version}</version>
+                        <version>${nexus-staging-plugin-version}</version>
                         <extensions>true</extensions>
                         <configuration>
                             <serverId>ossrh</serverId>
@@ -331,7 +331,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-			<version>${maven-gpg-plugin-version}</version>
+                        <version>${maven-gpg-plugin-version}</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
@@ -355,6 +355,16 @@
                 <!-- Configure the gpg plugin to use the env vars defined in the Travis build settings -->
                 <gpg.keyname>${env.GPG_KEYNAME}</gpg.keyname>
                 <gpg.passphrase>${env.GPG_PASSPHRASE}</gpg.passphrase>
+            </properties>
+        </profile>
+        <profile>
+            <id>java16+</id>
+            <activation>
+                <jdk>[16,)</jdk>
+            </activation>
+            <properties>
+                <!-- For java 16 and higher, we need these jvm args when running tests due to errors caused by other libraries. -->
+                <surefireJvmArgs>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.logging/java.util.logging=ALL-UNNAMED</surefireJvmArgs>
             </properties>
         </profile>
     </profiles>
