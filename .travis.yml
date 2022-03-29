@@ -46,6 +46,11 @@ jobs:
       script:
         - mvn clean package $MVN_ARGS
 
+    - jdk: openjdk17
+      install: skip
+      script:
+        - mvn clean package $MVN_ARGS
+
     - stage: Semantic-Release
       jdk: openjdk8
       install:
