@@ -21,6 +21,7 @@ import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -38,7 +39,9 @@ import com.ibm.cloud.sdk.core.service.exception.ServiceResponseException;
 import com.ibm.cloud.sdk.core.test.BaseServiceUnitTest;
 import com.ibm.cloud.sdk.core.util.Clock;
 
+import okhttp3.ConnectionSpec;
 import okhttp3.Headers;
+import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.mockwebserver.RecordedRequest;
 
@@ -439,10 +442,22 @@ public class Cp4dServiceAuthenticatorTest extends BaseServiceUnitTest {
         .permissions(testPermissions)
         .expirationTime(testExpirationTime)
         .build();
-    Request.Builder requestBuilder;
+
+    // Create a custom client and set it on the authenticator.
+    ConnectionSpec spec = new ConnectionSpec.Builder(ConnectionSpec.MODERN_TLS)
+        .allEnabledCipherSuites()
+        .build();
+    OkHttpClient client = new OkHttpClient.Builder()
+        .connectTimeout(30, TimeUnit.SECONDS)
+        .writeTimeout(120, TimeUnit.SECONDS)
+        .readTimeout(120, TimeUnit.SECONDS)
+        .connectionSpecs(Arrays.asList(spec, ConnectionSpec.CLEARTEXT))
+        .build();
+    authenticator.setClient(client);
+    assertEquals(authenticator.getClient(), client);
 
     // Authenticator should request new, valid token.
-    requestBuilder = new Request.Builder().url("https://test.com");
+    Request.Builder requestBuilder = new Request.Builder().url("https://test.com");
     authenticator.authenticate(requestBuilder);
     verifyAuthHeader(requestBuilder, "Bearer " + tokenData.getToken());
 
@@ -450,6 +465,9 @@ public class Cp4dServiceAuthenticatorTest extends BaseServiceUnitTest {
     requestBuilder = new Request.Builder().url("https://test.com");
     authenticator.authenticate(requestBuilder);
     verifyAuthHeader(requestBuilder, "Bearer " + tokenData.getToken());
+
+    // Verify that the authenticator is still using the same client instance that we set before.
+    assertEquals(authenticator.getClient(), client);
   }
 
   @Test
