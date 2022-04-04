@@ -1,3 +1,10 @@
+# [9.17.0](https://github.com/IBM/java-sdk-core/compare/9.16.1...9.17.0) (2022-04-04)
+
+
+### Features
+
+* allow user-specified default OkHttpClient instance ([#174](https://github.com/IBM/java-sdk-core/issues/174)) ([0205641](https://github.com/IBM/java-sdk-core/commit/020564132014d1ef7c7a8158ddbc79b84fc8d0dd))
+
 ## [9.16.1](https://github.com/IBM/java-sdk-core/compare/9.16.0...9.16.1) (2022-03-23)
 
 
