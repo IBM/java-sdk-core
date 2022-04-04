@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2019, 2021.
+ * (C) Copyright IBM Corp. 2019, 2022.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -40,15 +40,19 @@ import java.util.logging.Logger;
  * <ul>
  * <li>disableSSLVerification - a flag that indicates whether or not client-side SSL verification should be disabled.
  * <li>headers - a Map of keys/values that will be set as HTTP headers on requests sent to the token service.
- * <li>proxy - a java.net.Proxy instance that will be set on the Client object used to interact with the token service.
- * <li>proxyAuthenticator - an okhttp3.Authenticator instance to be set on the Client object used to interact wth
- * the token service.
+ * <li>proxy - a java.net.Proxy instance that will be set on the OkHttpClient instance used to
+ * interact with the token service.
+ * <li>proxyAuthenticator - an okhttp3.Authenticator instance to be set on the OkHttpClient instance used to
+ * interact with the token service.
+ * <li>client - a fully-configured OkHttpClient instance to be used to interact with the token service.
  * </ul>
  */
 public abstract class TokenRequestBasedAuthenticator<T extends AbstractToken, R extends TokenServerResponse>
   extends AuthenticatorBase implements Authenticator {
 
   private static final Logger logger = Logger.getLogger(TokenRequestBasedAuthenticator.class.getName());
+
+  protected OkHttpClient client;
 
   // Configuration properties that are common to all subclasses.
   private boolean disableSSLVerification;
@@ -65,6 +69,47 @@ public abstract class TokenRequestBasedAuthenticator<T extends AbstractToken, R 
 
   private void setTokenData(T tokenData) {
     this.tokenData = tokenData;
+  }
+
+  /**
+   * Sets the OkHttpClient instance to be used when interacting with the token service.
+   * @param client the OkHttpClient instance to use
+   */
+  public void setClient(OkHttpClient client) {
+    this.client = client;
+  }
+
+  /**
+   * Returns the OkHttpClient instance to be used when interacting with the token service.
+   * @return the client instance or null if a client insance has not yet been set
+   */
+  public OkHttpClient getClient() {
+    return this.client;
+  }
+
+  /**
+   * Returns a properly-configured OkHttpClient instance to use when interacting with the token service.
+   * This function is different from "getClient()" in that it will configure and save
+   * a client instance if one has not yet been setup for "this".
+   * @return a non-null, configured OkHttpClient instance
+   */
+  protected synchronized OkHttpClient getConfiguredClient() {
+    if (this.client == null) {
+      OkHttpClient defaultClient = HttpClientSingleton.getInstance().getHttpClient();
+
+      HttpConfigOptions.Builder clientOptions = new HttpConfigOptions.Builder()
+          .disableSslVerification(this.disableSSLVerification)
+          .proxy(this.proxy)
+          .proxyAuthenticator(this.proxyAuthenticator);
+
+      if (logger.isLoggable(Level.FINE)) {
+        clientOptions.loggingLevel(LoggingLevel.BODY);
+      }
+
+      this.client = HttpClientSingleton.getInstance().configureClient(defaultClient, clientOptions.build());
+    }
+
+    return this.client;
   }
 
   /**
@@ -136,7 +181,7 @@ public abstract class TokenRequestBasedAuthenticator<T extends AbstractToken, R 
 
   /**
    * Sets a Proxy object on this Authenticator.
-   * @param proxy the proxy object to be associated with the Client used to interact wth the token service.
+   * @param proxy the proxy object to be associated with the Client used to interact with the token service.
    */
   public void setProxy(Proxy proxy) {
     this.proxy = proxy;
@@ -256,18 +301,7 @@ public abstract class TokenRequestBasedAuthenticator<T extends AbstractToken, R 
     // Allocate the response.
     final Object[] responseObj = new Object[1];
 
-    // Set up the Client we'll use to invoke the request.
-    final HttpConfigOptions.Builder clientOptions = new HttpConfigOptions.Builder()
-        .disableSslVerification(this.disableSSLVerification)
-        .proxy(this.proxy)
-        .proxyAuthenticator(this.proxyAuthenticator);
-
-    // Enable request/response logging.
-    if (logger.isLoggable(Level.FINE)) {
-      clientOptions.loggingLevel(LoggingLevel.BODY);
-    }
-
-    final OkHttpClient client = HttpClientSingleton.getInstance().configureClient(clientOptions.build());
+    final OkHttpClient client = getConfiguredClient();
 
     final Request request = requestBuilder.build();
 

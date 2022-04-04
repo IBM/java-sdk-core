@@ -153,7 +153,25 @@ public class HttpClientSingleton {
   }
 
   /**
-   * Configures the HTTP client.
+   * Returns the current {@link OkHttpClient} instance held by this singleton.
+   * This is the client instance that is used as a default configuration from which other client instances are built.
+   * @return the current OkHttpClient instance
+   */
+  public OkHttpClient getHttpClient() {
+    return this.okHttpClient;
+  }
+
+  /**
+   * Sets the current {@link OkHttpClient} instance held by this singleton.
+   * This is the client instance that is used as a default configuration from which other client instances are built.
+   * @param client the new OkHttpClient instance to use as a default client configuration
+   */
+  public void setHttpClient(OkHttpClient client) {
+    this.okHttpClient = client;
+  }
+
+  /**
+   * Configures a new HTTP client instance.
    *
    * @return the HTTP client
    */
@@ -290,7 +308,7 @@ public class HttpClientSingleton {
    *
    * @param builder the {@link OkHttpClient} builder.
    */
-  private void setupTLSProtocol(final OkHttpClient.Builder builder) {
+  public static void setupTLSProtocol(final OkHttpClient.Builder builder) {
     try {
       TrustManagerFactory trustManagerFactory =
           TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
