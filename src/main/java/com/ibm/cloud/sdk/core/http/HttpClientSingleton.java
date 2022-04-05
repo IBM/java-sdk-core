@@ -117,11 +117,13 @@ public class HttpClientSingleton {
         // Find the TLS protocols supported by this socket
         List<String> supportedTlsNames = Arrays.asList(socket.getSupportedProtocols());
         LOG.log(Level.FINEST, "Socket supported protocols {0}", supportedTlsNames);
+
         // Get the union of MODERN_TLS_NAMES and the socket's supported protocols
         List<String> protocolsToEnable = new ArrayList<>();
         protocolsToEnable.addAll(supportedTlsNames);
         protocolsToEnable.retainAll(MODERN_TLS_NAMES);
         LOG.log(Level.FINEST, "Filtered protocols to enable {0}", protocolsToEnable);
+
         socket.setEnabledProtocols(protocolsToEnable.toArray(new String[]{}));
         return socket;
       }
@@ -304,36 +306,41 @@ public class HttpClientSingleton {
   }
 
   /**
-   * Specifically enable all TLS protocols. See: https://github.com/watson-developer-cloud/java-sdk/issues/610
+   * Set the required TLS-related configuration on "builder".
    *
-   * @param builder the {@link OkHttpClient} builder.
+   * @param builder the {@link OkHttpClient} Builder instance
    */
   public static void setupTLSProtocol(final OkHttpClient.Builder builder) {
     try {
+      // Create a trust manager with default behavior.
+      // Specifically, this means that we'll use a user-supplied truststore
+      // if the "javax.net.ssl.trustStore" system property is set,
+      // or the JVM's default truststore (cacerts) if not.
       TrustManagerFactory trustManagerFactory =
           TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
       trustManagerFactory.init((KeyStore) null);
       TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
-
       if (trustManagers.length != 1 || !(trustManagers[0] instanceof X509TrustManager)) {
         throw new IllegalStateException("Unexpected default trust managers:" + Arrays.toString(trustManagers));
       }
 
-      X509TrustManager trustManager = (X509TrustManager) trustManagers[0];
+      // Next, we need to get the socket factory from the default SSLContext.
+      // We do this for two reasons:
+      // 1. We want our FilteredSSLSocketFactory instance to delegate to this "default" socket factory.
+      // 2. We want this default socket factory to use a key manager with default behavior.
+      // Specifically, this means that the key manager will manage a user-supplied keystore
+      // if the "javax.net.ssl.keyStore" system property is set,
+      // or an "empty" key manager if not.
+      SSLContext defaultContext = SSLContext.getDefault();
+      SSLSocketFactory sslSocketFactory = new FilteredSSLSocketFactory(defaultContext.getSocketFactory());
 
-      // On IBM JDKs this gets only TLSv1
-      SSLContext sslContext = SSLContext.getInstance("TLS");
-
-      sslContext.init(null, new TrustManager[] { trustManager }, null);
-      SSLSocketFactory sslSocketFactory = new FilteredSSLSocketFactory(sslContext.getSocketFactory());
-      builder.sslSocketFactory(sslSocketFactory, trustManager);
+      // Now set the ssl socket factory and trust manager on the client builder.
+      builder.sslSocketFactory(sslSocketFactory, (X509TrustManager) trustManagers[0]);
 
     } catch (NoSuchAlgorithmException e) {
       LOG.log(Level.SEVERE, "The cryptographic algorithm requested is not available in the environment.", e);
     } catch (KeyStoreException e) {
       LOG.log(Level.SEVERE, "Error using the keystore.", e);
-    } catch (KeyManagementException e) {
-      LOG.log(Level.SEVERE, "Error initializing the SSL Context.", e);
     }
   }
 
