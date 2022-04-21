@@ -1,3 +1,10 @@
+## [9.17.1](https://github.com/IBM/java-sdk-core/compare/9.17.0...9.17.1) (2022-04-21)
+
+
+### Bug Fixes
+
+* bump kotlin-stdlib version to avoid vulnerability ([#176](https://github.com/IBM/java-sdk-core/issues/176)) ([4f186a2](https://github.com/IBM/java-sdk-core/commit/4f186a2d3460ae3df590d13df8384ebff1fbc923))
+
 # [9.17.0](https://github.com/IBM/java-sdk-core/compare/9.16.1...9.17.0) (2022-04-04)
 
 
