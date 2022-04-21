@@ -31,6 +31,7 @@
 
         <!-- versions of transitive dependencies we need to override to avoid vulnerability alerts -->
         <junit-version>4.13.2</junit-version>
+        <kotlin-version>1.6.21</kotlin-version>
 
         <!-- This property should be empty by default. -->
         <surefireJvmArgs></surefireJvmArgs>
@@ -151,7 +152,17 @@
             <version>${powermock-version}</version>
             <scope>test</scope>
         </dependency>
-    </dependencies>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-stdlib-jdk8</artifactId>
+            <version>${kotlin-version}</version>
+        </dependency>
+         <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-stdlib</artifactId>
+            <version>${kotlin-version}</version>
+        </dependency>
+   </dependencies>
 
     <build>
         <plugins>
