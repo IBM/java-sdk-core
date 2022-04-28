@@ -186,7 +186,7 @@ public class RetryInterceptor implements IRetryInterceptor {
    */
   protected boolean shouldRetry(Response response, Request request) {
     // First check the response.
-    if (response.code() == 429 || (response.code() >= 500 && response.code() != 501)) {
+    if (response.code() == 429 || (response.code() >= 500 && response.code() <= 599 && response.code() != 501)) {
       // Now check if we exhausted the max number of retries or not.
       RetryContext context = request.tag(RetryContext.class);
       if (context != null && !context.incCountAndCheck()) {
