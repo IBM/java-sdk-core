@@ -1,3 +1,10 @@
+## [9.17.2](https://github.com/IBM/java-sdk-core/compare/9.17.1...9.17.2) (2022-05-29)
+
+
+### Bug Fixes
+
+* bump okhttp to address CVE-2021-0341 ([#178](https://github.com/IBM/java-sdk-core/issues/178)) ([70d4dec](https://github.com/IBM/java-sdk-core/commit/70d4dec793c4d5ed0cb9e5cf1773d68c8c9c46f6))
+
 ## [9.17.1](https://github.com/IBM/java-sdk-core/compare/9.17.0...9.17.1) (2022-04-21)
 
 
