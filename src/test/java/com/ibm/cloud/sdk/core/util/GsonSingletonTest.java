@@ -21,12 +21,14 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
+import com.google.gson.ToNumberPolicy;
 import com.google.gson.internal.LazilyParsedNumber;
 import com.google.gson.reflect.TypeToken;
 
@@ -99,5 +101,19 @@ public class GsonSingletonTest {
     String jsonString = "{\"foo\":[\"numberlist\"]}";
     Gson gson = GsonSingleton.getGsonWithSerializeNulls();
     gson.fromJson(jsonString, modelType);
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void testLazilyParsedNumber4() {
+    Gson gson = GsonSingleton.getGsonWithoutPrettyPrinting();
+
+    String jsonString = "{\"foo\":38.9999,\"bar\":28.0001,\"baz\":74}";
+    Map<String, Object> map = gson.fromJson(jsonString, Map.class);
+    assertNotNull(map);
+
+    String serializedMap = gson.toJson(map);
+    assertNotNull(serializedMap);
+    assertEquals(serializedMap, jsonString);
   }
 }
