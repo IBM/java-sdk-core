@@ -1,3 +1,10 @@
+## [9.17.4](https://github.com/IBM/java-sdk-core/compare/9.17.3...9.17.4) (2022-11-11)
+
+
+### Bug Fixes
+
+* use gson 'lazily parsed number' for 'object to number' strategy ([#187](https://github.com/IBM/java-sdk-core/issues/187)) ([146da6f](https://github.com/IBM/java-sdk-core/commit/146da6f4e19058a797527a2c56664e6def623a45))
+
 ## [9.17.3](https://github.com/IBM/java-sdk-core/compare/9.17.2...9.17.3) (2022-06-13)
 
 
