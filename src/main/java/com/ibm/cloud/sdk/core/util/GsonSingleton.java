@@ -47,7 +47,7 @@ public final class GsonSingleton {
    */
   private static Gson createGson(boolean prettyPrint, boolean serializeNulls) {
     GsonBuilder builder = new GsonBuilder()
-        .setObjectToNumberStrategy(ToNumberPolicy.DOUBLE)
+        .setObjectToNumberStrategy(ToNumberPolicy.LAZILY_PARSED_NUMBER)
         .setNumberToNumberStrategy(ToNumberPolicy.LAZILY_PARSED_NUMBER);
 
     registerTypeAdapters(builder);
