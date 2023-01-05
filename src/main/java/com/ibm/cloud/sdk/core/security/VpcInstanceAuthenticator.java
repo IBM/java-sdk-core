@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2021.
+ * (C) Copyright IBM Corp. 2021, 2023.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -42,7 +42,7 @@ public class VpcInstanceAuthenticator
   private static final String operationPathCreateAccessToken = "/instance_identity/v1/token";
   private static final String operationPathCreateIamToken = "/instance_identity/v1/iam_token";
   private static final String metadataFlavor = "ibm";
-  private static final String metadataServiceVersion = "2021-09-20";
+  private static final String metadataServiceVersion = "2022-03-01";
   private static final int instanceIdentityTokenLifetime = 300;
 
   // Properties specific to a VpcInstanceAuthenticator.
