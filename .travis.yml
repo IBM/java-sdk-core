@@ -62,7 +62,7 @@ jobs:
         - npm install @semantic-release/github
         - pip install --user bump2version
       script:
-        - npx semantic-release
+        - npx semantic-release@19
       after_success:
         - echo "Semantic release has successfully created a new tagged-release"
 
