@@ -1,3 +1,11 @@
+## [9.17.5](https://github.com/IBM/java-sdk-core/compare/9.17.4...9.17.5) (2023-01-09)
+
+
+### Bug Fixes
+
+* pin build to semantic-release v19 ([680cf72](https://github.com/IBM/java-sdk-core/commit/680cf72782c6509db3c8beb1471762d61f74537d))
+* **VpcInstanceAuthenticator:** use correct version string ([d66fdbc](https://github.com/IBM/java-sdk-core/commit/d66fdbca4945fbd94569269fe288e51f3a2127cf))
+
 ## [9.17.4](https://github.com/IBM/java-sdk-core/compare/9.17.3...9.17.4) (2022-11-11)
 
 
