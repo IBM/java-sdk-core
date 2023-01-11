@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2021.
+ * (C) Copyright IBM Corp. 2015, 2023.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -24,10 +24,11 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.powermock.modules.testng.PowerMockTestCase;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
 
 import com.ibm.cloud.sdk.core.security.Authenticator;
 import com.ibm.cloud.sdk.core.security.CloudPakForDataServiceAuthenticator;
@@ -42,8 +43,7 @@ import com.ibm.cloud.sdk.core.util.EnvironmentUtils;
  * This class tests the ConfigBasedAuthenticatorFactory class.
  * We'll using various mocking techniques to simulate the credential file, environment and vcap services.
  */
-@PrepareForTest({ EnvironmentUtils.class })
-public class ConfigBasedAuthenticatorFactoryTest extends PowerMockTestCase {
+public class ConfigBasedAuthenticatorFactoryTest {
   private static final String ALTERNATE_CRED_FILENAME = "src/test/resources/my-credentials.env";
   private static final String VCAP_SERVICES = "vcap_services.json";
 
@@ -113,6 +113,22 @@ public class ConfigBasedAuthenticatorFactoryTest extends PowerMockTestCase {
     return env;
   }
 
+  // This will be our mocked version of the EnvironmentUtils class.
+  private static MockedStatic<EnvironmentUtils> envMock = null;
+
+  @BeforeMethod
+  public void createEnvMock() {
+    envMock = Mockito.mockStatic(EnvironmentUtils.class);
+  }
+
+  @AfterMethod
+  public void clearEnvMock() {
+    if (envMock != null) {
+      envMock.close();
+      envMock = null;
+    }
+  }
+
   /**
    * Sets up a mock VCAP_SERVICES object.
    */
@@ -120,14 +136,12 @@ public class ConfigBasedAuthenticatorFactoryTest extends PowerMockTestCase {
     final InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(VCAP_SERVICES);
     final String vcapServices = getStringFromInputStream(in);
 
-    PowerMockito.spy(EnvironmentUtils.class);
-    PowerMockito.when(EnvironmentUtils.getenv("VCAP_SERVICES")).thenReturn(vcapServices);
+    envMock.when(() ->EnvironmentUtils.getenv("VCAP_SERVICES")).thenReturn(vcapServices);
   }
 
   @Test
   public void testNoConfig() {
-    PowerMockito.spy(EnvironmentUtils.class);
-    PowerMockito.when(EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(null);
+    envMock.when(() ->EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(null);
 
     Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service-1");
     assertNull(auth);
@@ -163,8 +177,7 @@ public class ConfigBasedAuthenticatorFactoryTest extends PowerMockTestCase {
 
   @Test
   public void testFileCredentialsService1() {
-    PowerMockito.spy(EnvironmentUtils.class);
-    PowerMockito.when(EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
+    envMock.when(() ->EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
     assertEquals(EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE"), ALTERNATE_CRED_FILENAME);
 
     Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service-1");
@@ -174,8 +187,7 @@ public class ConfigBasedAuthenticatorFactoryTest extends PowerMockTestCase {
 
   @Test
   public void testFileCredentialsService2() {
-    PowerMockito.spy(EnvironmentUtils.class);
-    PowerMockito.when(EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
+    envMock.when(() ->EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
 
     Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service2");
     assertNotNull(auth);
@@ -184,8 +196,7 @@ public class ConfigBasedAuthenticatorFactoryTest extends PowerMockTestCase {
 
   @Test
   public void testFileCredentialsService3() {
-    PowerMockito.spy(EnvironmentUtils.class);
-    PowerMockito.when(EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
+    envMock.when(() ->EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
 
     Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service3");
     assertNotNull(auth);
@@ -194,8 +205,7 @@ public class ConfigBasedAuthenticatorFactoryTest extends PowerMockTestCase {
 
   @Test
   public void testFileCredentialsService4() {
-    PowerMockito.spy(EnvironmentUtils.class);
-    PowerMockito.when(EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
+    envMock.when(() ->EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
 
     Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service4");
     assertNotNull(auth);
@@ -204,8 +214,7 @@ public class ConfigBasedAuthenticatorFactoryTest extends PowerMockTestCase {
 
   @Test
   public void testFileCredentialsService11() {
-    PowerMockito.spy(EnvironmentUtils.class);
-    PowerMockito.when(EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
+    envMock.when(() ->EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
 
     Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service_11");
     assertNotNull(auth);
@@ -223,8 +232,7 @@ public class ConfigBasedAuthenticatorFactoryTest extends PowerMockTestCase {
 
   @Test
   public void testFileCredentialsService12() {
-    PowerMockito.spy(EnvironmentUtils.class);
-    PowerMockito.when(EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
+    envMock.when(() ->EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
 
     Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service_12");
     assertNotNull(auth);
@@ -242,8 +250,7 @@ public class ConfigBasedAuthenticatorFactoryTest extends PowerMockTestCase {
 
   @Test
   public void testFileCredentialsService13() {
-    PowerMockito.spy(EnvironmentUtils.class);
-    PowerMockito.when(EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
+    envMock.when(() ->EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
 
     Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service_13");
     assertNotNull(auth);
@@ -261,8 +268,7 @@ public class ConfigBasedAuthenticatorFactoryTest extends PowerMockTestCase {
 
   @Test
   public void testFileCredentialsService15() {
-    PowerMockito.spy(EnvironmentUtils.class);
-    PowerMockito.when(EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
+    envMock.when(() ->EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
 
     Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service_15");
     assertNotNull(auth);
@@ -275,8 +281,7 @@ public class ConfigBasedAuthenticatorFactoryTest extends PowerMockTestCase {
 
   @Test
   public void testFileCredentialsService16() {
-    PowerMockito.spy(EnvironmentUtils.class);
-    PowerMockito.when(EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
+    envMock.when(() ->EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
 
     Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service_16");
     assertNotNull(auth);
@@ -289,8 +294,7 @@ public class ConfigBasedAuthenticatorFactoryTest extends PowerMockTestCase {
 
   @Test
   public void testFileCredentialsService5() {
-    PowerMockito.spy(EnvironmentUtils.class);
-    PowerMockito.when(EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
+    envMock.when(() ->EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
 
     Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service5");
     assertNotNull(auth);
@@ -299,32 +303,28 @@ public class ConfigBasedAuthenticatorFactoryTest extends PowerMockTestCase {
 
   @Test(expectedExceptions = IllegalArgumentException.class)
   public void testFileCredentialsError1() {
-    PowerMockito.spy(EnvironmentUtils.class);
-    PowerMockito.when(EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
+    envMock.when(() ->EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
 
     ConfigBasedAuthenticatorFactory.getAuthenticator("error1");
   }
 
   @Test(expectedExceptions = IllegalArgumentException.class)
   public void testFileCredentialsError2() {
-    PowerMockito.spy(EnvironmentUtils.class);
-    PowerMockito.when(EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
+    envMock.when(() ->EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
 
     ConfigBasedAuthenticatorFactory.getAuthenticator("error2");
   }
 
   @Test(expectedExceptions = IllegalArgumentException.class)
   public void testFileCredentialsError3() {
-    PowerMockito.spy(EnvironmentUtils.class);
-    PowerMockito.when(EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
+    envMock.when(() ->EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
 
     ConfigBasedAuthenticatorFactory.getAuthenticator("error3");
   }
 
   @Test(expectedExceptions = IllegalArgumentException.class)
   public void testFileCredentialsError4() {
-    PowerMockito.spy(EnvironmentUtils.class);
-    PowerMockito.when(EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
+    envMock.when(() ->EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
 
     ConfigBasedAuthenticatorFactory.getAuthenticator("error4");
   }
@@ -342,8 +342,7 @@ public class ConfigBasedAuthenticatorFactoryTest extends PowerMockTestCase {
 
   @Test
   public void testEnvCredentialsService1() {
-    PowerMockito.spy(EnvironmentUtils.class);
-    PowerMockito.when(EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
+    envMock.when(() ->EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
 
     Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service-1");
     assertNotNull(auth);
@@ -358,8 +357,7 @@ public class ConfigBasedAuthenticatorFactoryTest extends PowerMockTestCase {
 
   @Test
   public void testEnvCredentialsService6() {
-    PowerMockito.spy(EnvironmentUtils.class);
-    PowerMockito.when(EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
+    envMock.when(() ->EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
 
     Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service6");
     assertNotNull(auth);
@@ -372,8 +370,7 @@ public class ConfigBasedAuthenticatorFactoryTest extends PowerMockTestCase {
 
   @Test
   public void testEnvCredentialsService7() {
-    PowerMockito.spy(EnvironmentUtils.class);
-    PowerMockito.when(EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
+    envMock.when(() ->EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
 
     Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service7");
     assertNotNull(auth);
@@ -391,8 +388,7 @@ public class ConfigBasedAuthenticatorFactoryTest extends PowerMockTestCase {
 
   @Test
   public void testEnvCredentialsService8() {
-    PowerMockito.spy(EnvironmentUtils.class);
-    PowerMockito.when(EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
+    envMock.when(() ->EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
 
     Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service8");
     assertNotNull(auth);
@@ -405,8 +401,7 @@ public class ConfigBasedAuthenticatorFactoryTest extends PowerMockTestCase {
 
   @Test
   public void testEnvCredentialsService9() {
-    PowerMockito.spy(EnvironmentUtils.class);
-    PowerMockito.when(EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
+    envMock.when(() ->EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
 
     Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service9");
     assertNotNull(auth);
@@ -421,16 +416,14 @@ public class ConfigBasedAuthenticatorFactoryTest extends PowerMockTestCase {
 
   @Test(expectedExceptions = IllegalArgumentException.class)
   public void testEnvCredentialsError1() {
-    PowerMockito.spy(EnvironmentUtils.class);
-    PowerMockito.when(EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
+    envMock.when(() ->EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
 
     ConfigBasedAuthenticatorFactory.getAuthenticator("error1");
   }
 
   @Test(expectedExceptions = IllegalArgumentException.class)
   public void testEnvCredentialsError2() {
-    PowerMockito.spy(EnvironmentUtils.class);
-    PowerMockito.when(EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
+    envMock.when(() ->EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
 
     ConfigBasedAuthenticatorFactory.getAuthenticator("error2");
   }

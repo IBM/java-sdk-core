@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2019.
+ * (C) Copyright IBM Corp. 2015, 2023.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -16,18 +16,19 @@ package com.ibm.cloud.sdk.core.util;
 import static com.ibm.cloud.sdk.core.test.TestUtils.getStringFromInputStream;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
-import static org.testng.Assert.assertNotNull;
 
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.powermock.modules.testng.PowerMockTestCase;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
 
 import com.ibm.cloud.sdk.core.security.Authenticator;
 import com.ibm.cloud.sdk.core.security.CloudPakForDataAuthenticator;
@@ -36,12 +37,27 @@ import com.ibm.cloud.sdk.core.service.BaseService;
 /**
  * The Class CredentialUtilsTest.
  */
-@PrepareForTest({ EnvironmentUtils.class })
-public class CredentialUtilsTest extends PowerMockTestCase {
+public class CredentialUtilsTest {
   private static final String ALTERNATE_CRED_FILENAME = "src/test/resources/my-credentials.env";
   private static final String VCAP_SERVICES = "vcap_services.json";
   private static final String NOT_A_USERNAME = "not-a-username";
   private static final String NOT_A_PASSWORD = "not-a-password";
+
+  // This will be our mocked version of the EnvironmentUtils class.
+  private static MockedStatic<EnvironmentUtils> envMock = null;
+
+  @BeforeMethod
+  public void createEnvMock() {
+    envMock = Mockito.mockStatic(EnvironmentUtils.class);
+  }
+
+  @AfterMethod
+  public void clearEnvMock() {
+    if (envMock != null) {
+      envMock.close();
+      envMock = null;
+    }
+  }
 
   private Map<String, String> getTestProcessEnvironment() {
     Map<String, String> env = new HashMap<>();
@@ -195,12 +211,11 @@ public class CredentialUtilsTest extends PowerMockTestCase {
   /**
    * Setup.
    */
-  public void setupVCAP() {
+  private void setupVCAP() {
     final InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(VCAP_SERVICES);
     final String vcapServices = getStringFromInputStream(in);
 
-    PowerMockito.spy(EnvironmentUtils.class);
-    PowerMockito.when(EnvironmentUtils.getenv("VCAP_SERVICES")).thenReturn(vcapServices);
+    envMock.when(() -> EnvironmentUtils.getenv("VCAP_SERVICES")).thenReturn(vcapServices);
   }
 
   @Test
@@ -246,16 +261,14 @@ public class CredentialUtilsTest extends PowerMockTestCase {
 
   @Test
   public void testFileCredentialsMapEmpty() {
-    PowerMockito.spy(EnvironmentUtils.class);
-    PowerMockito.when(EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(null);
+    envMock.when(() -> EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(null);
     Map<String, String> props = CredentialUtils.getFileCredentialsAsMap("service-1");
     assertTrue(props.isEmpty());
   }
 
   @Test
   public void testFileCredentialsMapService1() {
-    PowerMockito.spy(EnvironmentUtils.class);
-    PowerMockito.when(EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
+    envMock.when(() -> EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
     assertEquals(ALTERNATE_CRED_FILENAME, EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE"));
 
     Map<String, String> props = CredentialUtils.getFileCredentialsAsMap("service-1");
@@ -264,8 +277,7 @@ public class CredentialUtilsTest extends PowerMockTestCase {
 
   @Test
   public void testFileCredentialsMapService2() {
-    PowerMockito.spy(EnvironmentUtils.class);
-    PowerMockito.when(EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
+    envMock.when(() -> EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
     assertEquals(ALTERNATE_CRED_FILENAME, EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE"));
 
     Map<String, String> props = CredentialUtils.getFileCredentialsAsMap("service2");
@@ -274,8 +286,7 @@ public class CredentialUtilsTest extends PowerMockTestCase {
 
   @Test
   public void testFileCredentialsMapService3() {
-    PowerMockito.spy(EnvironmentUtils.class);
-    PowerMockito.when(EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
+    envMock.when(() -> EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
     assertEquals(ALTERNATE_CRED_FILENAME, EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE"));
 
     Map<String, String> props = CredentialUtils.getFileCredentialsAsMap("service3");
@@ -284,8 +295,7 @@ public class CredentialUtilsTest extends PowerMockTestCase {
 
   @Test
   public void testFileCredentialsMapService4() {
-    PowerMockito.spy(EnvironmentUtils.class);
-    PowerMockito.when(EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
+    envMock.when(() -> EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
     assertEquals(ALTERNATE_CRED_FILENAME, EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE"));
 
     Map<String, String> props = CredentialUtils.getFileCredentialsAsMap("service4");
@@ -294,8 +304,7 @@ public class CredentialUtilsTest extends PowerMockTestCase {
 
   @Test
   public void testFileCredentialsMapService5() {
-    PowerMockito.spy(EnvironmentUtils.class);
-    PowerMockito.when(EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
+    envMock.when(() -> EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
     assertEquals(ALTERNATE_CRED_FILENAME, EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE"));
 
     Map<String, String> props = CredentialUtils.getFileCredentialsAsMap("service5");
@@ -304,8 +313,7 @@ public class CredentialUtilsTest extends PowerMockTestCase {
 
   @Test
   public void testFileCredentialsMapService6() {
-    PowerMockito.spy(EnvironmentUtils.class);
-    PowerMockito.when(EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
+    envMock.when(() -> EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
     assertEquals(ALTERNATE_CRED_FILENAME, EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE"));
 
     Map<String, String> props = CredentialUtils.getFileCredentialsAsMap("service6");
@@ -314,8 +322,7 @@ public class CredentialUtilsTest extends PowerMockTestCase {
 
   @Test
   public void testFileCredentialsMapService7() {
-    PowerMockito.spy(EnvironmentUtils.class);
-    PowerMockito.when(EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
+    envMock.when(() -> EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
     assertEquals(ALTERNATE_CRED_FILENAME, EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE"));
 
     Map<String, String> props = CredentialUtils.getFileCredentialsAsMap("service-7");
@@ -324,8 +331,7 @@ public class CredentialUtilsTest extends PowerMockTestCase {
 
   @Test
   public void testFileCredentialsMapService8() {
-    PowerMockito.spy(EnvironmentUtils.class);
-    PowerMockito.when(EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
+    envMock.when(() -> EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
     assertEquals(ALTERNATE_CRED_FILENAME, EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE"));
 
     Map<String, String> props = CredentialUtils.getFileCredentialsAsMap("service-8");
@@ -334,8 +340,7 @@ public class CredentialUtilsTest extends PowerMockTestCase {
 
   @Test
   public void testFileCredentialsMapService9() {
-    PowerMockito.spy(EnvironmentUtils.class);
-    PowerMockito.when(EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
+    envMock.when(() -> EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
     assertEquals(ALTERNATE_CRED_FILENAME, EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE"));
 
     Map<String, String> props = CredentialUtils.getFileCredentialsAsMap("service-9");
@@ -463,16 +468,14 @@ public class CredentialUtilsTest extends PowerMockTestCase {
 
   @Test
   public void testEnvCredentialsMapEmpty() {
-    PowerMockito.spy(EnvironmentUtils.class);
-    PowerMockito.when(EnvironmentUtils.getenv()).thenReturn(new HashMap<String, String>());
+    envMock.when(() -> EnvironmentUtils.getenv()).thenReturn(new HashMap<String, String>());
     Map<String, String> props = CredentialUtils.getEnvCredentialsAsMap("service-1");
     assertTrue(props.isEmpty());
   }
 
   @Test
   public void testEnvCredentialsMapService1() {
-    PowerMockito.spy(EnvironmentUtils.class);
-    PowerMockito.when(EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
+    envMock.when(() -> EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
 
     Map<String, String> props = CredentialUtils.getEnvCredentialsAsMap("service-1");
     verifyMapService1(props);
@@ -480,8 +483,7 @@ public class CredentialUtilsTest extends PowerMockTestCase {
 
   @Test
   public void testEnvCredentialsMapService2() {
-    PowerMockito.spy(EnvironmentUtils.class);
-    PowerMockito.when(EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
+    envMock.when(() -> EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
 
     Map<String, String> props = CredentialUtils.getEnvCredentialsAsMap("service2");
     verifyMapService2(props);
@@ -489,8 +491,7 @@ public class CredentialUtilsTest extends PowerMockTestCase {
 
   @Test
   public void testEnvCredentialsMapService3() {
-    PowerMockito.spy(EnvironmentUtils.class);
-    PowerMockito.when(EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
+    envMock.when(() -> EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
 
     Map<String, String> props = CredentialUtils.getEnvCredentialsAsMap("service3");
     verifyMapService3(props);
@@ -498,8 +499,7 @@ public class CredentialUtilsTest extends PowerMockTestCase {
 
   @Test
   public void testEnvCredentialsMapService4() {
-    PowerMockito.spy(EnvironmentUtils.class);
-    PowerMockito.when(EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
+    envMock.when(() -> EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
 
     Map<String, String> props = CredentialUtils.getEnvCredentialsAsMap("service4");
     verifyMapService4(props);
@@ -507,8 +507,7 @@ public class CredentialUtilsTest extends PowerMockTestCase {
 
   @Test
   public void testEnvCredentialsMapService5() {
-    PowerMockito.spy(EnvironmentUtils.class);
-    PowerMockito.when(EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
+    envMock.when(() -> EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
 
     Map<String, String> props = CredentialUtils.getEnvCredentialsAsMap("service5");
     verifyMapService5(props);
@@ -516,8 +515,7 @@ public class CredentialUtilsTest extends PowerMockTestCase {
 
   @Test
   public void testEnvCredentialsMapService6() {
-    PowerMockito.spy(EnvironmentUtils.class);
-    PowerMockito.when(EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
+    envMock.when(() -> EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
 
     Map<String, String> props = CredentialUtils.getEnvCredentialsAsMap("service6");
     verifyMapService6(props);
@@ -525,8 +523,7 @@ public class CredentialUtilsTest extends PowerMockTestCase {
 
   @Test
   public void testEnvCredentialsMapService7() {
-    PowerMockito.spy(EnvironmentUtils.class);
-    PowerMockito.when(EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
+    envMock.when(() -> EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
 
     Map<String, String> props = CredentialUtils.getEnvCredentialsAsMap("service-7");
     verifyMapService7(props);
@@ -534,8 +531,7 @@ public class CredentialUtilsTest extends PowerMockTestCase {
 
   @Test
   public void testEnvCredentialsMapService8() {
-    PowerMockito.spy(EnvironmentUtils.class);
-    PowerMockito.when(EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
+    envMock.when(() -> EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
 
     Map<String, String> props = CredentialUtils.getEnvCredentialsAsMap("service-8");
     verifyMapService8(props);
@@ -543,8 +539,7 @@ public class CredentialUtilsTest extends PowerMockTestCase {
 
   @Test
   public void testEnvCredentialsMapService9() {
-    PowerMockito.spy(EnvironmentUtils.class);
-    PowerMockito.when(EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
+    envMock.when(() -> EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
 
     Map<String, String> props = CredentialUtils.getEnvCredentialsAsMap("service-9");
     verifyMapService9(props);
@@ -552,8 +547,7 @@ public class CredentialUtilsTest extends PowerMockTestCase {
 
   @Test
   public void testEnvCredentialsMapService14() {
-    PowerMockito.spy(EnvironmentUtils.class);
-    PowerMockito.when(EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
+    envMock.when(() -> EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
 
     Map<String, String> props = CredentialUtils.getEnvCredentialsAsMap("service-14");
     verifyMapService14(props);
@@ -565,8 +559,7 @@ public class CredentialUtilsTest extends PowerMockTestCase {
     assertTrue(props.isEmpty());
 
     // Setting Only environment variables should still result in empty props
-    PowerMockito.spy(EnvironmentUtils.class);
-    PowerMockito.when(EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
+    envMock.when(() -> EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
     props = CredentialUtils.getSystemPropsCredentialsAsMap("service-1");
     assertTrue(props.isEmpty());
   }

@@ -26,7 +26,6 @@ import okhttp3.mockwebserver.RecordedRequest;
 
 import org.apache.commons.lang3.StringUtils;
 import org.testng.annotations.AfterMethod;
-import org.powermock.modules.testng.PowerMockTestCase;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -39,7 +38,7 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
-public class BaseServiceUnitTest extends PowerMockTestCase {
+public class BaseServiceUnitTest /* extends PowerMockTestCase */ {
   private static final Gson GSON = GsonSingleton.getGson();
 
   /** The server. */
