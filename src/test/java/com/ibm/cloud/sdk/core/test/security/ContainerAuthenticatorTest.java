@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2022.
+ * (C) Copyright IBM Corp. 2015, 2023.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -30,9 +30,9 @@ import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -52,12 +52,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.mockwebserver.RecordedRequest;
 
-@PrepareForTest({ Clock.class })
-@PowerMockIgnore({
-    "javax.net.ssl.*",
-    "okhttp3.*",
-    "okio.*"
-})
 public class ContainerAuthenticatorTest extends BaseServiceUnitTest {
 
   private IamToken tokenData1;
@@ -97,6 +91,21 @@ public class ContainerAuthenticatorTest extends BaseServiceUnitTest {
     logger.addHandler(handler);
   }
 
+  // This will be our mocked version of the Clock class.
+  private static MockedStatic<Clock> clockMock = null;
+
+  @BeforeMethod
+  public void createEnvMock() {
+    clockMock = Mockito.mockStatic(Clock.class);
+  }
+
+  @AfterMethod
+  public void clearEnvMock() {
+    if (clockMock != null) {
+      clockMock.close();
+      clockMock = null;
+    }
+  }
 
   //
   // Tests involving the Builder class and fromConfiguration() method.
@@ -243,8 +252,7 @@ public class ContainerAuthenticatorTest extends BaseServiceUnitTest {
   @Test
   public void testAuthenticateNewAndStoredToken() throws Throwable {
     // Mock current time to ensure that we're way before the token expiration time.
-    PowerMockito.mockStatic(Clock.class);
-    PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
+    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
 
     ContainerAuthenticator authenticator = new ContainerAuthenticator.Builder()
         .crTokenFilename(mockCRTokenFile)
@@ -304,8 +312,7 @@ public class ContainerAuthenticatorTest extends BaseServiceUnitTest {
   @Test
   public void testAuthenticationExpiredToken() throws Throwable {
     // Mock current time to ensure that we've passed the token expiration time.
-    PowerMockito.mockStatic(Clock.class);
-    PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn((long) 1800000000);
+    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn((long) 1800000000);
 
     ContainerAuthenticator authenticator = new ContainerAuthenticator.Builder()
         .crTokenFilename(mockCRTokenFile)
@@ -346,8 +353,7 @@ public class ContainerAuthenticatorTest extends BaseServiceUnitTest {
   @Test
   public void testAuthenticationBackgroundTokenRefresh() throws InterruptedException {
     // Mock current time to put us in the "refresh window" where the token is not expired but still needs refreshed.
-    PowerMockito.mockStatic(Clock.class);
-    PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn((long) 1522788600);
+    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn((long) 1522788600);
 
     ContainerAuthenticator authenticator = new ContainerAuthenticator.Builder()
         .crTokenFilename(mockCRTokenFile)
@@ -400,8 +406,7 @@ public class ContainerAuthenticatorTest extends BaseServiceUnitTest {
   @Test
   public void testUserHeaders() throws Throwable {
     // Mock current time to ensure the token is valid.
-    PowerMockito.mockStatic(Clock.class);
-    PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
+    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
 
     Map<String, String> headers = new HashMap<>();
     headers.put("header1", "value1");
@@ -442,8 +447,7 @@ public class ContainerAuthenticatorTest extends BaseServiceUnitTest {
   @Test
   public void testClientIdSecret() throws Throwable {
     // Mock current time to ensure the token is valid.
-    PowerMockito.mockStatic(Clock.class);
-    PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
+    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
 
     ContainerAuthenticator authenticator = new ContainerAuthenticator.Builder()
         .crTokenFilename(mockCRTokenFile)
@@ -480,8 +484,7 @@ public class ContainerAuthenticatorTest extends BaseServiceUnitTest {
   @Test
   public void testScope() throws Throwable {
     // Mock current time to ensure the token is valid.
-    PowerMockito.mockStatic(Clock.class);
-    PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
+    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
 
     ContainerAuthenticator authenticator = new ContainerAuthenticator.Builder()
         .crTokenFilename(mockCRTokenFile)
@@ -524,8 +527,7 @@ public class ContainerAuthenticatorTest extends BaseServiceUnitTest {
   public void testApiErrorBadRequest() throws Throwable {
 
     // Mock current time to ensure the token is valid.
-    PowerMockito.mockStatic(Clock.class);
-    PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
+    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
 
     ContainerAuthenticator authenticator = new ContainerAuthenticator.Builder()
         .crTokenFilename(mockCRTokenFile)
@@ -545,8 +547,7 @@ public class ContainerAuthenticatorTest extends BaseServiceUnitTest {
   @Test
   public void testApiResponseError() throws Throwable {
     // Mock current time to ensure the token is valid.
-    PowerMockito.mockStatic(Clock.class);
-    PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
+    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
 
     ContainerAuthenticator authenticator = new ContainerAuthenticator.Builder()
         .crTokenFilename(mockCRTokenFile)
@@ -576,8 +577,7 @@ public class ContainerAuthenticatorTest extends BaseServiceUnitTest {
   public void testErrorReadingCRToken() throws Throwable {
 
     // Mock current time to ensure the token is valid.
-    PowerMockito.mockStatic(Clock.class);
-    PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
+    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
 
     ContainerAuthenticator authenticator = new ContainerAuthenticator.Builder()
         .crTokenFilename("bogus-cr-token-file")

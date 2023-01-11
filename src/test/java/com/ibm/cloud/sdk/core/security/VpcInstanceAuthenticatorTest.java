@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2022.
+ * (C) Copyright IBM Corp. 2022, 2023.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -28,9 +28,9 @@ import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -45,12 +45,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.mockwebserver.RecordedRequest;
 
-@PrepareForTest({ Clock.class })
-@PowerMockIgnore({
-    "javax.net.ssl.*",
-    "okhttp3.*",
-    "okio.*"
-})
 public class VpcInstanceAuthenticatorTest extends BaseServiceUnitTest {
   private VpcTokenResponse vpcInstanceIdentityTokenResponse;
   private VpcTokenResponse vpcIamAccessTokenResponse1;
@@ -93,6 +87,21 @@ public class VpcInstanceAuthenticatorTest extends BaseServiceUnitTest {
     logger.addHandler(handler);
   }
 
+  // This will be our mocked version of the Clock class.
+  private static MockedStatic<Clock> clockMock = null;
+
+  @BeforeMethod
+  public void createEnvMock() {
+    clockMock = Mockito.mockStatic(Clock.class);
+  }
+
+  @AfterMethod
+  public void clearEnvMock() {
+    if (clockMock != null) {
+      clockMock.close();
+      clockMock = null;
+    }
+  }
 
   //
   // Tests involving the Builder class and fromConfiguration() method.
@@ -399,8 +408,7 @@ public class VpcInstanceAuthenticatorTest extends BaseServiceUnitTest {
   public void testAuthenticateNewAndCachedToken() throws Throwable {
     // Mock current time to ensure that we're before the token expiration time.
     long mockTime = vpcIamAccessTokenResponse1.getCreatedAt().getTime() / 1000;
-    PowerMockito.mockStatic(Clock.class);
-    PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn(mockTime);
+    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn(mockTime);
 
     VpcInstanceAuthenticator authenticator = new VpcInstanceAuthenticator.Builder()
         .iamProfileId(mockIamProfileId)
@@ -447,8 +455,7 @@ public class VpcInstanceAuthenticatorTest extends BaseServiceUnitTest {
   public void testAuthenticationExpiredToken() throws Throwable {
     // Mock current time to ensure that we're past the token expiration time.
     long mockTime = vpcIamAccessTokenResponse1.getExpiresAt().getTime() / 1000 + 1;
-    PowerMockito.mockStatic(Clock.class);
-    PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn(mockTime);
+    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn(mockTime);
 
     VpcInstanceAuthenticator authenticator = new VpcInstanceAuthenticator.Builder()
         .iamProfileId(mockIamProfileId)
@@ -476,8 +483,6 @@ public class VpcInstanceAuthenticatorTest extends BaseServiceUnitTest {
 
   @Test
   public void testAuthenticationBackgroundTokenRefresh() throws InterruptedException {
-    PowerMockito.mockStatic(Clock.class);
-
     // "expiresAt" will be the token's expiration time expressed as # of seconds since 1/1/1970.
     // "ttl10" will be set to 10% of the token's time to live in seconds.
     // "ttl25" will be set to 25% of the token's time to live in seconds.
@@ -489,7 +494,7 @@ public class VpcInstanceAuthenticatorTest extends BaseServiceUnitTest {
     // We'll do this by setting the clock to the expiration minus 10% of time to live.
     // The refresh window starts at expiration time minus 20% of time-to-live,
     // so "expiresAt - ttl10" puts us right in the middle of the refresh window.
-    PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn(expiresAt - ttl10);
+    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn(expiresAt - ttl10);
 
     VpcInstanceAuthenticator authenticator = new VpcInstanceAuthenticator.Builder()
         .iamProfileId(mockIamProfileId)
@@ -520,7 +525,7 @@ public class VpcInstanceAuthenticatorTest extends BaseServiceUnitTest {
     // Set our clock to be before the refresh window so we use the new access token that was
     // obtained above when we detected the need to do a background refresh,
     // but we also want to avoid trying to refresh again.
-    PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn(expiresAt - ttl25);
+    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn(expiresAt - ttl25);
 
     // Calling "authenticate()" a third time should result in the new access token being used.
     authenticator.authenticate(requestBuilder);

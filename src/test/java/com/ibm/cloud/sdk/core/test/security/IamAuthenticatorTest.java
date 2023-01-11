@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2022.
+ * (C) Copyright IBM Corp. 2015, 2023.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -29,9 +29,9 @@ import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -51,12 +51,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.mockwebserver.RecordedRequest;
 
-@PrepareForTest({ Clock.class })
-@PowerMockIgnore({
-    "javax.net.ssl.*",
-    "okhttp3.*",
-    "okio.*"
-})
 @SuppressWarnings("deprecation")
 public class IamAuthenticatorTest extends BaseServiceUnitTest {
 
@@ -91,6 +85,21 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
     logger.addHandler(handler);
   }
 
+  // This will be our mocked version of the Clock class.
+  private static MockedStatic<Clock> clockMock = null;
+
+  @BeforeMethod
+  public void createEnvMock() {
+    clockMock = Mockito.mockStatic(Clock.class);
+  }
+
+  @AfterMethod
+  public void clearEnvMock() {
+    if (clockMock != null) {
+      clockMock.close();
+      clockMock = null;
+    }
+  }
 
   //
   // Tests involving the Builder class and fromConfiguration() method.
@@ -273,8 +282,7 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
     server.enqueue(jsonResponse(tokenData));
 
     // Mock current time to ensure that we're way before the token expiration time.
-    PowerMockito.mockStatic(Clock.class);
-    PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
+    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
 
     IamAuthenticator authenticator = new IamAuthenticator.Builder()
         .apikey(API_KEY)
@@ -323,8 +331,7 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
     server.enqueue(jsonResponse(tokenData));
 
     // Mock current time to ensure that we've passed the token expiration time.
-    PowerMockito.mockStatic(Clock.class);
-    PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn((long) 1800000000);
+    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn((long) 1800000000);
 
     IamAuthenticator authenticator = new IamAuthenticator(API_KEY);
     authenticator.setURL(url);
@@ -346,8 +353,7 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
     server.enqueue(jsonResponse(tokenData));
 
     // Mock current time to put us in the "refresh window" where the token is not expired but still needs refreshed.
-    PowerMockito.mockStatic(Clock.class);
-    PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn((long) 1522788600);
+    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn((long) 1522788600);
 
     IamAuthenticator authenticator = new IamAuthenticator.Builder().apikey(API_KEY).build();
     authenticator.setURL(url);
@@ -379,8 +385,7 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
     server.enqueue(jsonResponse(tokenData));
 
     // Mock current time to ensure the token is valid.
-    PowerMockito.mockStatic(Clock.class);
-    PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
+    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
 
     Map<String, String> headers = new HashMap<>();
     headers.put("header1", "value1");
@@ -414,8 +419,7 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
     server.enqueue(jsonResponse(tokenData));
 
     // Mock current time to ensure the token is valid.
-    PowerMockito.mockStatic(Clock.class);
-    PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
+    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
 
     IamAuthenticator authenticator = new IamAuthenticator.Builder()
         .apikey(API_KEY)
@@ -449,8 +453,7 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
     server.enqueue(jsonResponse(tokenData));
 
     // Mock current time to ensure the token is valid.
-    PowerMockito.mockStatic(Clock.class);
-    PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
+    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
 
     IamAuthenticator authenticator = new IamAuthenticator.Builder()
         .apikey(API_KEY)
@@ -478,8 +481,7 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
     server.enqueue(jsonResponse(tokenData));
 
     // Mock current time to ensure the token is valid.
-    PowerMockito.mockStatic(Clock.class);
-    PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
+    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
 
     IamAuthenticator authenticator = new IamAuthenticator.Builder()
         .apikey(API_KEY)
@@ -507,8 +509,7 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
     server.enqueue(errorResponse(400));
 
     // Mock current time to ensure the token is valid.
-    PowerMockito.mockStatic(Clock.class);
-    PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
+    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
 
     IamAuthenticator authenticator = new IamAuthenticator.Builder()
         .apikey(API_KEY)
@@ -526,8 +527,7 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
     server.enqueue(jsonResponse("{'}"));
 
     // Mock current time to ensure the token is valid.
-    PowerMockito.mockStatic(Clock.class);
-    PowerMockito.when(Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
+    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
 
     IamAuthenticator authenticator = new IamAuthenticator.Builder()
         .apikey(API_KEY)

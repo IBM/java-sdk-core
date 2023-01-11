@@ -23,7 +23,7 @@
         <commons-io-version>2.7</commons-io-version>
         <commons-lang3-version>3.8.1</commons-lang3-version>
         <rx-version>2.2.7</rx-version>
-        <powermock-version>2.0.9</powermock-version>
+        <mockito-version>4.11.0</mockito-version>
         <maven-deploy-plugin-version>3.0.0</maven-deploy-plugin-version>
         <nexus-staging-plugin-version>1.6.13</nexus-staging-plugin-version>
         <maven-gpg-plugin-version>3.0.1</maven-gpg-plugin-version>
@@ -134,15 +134,15 @@
             <version>${rx-version}</version>
         </dependency>
         <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-api-mockito2</artifactId>
-            <version>${powermock-version}</version>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${mockito-version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-module-testng</artifactId>
-            <version>${powermock-version}</version>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-inline</artifactId>
+            <version>${mockito-version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -359,16 +359,6 @@
                 <!-- Configure the gpg plugin to use the env vars defined in the Travis build settings -->
                 <gpg.keyname>${env.GPG_KEYNAME}</gpg.keyname>
                 <gpg.passphrase>${env.GPG_PASSPHRASE}</gpg.passphrase>
-            </properties>
-        </profile>
-        <profile>
-            <id>java16+</id>
-            <activation>
-                <jdk>[16,)</jdk>
-            </activation>
-            <properties>
-                <!-- For java 16 and higher, we need these jvm args when running tests due to errors caused by other libraries. -->
-                <surefireJvmArgs>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.logging/java.util.logging=ALL-UNNAMED</surefireJvmArgs>
             </properties>
         </profile>
     </profiles>
