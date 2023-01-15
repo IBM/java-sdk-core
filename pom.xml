@@ -10,7 +10,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <testng-version>7.4.0</testng-version>
+        <testng-version>7.7.1</testng-version>
+        <testng-slf4j-version>2.0.6</testng-slf4j-version>
         <surefire-version>3.0.0-M7</surefire-version>
         <checkstyle-plugin-version>3.2.0</checkstyle-plugin-version>
         <checkstyle-version>8.41</checkstyle-version>
@@ -27,6 +28,13 @@
         <maven-deploy-plugin-version>3.0.0</maven-deploy-plugin-version>
         <nexus-staging-plugin-version>1.6.13</nexus-staging-plugin-version>
         <maven-gpg-plugin-version>3.0.1</maven-gpg-plugin-version>
+        
+        <maven-enforcer-version>3.1.0</maven-enforcer-version>
+        <min-jdk-version>11</min-jdk-version>
+        <min-maven-version>3.5.0</min-maven-version>
+
+        <java-source-version>1.8</java-source-version>
+        <java-target-version>1.8</java-target-version>
 
         <!-- versions of transitive dependencies we need to override to avoid vulnerability alerts -->
         <junit-version>4.13.2</junit-version>
@@ -119,6 +127,18 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${testng-slf4j-version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>${testng-slf4j-version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>${guava-version}</version>
@@ -159,6 +179,31 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>${maven-enforcer-version}</version>
+                <executions>
+                    <execution>
+                        <id>enforce-versions</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireMavenVersion>
+                                    <version>${min-maven-version}</version>
+                                    <message>Apache Maven ${min-maven-version}+ is required to build this project.</message>
+                                </requireMavenVersion>
+                                <requireJavaVersion>
+                                    <version>${min-jdk-version}</version>
+                                    <message>Java ${min-jdk-version}+ is required to build this project.</message>
+                                </requireJavaVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <!-- Disable default maven-deploy-plugin -->
                 <groupId>org.apache.maven.plugins</groupId>
@@ -268,8 +313,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${compiler-plugin-version}</version>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <source>${java-source-version}</source>
+                    <target>${java-target-version}</target>
                 </configuration>
             </plugin>
             <plugin>

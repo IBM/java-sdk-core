@@ -16,26 +16,25 @@ import okhttp3.HttpUrl;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.RecordedRequest;
 
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertTrue;
+
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import static com.ibm.cloud.sdk.core.http.HttpHeaders.CONTENT_TYPE;
 import static com.ibm.cloud.sdk.core.http.HttpHeaders.CONTENT_ENCODING;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertNotNull;
 
 public class RateLimitTest extends BaseServiceUnitTest {
 
     public class TestModel extends GenericModel {
         String success;
-
         public String getSuccess() {
             return success;
         }
     }
-
 
     public class TestService extends BaseService {
 
@@ -58,6 +57,7 @@ public class RateLimitTest extends BaseServiceUnitTest {
      *
      * @see com.ibm.cloud.sdk.core.test.WatsonServiceTest#setUp()
      */
+    @SuppressWarnings("deprecation")
     @Override
     @BeforeMethod
     public void setUp() throws Exception {
@@ -88,9 +88,9 @@ public class RateLimitTest extends BaseServiceUnitTest {
         } catch (Exception e) {
             assertTrue(e instanceof TooManyRequestsException);
             TooManyRequestsException ex = (TooManyRequestsException) e;
-            assertEquals(429, ex.getStatusCode());
+            assertEquals(ex.getStatusCode(), 429);
             assertEquals(message, ex.getMessage());
-            assertEquals(4, server.getRequestCount());
+            assertEquals(server.getRequestCount(), 4);
         }
     }
 
@@ -111,12 +111,11 @@ public class RateLimitTest extends BaseServiceUnitTest {
                 .addHeader(CONTENT_TYPE, HttpMediaType.APPLICATION_JSON)
                 .setBody("{\"success\": \"awesome\"}"));
 
-
         Response<TestModel> r = service.testMethod().execute();
 
-        assertEquals(200, r.getStatusCode());
-        assertEquals("awesome", r.getResult().getSuccess());
-        assertEquals(2, server.getRequestCount());
+        assertEquals(r.getStatusCode(), 200);
+        assertEquals(r.getResult().getSuccess(), "awesome");
+        assertEquals(server.getRequestCount(), 2);
 
         RecordedRequest request = server.takeRequest();
         assertNotNull(request);
@@ -143,9 +142,8 @@ public class RateLimitTest extends BaseServiceUnitTest {
 
         Response<TestModel> r = service.testMethod().execute();
 
-        assertEquals(200, r.getStatusCode());
-        assertEquals("awesome", r.getResult().getSuccess());
-        assertEquals(2, server.getRequestCount());
-
+        assertEquals(r.getStatusCode(), 200);
+        assertEquals(r.getResult().getSuccess(), "awesome");
+        assertEquals(server.getRequestCount(), 2);
     }
 }
