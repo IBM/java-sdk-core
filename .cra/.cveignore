@@ -1,7 +1,2 @@
 [
-    {
-        "cve": "SNYK-JAVA-ORGTESTNG-3040285",
-        "alwaysOmit": true,
-        "comment": "The 'Zip Slip' vulnerability does not apply to this project because we merely use TestNG to execute testcases during our maven build, and we do not deliver a jar containing test classes."
-    }
 ]

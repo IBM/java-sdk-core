@@ -1,9 +1,9 @@
 ---
 language: java
-dist: bionic
+dist: jammy
 
 jdk:
-- openjdk8
+- openjdk11
 
 notifications:
   email: true
@@ -35,15 +35,10 @@ before_install:
 jobs:
   include:
     - stage: Build-Test
-      jdk: openjdk8
+      jdk: openjdk11
       install: skip
       script:
         - build/setMavenVersion.sh
-        - mvn clean package $MVN_ARGS
-
-    - jdk: openjdk11
-      install: skip
-      script:
         - mvn clean package $MVN_ARGS
 
     - jdk: openjdk17
@@ -52,7 +47,7 @@ jobs:
         - mvn clean package $MVN_ARGS
 
     - stage: Semantic-Release
-      jdk: openjdk8
+      jdk: openjdk11
       install:
         - nvm install 14
         - npm install
@@ -63,7 +58,7 @@ jobs:
         - echo "Semantic release has successfully created a new tagged-release"
 
     - stage: Publish-Release
-      jdk: openjdk8
+      jdk: openjdk11
       name: Publish-Javadoc
       install: true
       script:
@@ -73,7 +68,7 @@ jobs:
       after_success:
         - echo "Javadocs successfully published to gh-pages!"
 
-    - jdk: openjdk8
+    - jdk: openjdk11
       name: Publish-To-Maven-Central
       install: true
       script:

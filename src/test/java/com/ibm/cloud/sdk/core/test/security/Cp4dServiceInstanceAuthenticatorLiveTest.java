@@ -16,8 +16,8 @@ package com.ibm.cloud.sdk.core.test.security;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.testng.annotations.Ignore;
+import org.testng.annotations.Test;
 
 import com.ibm.cloud.sdk.core.http.HttpHeaders;
 import com.ibm.cloud.sdk.core.security.Authenticator;
