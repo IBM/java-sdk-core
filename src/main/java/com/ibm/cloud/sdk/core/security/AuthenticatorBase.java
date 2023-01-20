@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2019, 2021.
+ * (C) Copyright IBM Corp. 2019, 2023.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -13,9 +13,8 @@
 
 package com.ibm.cloud.sdk.core.security;
 
+import java.util.Base64;
 import org.apache.commons.lang3.StringUtils;
-
-import com.google.common.io.BaseEncoding;
 
 /**
  * This is a common base class used with the various Authenticator implementations.
@@ -42,7 +41,7 @@ public class AuthenticatorBase {
    */
   public static String constructBasicAuthHeader(String username, String password) {
     if (StringUtils.isNotEmpty(username) && StringUtils.isNotEmpty(password)) {
-      return "Basic " + BaseEncoding.base64().encode(((username + ":" + password).getBytes()));
+      return "Basic " + Base64.getEncoder().encodeToString(((username + ":" + password).getBytes()));
     }
     return null;
   }

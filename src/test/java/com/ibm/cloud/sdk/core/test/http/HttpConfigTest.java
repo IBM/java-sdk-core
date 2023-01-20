@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2022.
+ * (C) Copyright IBM Corp. 2015, 2023.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -21,8 +21,6 @@ import static org.testng.Assert.assertTrue;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
-
-import javax.annotation.Nullable;
 
 import org.testng.annotations.Test;
 
@@ -46,9 +44,8 @@ public class HttpConfigTest {
   @Test
   public void testHttpConfigOptions() {
     Authenticator authenticator = new Authenticator() {
-      @Nullable
       @Override
-      public Request authenticate(@Nullable Route route, Response response) throws IOException {
+      public Request authenticate(Route route, Response response) throws IOException {
         return null;
       }
     };

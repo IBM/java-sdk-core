@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2019.
+ * (C) Copyright IBM Corp. 2019, 2023.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -13,12 +13,13 @@
 
 package com.ibm.cloud.sdk.core.security;
 
-import com.google.common.io.BaseEncoding;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
 import com.ibm.cloud.sdk.core.util.GsonSingleton;
 
 import java.lang.reflect.Type;
+import java.nio.charset.Charset;
+import java.util.Base64;
 import java.util.Map;
 
 /**
@@ -41,11 +42,11 @@ public class JsonWebToken {
     Type headerType = new TypeToken<Map<String, String>>(){}.getType();
 
     // Decode and parse the header.
-    json = new String(BaseEncoding.base64Url().decode(decodedParts[0]));
+    json = new String(Base64.getUrlDecoder().decode(decodedParts[0]), Charset.forName("UTF-8"));
     header = GsonSingleton.getGson().fromJson(json, headerType);
 
     // Decode and parse the body.
-    json = new String(BaseEncoding.base64Url().decode(decodedParts[1]));
+    json = new String(Base64.getUrlDecoder().decode(decodedParts[1]), Charset.forName("UTF-8"));
     payload = GsonSingleton.getGson().fromJson(json, Payload.class);
   }
 

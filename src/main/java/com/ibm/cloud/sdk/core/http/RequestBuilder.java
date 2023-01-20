@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2021.
+ * (C) Copyright IBM Corp. 2015, 2023.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -17,12 +17,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-
 import org.apache.commons.lang3.StringUtils;
-
-import com.google.common.escape.Escaper;
-import com.google.common.net.UrlEscapers;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.ibm.cloud.sdk.core.util.GsonSingleton;
@@ -39,8 +34,6 @@ import okhttp3.RequestBody;
  * Convenience class for constructing HTTP/HTTPS requests.
  */
 public class RequestBuilder {
-
-  private static Escaper pathEscaper = UrlEscapers.urlPathSegmentEscaper();
 
   private enum HTTPMethod {
     DELETE, GET, POST, PUT, PATCH, HEAD
@@ -169,22 +162,24 @@ public class RequestBuilder {
     HttpUrl.Builder builder = HttpUrl.get(serviceUrl).newBuilder();
 
     if (StringUtils.isNotEmpty(path)) {
-
-      // If path parameter values were passed in, then for each one, replace any references to it
-      // within "path" with the path parameter's encoded value.
+      // If path parameter values were passed in, then create search/replace lists from the keys and values.
+      // These will be used to find/replace any references to it within "path".
+      String[] paramSearchStrings = new String[0];
+      String[] paramReplacementStrings = new String[0];
       if (pathParams != null) {
-        for (Entry<String, String> paramEntry : pathParams.entrySet()) {
+        List<String> keys = new ArrayList<>();
+        List<String> values = new ArrayList<>();
+        for (Map.Entry<String, String> paramEntry : pathParams.entrySet()) {
           if (StringUtils.isEmpty(paramEntry.getValue())) {
             throw new IllegalArgumentException(
                 String.format("Path parameter '%s' is empty", paramEntry.getKey()));
+          } else {
+            keys.add(StringUtils.join("{", paramEntry.getKey(), "}"));
+            values.add(paramEntry.getValue());
           }
-
-          // Encode the individual path param value as a path segment, then replace its reference(s)
-          // within the path string with the encoded value.
-          String encodedValue = pathEscaper.escape(paramEntry.getValue());
-          String ref = String.format("{%s}", paramEntry.getKey());
-          path = path.replace(ref, encodedValue);
         }
+        paramSearchStrings = keys.toArray(paramSearchStrings);
+        paramReplacementStrings = values.toArray(paramReplacementStrings);
       }
 
       // Strip off any leading slash from the path string.
@@ -192,8 +187,16 @@ public class RequestBuilder {
         path = path.substring(1);
       }
 
-      // Set the path on the builder object.
-      builder.addEncodedPathSegments(path);
+      // Split the path into segments to replace parameters
+      // These replacements have to be done per segment in case any of the values
+      // contain the separator / which needs to be encoded.
+      for (String pathSegment : path.split("/")) {
+        // For each segment search for key, {k}, references and replace with value, v
+        String paramResolvedSegment = StringUtils.replaceEachRepeatedly(
+            pathSegment, paramSearchStrings, paramReplacementStrings);
+        // Add the segment to the URL, noting that it will be URL encoded by okhttp
+        builder.addPathSegment(paramResolvedSegment);
+      }
     }
 
     // Return the final HttpUrl object.
