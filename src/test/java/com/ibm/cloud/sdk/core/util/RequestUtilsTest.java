@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2022.
+ * (C) Copyright IBM Corp. 2015, 2023.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -13,7 +13,6 @@
 
 package com.ibm.cloud.sdk.core.util;
 
-import com.google.common.collect.Lists;
 import com.ibm.cloud.sdk.core.http.HttpMediaType;
 
 import org.testng.annotations.Test;
@@ -21,6 +20,7 @@ import org.testng.annotations.Test;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -59,12 +59,12 @@ public class RequestUtilsTest {
 
     Map<String, Object> omitted = RequestUtils.omit(params, "A");
 
-    assertTrue(omitted.keySet().containsAll(Lists.newArrayList("B", "C", "D")));
-    assertTrue(omitted.values().containsAll(Lists.newArrayList(2, 3, 4)));
+    assertTrue(omitted.keySet().containsAll(Arrays.asList("B", "C", "D")));
+    assertTrue(omitted.values().containsAll(Arrays.asList(2, 3, 4)));
 
     omitted = RequestUtils.omit(params, "F");
-    assertTrue(omitted.keySet().containsAll(Lists.newArrayList("A", "B", "C", "D")));
-    assertTrue(omitted.values().containsAll(Lists.newArrayList(1, 2, 3, 4)));
+    assertTrue(omitted.keySet().containsAll(Arrays.asList("A", "B", "C", "D")));
+    assertTrue(omitted.values().containsAll(Arrays.asList(1, 2, 3, 4)));
   }
 
   /**

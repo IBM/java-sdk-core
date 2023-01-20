@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2020.
+ * (C) Copyright IBM Corp. 2015, 2023.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -13,7 +13,6 @@
 
 package com.ibm.cloud.sdk.core.test.model;
 
-import com.google.common.collect.Sets;
 import com.google.gson.JsonSyntaxException;
 import com.ibm.cloud.sdk.core.service.model.DynamicModel;
 import com.ibm.cloud.sdk.core.test.model.generated.Foo;
@@ -28,8 +27,9 @@ import com.ibm.cloud.sdk.core.test.model.generated.ModelAPProtectedCtor;
 import com.ibm.cloud.sdk.core.test.model.generated.ModelAPString;
 import com.ibm.cloud.sdk.core.util.GsonSingleton;
 import org.testng.annotations.Test;
-
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
@@ -355,12 +355,12 @@ public class DynamicModelSerializationTest {
     // This test will exercise some of the DynamicModel methods
     // dealing with additional properties.
     ModelAPFoo model = createModelAPFoo();
-    assertEquals(model.getPropertyNames(), Sets.newHashSet("baseball", "football"));
+    assertEquals(model.getPropertyNames(), new HashSet<>(Arrays.asList("baseball", "football")));
 
     Foo foo = model.get("baseball");
     assertNotNull(foo);
     model.put("baseball2", foo);
-    assertEquals(model.getPropertyNames(), Sets.newHashSet("baseball", "football", "baseball2"));
+    assertEquals(model.getPropertyNames(), new HashSet<>(Arrays.asList("baseball", "football", "baseball2")));
 
     Foo newFoo = createFoo("1B", 44);
     Foo previous = model.put("baseball", newFoo);
@@ -372,7 +372,7 @@ public class DynamicModelSerializationTest {
     assertEquals(props.size(), 3);
 
     model.removeProperty("baseball2");
-    assertEquals(model.getPropertyNames(), Sets.newHashSet("baseball", "football"));
+    assertEquals(model.getPropertyNames(), new HashSet<>(Arrays.asList("baseball", "football")));
 
     ModelAPFoo newModel = deserialize(serialize(model), ModelAPFoo.class);
     assertEquals(newModel, model);
@@ -380,9 +380,9 @@ public class DynamicModelSerializationTest {
     Map<String, Foo> newProps = new HashMap<>();
     newProps.put("soccer", newFoo);
     model.setProperties(newProps);
-    assertEquals(model.getPropertyNames(), Sets.newHashSet("soccer"));
+    assertEquals(model.getPropertyNames(), new HashSet<>(Arrays.asList("soccer")));
     newProps.remove("soccer");
-    assertEquals(model.getPropertyNames(), Sets.newHashSet("soccer"));
+    assertEquals(model.getPropertyNames(), new HashSet<>(Arrays.asList("soccer")));
 
     assertTrue(model.equals(model));
     assertFalse(model.equals(null));
