@@ -337,7 +337,8 @@ The IAM access token is added to each outbound request in the `Authorization` he
 - iamProfileId: (optional) the id of the linked trusted IAM profile to be used when obtaining the IAM access token.
 
 - url: (optional) The base endpoint URL of the VPC Instance Metadata Service.  
-The default value of this property is `http://169.254.169.254`, and should not need to be specified in normal situations.
+The default value of this property is `http://169.254.169.254`.  However, if the VPC Instance Metadata Service is configured
+with the HTTP Secure Protocol setting (`https`), then you should configure this property to be `https://api.metadata.cloud.ibm.com`.
 
 Usage Notes:
 1. At most one of `iamProfileCrn` or `iamProfileId` may be specified.  The specified value must map
