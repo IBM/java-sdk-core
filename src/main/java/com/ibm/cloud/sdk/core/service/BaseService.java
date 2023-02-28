@@ -86,9 +86,9 @@ public abstract class BaseService {
 
   // Regular expression for JSON-related mimetypes.
   protected static final Pattern JSON_MIME_PATTERN =
-    Pattern.compile("(?i)application\\/((json)|(merge\\-patch\\+json))(;.*)?");
+    Pattern.compile("(?i)application\\/((json)|(merge\\-patch\\+json))(\\s*;.*)?");
   protected static final Pattern JSON_PATCH_MIME_PATTERN =
-    Pattern.compile("(?i)application\\/json\\-patch\\+json(;.*)?");
+    Pattern.compile("(?i)application\\/json\\-patch\\+json(\\s*;.*)?");
 
   // Hide the default ctor to prevent clients from calling it directly.
   protected BaseService() {
