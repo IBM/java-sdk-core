@@ -81,6 +81,7 @@ public class BaseServiceTest {
     assertFalse(BaseService.isJsonPatchMimeType(null));
     assertTrue(BaseService.isJsonMimeType("application/json"));
     assertTrue(BaseService.isJsonMimeType("application/json; charset=utf-8"));
+    assertTrue(BaseService.isJsonMimeType("application/json ;charset=utf-8"));
     assertTrue(BaseService.isJsonMimeType("application/json;charset=utf-8"));
     assertTrue(BaseService.isJsonMimeType("APPLICATION/JSON;charset=utf-16"));
     assertFalse(BaseService.isJsonMimeType("application/notjson"));
@@ -95,6 +96,7 @@ public class BaseServiceTest {
 
     assertTrue(BaseService.isJsonPatchMimeType("application/json-patch+json"));
     assertTrue(BaseService.isJsonPatchMimeType("application/json-patch+json;charset=utf-8"));
+    assertTrue(BaseService.isJsonPatchMimeType("application/json-patch+json ; charset=utf-8"));
     assertFalse(BaseService.isJsonPatchMimeType("application/json"));
     assertFalse(BaseService.isJsonPatchMimeType("APPLICATION/JsOn; charset=utf-8"));
     assertFalse(BaseService.isJsonPatchMimeType("application/merge-patch+json"));
