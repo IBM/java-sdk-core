@@ -1,3 +1,10 @@
+## [9.17.6](https://github.com/IBM/java-sdk-core/compare/9.17.5...9.17.6) (2023-02-28)
+
+
+### Bug Fixes
+
+* recognize content types with whitespace ([#200](https://github.com/IBM/java-sdk-core/issues/200)) ([58a7c7f](https://github.com/IBM/java-sdk-core/commit/58a7c7f2153350cfc2ae32f668f632fd482d9953))
+
 ## [9.17.5](https://github.com/IBM/java-sdk-core/compare/9.17.4...9.17.5) (2023-01-09)
 
 
