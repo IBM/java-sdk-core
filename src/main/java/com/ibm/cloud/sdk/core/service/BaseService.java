@@ -521,7 +521,7 @@ public abstract class BaseService {
       try {
         return converter.convert(response);
       } catch (Throwable t) {
-        throw new InvalidServiceResponseException(response, "Error processing the http response", t);
+        throw new InvalidServiceResponseException(response, "Error processing the HTTP response", t);
       }
     }
 
