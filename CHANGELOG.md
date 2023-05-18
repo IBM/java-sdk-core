@@ -1,3 +1,10 @@
+## [9.18.1](https://github.com/IBM/java-sdk-core/compare/9.18.0...9.18.1) (2023-05-18)
+
+
+### Bug Fixes
+
+* tweak JSON parsing error message ([#203](https://github.com/IBM/java-sdk-core/issues/203)) ([a28f796](https://github.com/IBM/java-sdk-core/commit/a28f796980c6b14fe9b1a0b74d6ff215c3e6e8a7))
+
 # [9.18.0](https://github.com/IBM/java-sdk-core/compare/9.17.6...9.18.0) (2023-05-02)
 
 
