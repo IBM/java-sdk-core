@@ -1,3 +1,10 @@
+## [9.18.2](https://github.com/IBM/java-sdk-core/compare/9.18.1...9.18.2) (2023-05-19)
+
+
+### Bug Fixes
+
+* **build:** add new signing key ([afc9dd0](https://github.com/IBM/java-sdk-core/commit/afc9dd01628b40e937ac39f49c8e8fdbf9a21bb8))
+
 ## [9.18.1](https://github.com/IBM/java-sdk-core/compare/9.18.0...9.18.1) (2023-05-18)
 
 
