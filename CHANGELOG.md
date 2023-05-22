@@ -1,3 +1,10 @@
+## [9.18.3](https://github.com/IBM/java-sdk-core/compare/9.18.2...9.18.3) (2023-05-22)
+
+
+### Bug Fixes
+
+* **ContainerAuthenticator:** add sa-token as default CR token filename ([#202](https://github.com/IBM/java-sdk-core/issues/202)) ([593244a](https://github.com/IBM/java-sdk-core/commit/593244ad1ef48f2c1df2843233f0df01e439d72c))
+
 ## [9.18.2](https://github.com/IBM/java-sdk-core/compare/9.18.1...9.18.2) (2023-05-19)
 
 
