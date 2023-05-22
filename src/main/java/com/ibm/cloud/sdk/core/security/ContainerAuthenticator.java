@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2021.
+ * (C) Copyright IBM Corp. 2021, 2023.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -13,6 +13,7 @@
 
 package com.ibm.cloud.sdk.core.security;
 
+import java.io.IOException;
 import java.net.Proxy;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -40,7 +41,8 @@ public class ContainerAuthenticator extends IamRequestBasedAuthenticator impleme
   private static final Logger LOG = Logger.getLogger(ContainerAuthenticator.class.getName());
   private static final String DEFAULT_IAM_URL = "https://iam.cloud.ibm.com";
   private static final String OPERATION_PATH = "/identity/token";
-  private static final String DEFAULT_CR_TOKEN_FILENAME = "/var/run/secrets/tokens/vault-token";
+  private static final String DEFAULT_CR_TOKEN_FILENAME1 = "/var/run/secrets/tokens/vault-token";
+  private static final String DEFAULT_CR_TOKEN_FILENAME2 = "/var/run/secrets/tokens/sa-token";
   private static final String ERRORMSG_CR_TOKEN_ERROR = "Error reading CR token file: %s";
 
   // Properties specific to a ContainerAuthenticator.
@@ -369,27 +371,46 @@ public class ContainerAuthenticator extends IamRequestBasedAuthenticator impleme
   /**
    * Reads the CR token value from the file system.
    * @return the CR token value
-   * @throws IllegalStateException
    */
-  protected String retrieveCRToken() throws IllegalStateException {
-    try {
-      // Use the default filename if one wasn't supplied by the user.
-      String tokenFilename = getCrTokenFilename();
-      if (StringUtils.isEmpty(tokenFilename)) {
-        tokenFilename = DEFAULT_CR_TOKEN_FILENAME;
+  protected String retrieveCRToken() {
+      try {
+          String crToken = null;
+          if (StringUtils.isNotEmpty(getCrTokenFilename())) {
+              // Try to read from the file specified by the user.
+              crToken = readFile(getCrTokenFilename());
+          } else {
+              // If no filename was supplied by the user, then try our two default filenames.
+              try {
+                  crToken = readFile(DEFAULT_CR_TOKEN_FILENAME1);
+              } catch (Throwable t) {
+                  crToken = readFile(DEFAULT_CR_TOKEN_FILENAME2);
+              }
+          }
+          return crToken;
+      } catch (Throwable t) {
+          String msg = (t.getMessage() != null ? t.getMessage() : t.getClass().getName());
+          throw new RuntimeException(String.format(ERRORMSG_CR_TOKEN_ERROR, msg), t);
       }
+  }
 
-      LOG.log(Level.FINE, "Attempting to read CR token from file: ", tokenFilename);
-
-      // Read the entire file into a byte array, then convert to string.
-      byte[] crTokenBytes = Files.readAllBytes(Paths.get(tokenFilename));
-      String crToken = new String(crTokenBytes, StandardCharsets.UTF_8);
-
-      LOG.log(Level.FINE, "Successfully read CR token from file: ", tokenFilename);
-      return crToken;
-    } catch (Throwable t) {
-      String msg = (t.getMessage() != null ? t.getMessage() : t.getClass().getName());
-      throw new RuntimeException(String.format(ERRORMSG_CR_TOKEN_ERROR, msg), t);
-    }
+  /**
+   * Reads a CR token from the specified file and returns it as a String.
+   * @param filename the name of the file to read
+   * @return the CR token value, or an exception if there was an error reading the file
+   * @throws IOException
+   */
+  protected String readFile(String filename) throws IOException {
+      try {
+          String crToken = null;
+          // Read the entire file into a byte array, then convert to string.
+          LOG.log(Level.FINE, "Attempting to read CR token from file: ", filename);
+          byte[] bytes = Files.readAllBytes(Paths.get(filename));
+          crToken = new String(bytes, StandardCharsets.UTF_8);
+          LOG.log(Level.FINE, "Successfully read CR token from file: ", filename);
+          return crToken;
+      } catch (Throwable t) {
+          LOG.log(Level.FINE, "Error reading CR token: ", t);
+          throw t;
+      }
   }
 }
