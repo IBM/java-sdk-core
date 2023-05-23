@@ -197,6 +197,13 @@ public class RequestBuilder {
         // Add the segment to the URL, noting that it will be URL encoded by okhttp
         builder.addPathSegment(paramResolvedSegment);
       }
+
+      // Due to the way in which we're handling the path segments one at a time above,
+      // if our original path string contained a trailing slash (e.g. /v1/mypath/), then we need to
+      // add "" as a path segment to ensure that the final request URL also has a trailing slash.
+      if (path.endsWith("/")) {
+          builder.addPathSegment("");
+      }
     }
 
     // Return the final HttpUrl object.

@@ -41,6 +41,7 @@ import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.RecordedRequest;
 
 public class RequestTest extends BaseServiceUnitTest {
+  private static String OperationPath = "/v1/test/";
   private class TestModel extends GenericModel {
     String city;
 
@@ -67,7 +68,7 @@ public class RequestTest extends BaseServiceUnitTest {
 
       final JsonObject contentJson = new JsonObject();
       contentJson.addProperty("city", model.getCity());
-      RequestBuilder builder = RequestBuilder.post(HttpUrl.parse(getServiceUrl() + "/v1/test"));
+      RequestBuilder builder = RequestBuilder.post(RequestBuilder.resolveRequestUrl(getServiceUrl(), OperationPath));
       builder.bodyJson(contentJson).build();
       return createServiceCall(builder.build(), ResponseConverterUtils.getObject(TestModel.class));
     }
@@ -118,6 +119,7 @@ public class RequestTest extends BaseServiceUnitTest {
     // Validate the next request was compressed, which should be the call to the service
     String expectedOperationBody = "{\"city\":\"Columbus\"}";
     request = server.takeRequest();
+    assertEquals(OperationPath, request.getPath());
     assertEquals("gzip", request.getHeader(CONTENT_ENCODING));
     assertFalse(expectedOperationBody == request.getBody().readUtf8());
     assertEquals(request.getMethod(), "POST");
@@ -156,6 +158,7 @@ public class RequestTest extends BaseServiceUnitTest {
     // Validate the next request was compressed, which should be the call to the service
     String expectedOperationBody = "{\"city\":\"Columbus\"}";
     request = server.takeRequest();
+    assertEquals(OperationPath, request.getPath());
     assertEquals("gzip", request.getHeader(CONTENT_ENCODING));
     assertFalse(expectedOperationBody == request.getBody().readUtf8());
 
