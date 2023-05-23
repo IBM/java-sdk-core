@@ -16,9 +16,9 @@ echo '<!DOCTYPE html>
     <div class="page-header">
         <h1>IBM Cloud Java SDK Core Library Documentation</h1>
     </div>
-    <p>Javadoc by branch/release:</p>
-    <ul>
-        <li><a href="docs/latest">Latest</a></li>'
+    <p>Javadoc by release:</p>
+    <ul>'
+echo ${TRAVIS_BRANCH} | sed 's/^.*/        <li><a href="docs\/&">Latest release<\/a><\/li>/'
 ls docs | grep --invert-match index.html | sed 's/^.*/        <li><a href="docs\/&">&<\/a><\/li>/'
 echo '    </ul>
 </div>
