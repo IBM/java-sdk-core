@@ -443,6 +443,13 @@ public class RequestBuilderTest {
   }
 
   @Test
+  public void testResolveRequestUrlPathSlash3() {
+    HttpUrl url = RequestBuilder.resolveRequestUrl("https://myserver.com", "/v1/serviceids/");
+    assertNotNull(url);
+    assertEquals("https://myserver.com/v1/serviceids/", url.toString());
+  }
+
+  @Test
   public void testResolveRequestUrlEncodedPathParams() {
     Map<String, String> pathParameters = new HashMap<String, String>() {{
       put("param_1", "param/1");
