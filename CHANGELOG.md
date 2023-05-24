@@ -1,3 +1,10 @@
+## [9.18.4](https://github.com/IBM/java-sdk-core/compare/9.18.3...9.18.4) (2023-05-24)
+
+
+### Bug Fixes
+
+* **RequestBuilder:** retain trailing slash on operation path ([#206](https://github.com/IBM/java-sdk-core/issues/206)) ([aa22d28](https://github.com/IBM/java-sdk-core/commit/aa22d28434e12ef9f7be9c8b2a08d1b97c94e628))
+
 ## [9.18.3](https://github.com/IBM/java-sdk-core/compare/9.18.2...9.18.3) (2023-05-22)
 
 
