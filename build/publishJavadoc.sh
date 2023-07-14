@@ -22,16 +22,6 @@ if [[ -n "${TRAVIS_TAG}" ]]; then
     printf "\n>>>>> Generating gh-pages index.html...\n"
     ../build/generateJavadocIndex.sh > index.html
 
-    # Update the 'latest' symlink to point to this branch if it's a tagged release.
-    if [ -n "$TRAVIS_TAG" ]; then
-	pushd docs
-	rm latest
-	ln -s ./${TRAVIS_TAG} latest
-	printf "\n>>>>> Updated 'docs/latest' symlink:\n"
-	ls -l latest
-	popd
-    fi
-
     printf "\n>>>>> Committing new javadoc...\n"
     git add -f .
     git commit -m "doc: latest javadoc for ${TRAVIS_BRANCH} (${TRAVIS_COMMIT})"
