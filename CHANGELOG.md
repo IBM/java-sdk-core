@@ -1,3 +1,10 @@
+## [9.18.5](https://github.com/IBM/java-sdk-core/compare/9.18.4...9.18.5) (2023-09-06)
+
+
+### Bug Fixes
+
+* bump okio transitive dependency to avoid CVE ([#211](https://github.com/IBM/java-sdk-core/issues/211)) ([12b367c](https://github.com/IBM/java-sdk-core/commit/12b367cab937bb71260cc41837769d8cc54531f3))
+
 ## [9.18.4](https://github.com/IBM/java-sdk-core/compare/9.18.3...9.18.4) (2023-05-24)
 
 
