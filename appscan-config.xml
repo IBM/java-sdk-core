@@ -1,0 +1,8 @@
+<Configuration>
+  <Targets>
+    <Target path=".">
+      <Exclude>src/main/java/com/ibm/cloud/sdk/core/service/security/DelegatingSSLSocketFactory.java</Exclude>
+      <Exclude>src/main/java/com/ibm/cloud/sdk/core/util/DynamicModelTypeAdapterFactory.java</Exclude>
+    </Target>
+  </Targets>
+</Configuration>
