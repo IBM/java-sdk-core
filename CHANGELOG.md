@@ -1,3 +1,10 @@
+## [9.18.6](https://github.com/IBM/java-sdk-core/compare/9.18.5...9.18.6) (2023-10-02)
+
+
+### Bug Fixes
+
+* bump dependencies to avoid vulnerabilities ([#215](https://github.com/IBM/java-sdk-core/issues/215)) ([3f5a609](https://github.com/IBM/java-sdk-core/commit/3f5a6098ee70f90d8ea836b8e7bc9e8cd21629ee)), closes [#214](https://github.com/IBM/java-sdk-core/issues/214)
+
 ## [9.18.5](https://github.com/IBM/java-sdk-core/compare/9.18.4...9.18.5) (2023-09-06)
 
 
