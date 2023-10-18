@@ -1,3 +1,10 @@
+## [9.18.7](https://github.com/IBM/java-sdk-core/compare/9.18.6...9.18.7) (2023-10-18)
+
+
+### Bug Fixes
+
+* bump okhttp to 4.12.0 ([#216](https://github.com/IBM/java-sdk-core/issues/216)) ([5644504](https://github.com/IBM/java-sdk-core/commit/56445047940b0f8b6aa284fe84059c499eb77216)), closes [#211](https://github.com/IBM/java-sdk-core/issues/211)
+
 ## [9.18.6](https://github.com/IBM/java-sdk-core/compare/9.18.5...9.18.6) (2023-10-02)
 
 
