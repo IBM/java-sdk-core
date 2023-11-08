@@ -36,6 +36,7 @@ import com.ibm.cloud.sdk.core.security.CloudPakForDataServiceInstanceAuthenticat
 import com.ibm.cloud.sdk.core.security.ConfigBasedAuthenticatorFactory;
 import com.ibm.cloud.sdk.core.security.ContainerAuthenticator;
 import com.ibm.cloud.sdk.core.security.IamAuthenticator;
+import com.ibm.cloud.sdk.core.security.MCSPAuthenticator;
 import com.ibm.cloud.sdk.core.security.VpcInstanceAuthenticator;
 import com.ibm.cloud.sdk.core.util.EnvironmentUtils;
 
@@ -106,6 +107,10 @@ public class ConfigBasedAuthenticatorFactoryTest {
     env.put("SERVICE9_APIKEY", "my-cp4d-apikey");
     env.put("SERVICE9_SERVICE_INSTANCE_ID", "my-cp4d-service-instance-id");
     env.put("SERVICE9_AUTH_DISABLE_SSL", "false");
+
+    env.put("SERVICE10_AUTH_TYPE", "mCsP");
+    env.put("SERVICE10_AUTH_URL", "https://mcsp.ibm.com");
+    env.put("SERVICE10_APIKEY", "my-api-key");
 
     env.put("ERROR1_AUTH_TYPE", Authenticator.AUTHTYPE_CP4D);
     env.put("ERROR2_AUTH_TYPE", "BAD_AUTH_TYPE");
@@ -293,6 +298,18 @@ public class ConfigBasedAuthenticatorFactoryTest {
   }
 
   @Test
+  public void testFileCredentialsService17() {
+    envMock.when(() ->EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
+
+    Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service_17");
+    assertNotNull(auth);
+    assertEquals(auth.authenticationType(), Authenticator.AUTHTYPE_MCSP);
+    MCSPAuthenticator mcspAuth = (MCSPAuthenticator) auth;
+    assertEquals(mcspAuth.getApiKey(), "my-api-key");
+    assertEquals(mcspAuth.getURL(), "https://mcsp.ibm.com");
+  }
+
+  @Test
   public void testFileCredentialsService5() {
     envMock.when(() ->EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
 
@@ -412,6 +429,19 @@ public class ConfigBasedAuthenticatorFactoryTest {
     assertEquals(cp4dAuth.getApikey(), "my-cp4d-apikey");
     assertEquals(cp4dAuth.getServiceInstanceId(), "my-cp4d-service-instance-id");
     assertFalse(cp4dAuth.getDisableSSLVerification());
+  }
+
+  @Test
+  public void testEnvCredentialsService10() {
+    envMock.when(() ->EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
+
+    Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service10");
+    assertNotNull(auth);
+    assertEquals(auth.authenticationType(), Authenticator.AUTHTYPE_MCSP);
+    MCSPAuthenticator mcspAuth = (MCSPAuthenticator) auth;
+    assertEquals(mcspAuth.getURL(), "https://mcsp.ibm.com");
+    assertEquals(mcspAuth.getApiKey(), "my-api-key");
+    assertFalse(mcspAuth.getDisableSSLVerification());
   }
 
   @Test(expectedExceptions = IllegalArgumentException.class)

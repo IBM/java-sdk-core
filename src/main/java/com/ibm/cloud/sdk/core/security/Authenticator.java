@@ -32,6 +32,7 @@ public interface Authenticator {
   String AUTHTYPE_BEARER_TOKEN = "bearerToken";
   String AUTHTYPE_CONTAINER = "container";
   String AUTHTYPE_VPC = "vpc";
+  String AUTHTYPE_MCSP = "mcsp";
 
   /**
    * Constants which define the names of external config propreties (credential file, environment variable, etc.).

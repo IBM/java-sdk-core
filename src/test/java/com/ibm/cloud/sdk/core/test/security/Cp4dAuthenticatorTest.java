@@ -339,7 +339,7 @@ public class Cp4dAuthenticatorTest extends BaseServiceUnitTest {
     assertEquals(authenticator.getClient(), client);
 
     // Authenticator should request new, valid token.
-     Request.Builder requestBuilder = new Request.Builder().url("https://test.com");
+    Request.Builder requestBuilder = new Request.Builder().url("https://test.com");
     authenticator.authenticate(requestBuilder);
     verifyAuthHeader(requestBuilder, "Bearer " + tokenData.getToken());
 

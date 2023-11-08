@@ -35,7 +35,7 @@ import okhttp3.Request;
 // This class contains an integration test that uses the live IAM token service.
 // This test is normally @Ignored to avoid trying to run this during automated builds.
 //
-// In order to run these tests, ceate file "iamtest.env" in the project root.
+// In order to run these tests, create file "iamtest.env" in the project root.
 // It should look like this:
 //
 // IAMTEST1_AUTH_URL=<prod iam url>   e.g. https://iam.cloud.ibm.com
