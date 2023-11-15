@@ -1,3 +1,10 @@
+# [9.19.0](https://github.com/IBM/java-sdk-core/compare/9.18.7...9.19.0) (2023-11-15)
+
+
+### Features
+
+* **MCSPAuthenticator:** add new authenticator for Multi-Cloud Saas Platform ([#217](https://github.com/IBM/java-sdk-core/issues/217)) ([da0b4be](https://github.com/IBM/java-sdk-core/commit/da0b4be6ef5a9281cdcbe00251a55d1ccca5be78))
+
 ## [9.18.7](https://github.com/IBM/java-sdk-core/compare/9.18.6...9.18.7) (2023-10-18)
 
 
