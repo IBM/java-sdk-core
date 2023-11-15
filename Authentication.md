@@ -6,6 +6,7 @@ The java-sdk-core project supports the following types of authentication:
 - Container Authentication
 - VPC Instance Authentication
 - Cloud Pak for Data Authentication
+- Multi-Cloud Saas Platform (MCSP) Authentication
 - No Authentication (for testing)
 
 The SDK user configures the appropriate type of authentication for use with service instances.  
@@ -440,6 +441,74 @@ export EXAMPLE_SERVICE_AUTH_TYPE=cp4d
 export EXAMPLE_SERVICE_USERNAME=myuser
 export EXAMPLE_SERVICE_APIKEY=myapikey
 export EXAMPLE_SERVICE_URL=https://mycp4dhost.com
+```
+Application code:
+```java
+import <sdk_base_package>.ExampleService.v1.ExampleService;
+...
+
+// Create the service instance.
+ExampleService service = ExampleService.newInstance("example_service");
+
+// 'service' can now be used to invoke operations.
+```
+
+
+## Multi-Cloud Saas Platform (MCSP) Authentication
+The `MCSPAuthenticator` can be used in scenarios where an application needs to
+interact with an IBM Cloud service that has been deployed to a non-IBM Cloud environment (e.g. AWS).
+It accepts a user-supplied apikey and performs the necessary interactions with the
+Multi-Cloud Saas Platform token service to obtain a suitable MCSP access token (a bearer token)
+for the specified apikey.
+The authenticator will also obtain a new bearer token when the current token expires.
+The bearer token is then added to each outbound request in the `Authorization` header in the
+form:
+```
+   Authorization: Bearer <bearer-token>
+```
+
+### Properties
+
+- apikey: (required) the apikey to be used to obtain an MCSP access token.
+
+- url: (required) The URL representing the MCSP token service endpoint's base URL string. Do not include the
+operation path (e.g. `/siusermgr/api/1.0/apikeys/token`) as part of this property's value.
+
+- disableSSLVerification: (optional) A flag that indicates whether verificaton of the server's SSL 
+certificate should be disabled or not. The default value is `false`.
+
+- headers: (optional) A set of key/value pairs that will be sent as HTTP headers in requests
+made to the MCSP token service.
+
+### Usage Notes
+- When constructing an MCSPAuthenticator instance, you must specify the apikey and url properties.
+
+- The authenticator will use the token server's `POST /siusermgr/api/1.0/apikeys/token` operation to
+exchange the user-supplied apikey for an MCSP access token (the bearer token).
+
+### Programming example
+```java
+import com.ibm.cloud.sdk.core.security.MCSPAuthenticator;
+import <sdk_base_package>.ExampleService.v1.ExampleService;
+...
+// Create the authenticator.
+MCSPAuthenticator authenticator = new MCSPAuthenticator.Builder()
+    .apikey("myapikey")
+    .url("https://example.mcsp.token-exchange.com")
+    .build();
+
+// Create the service instance.
+ExampleService service = new ExampleService(ExampleService.DEFAULT_SERVICE_NAME, authenticator);
+
+// 'service' can now be used to invoke operations.
+```
+
+### Configuration example
+External configuration:
+```
+export EXAMPLE_SERVICE_AUTH_TYPE=mcsp
+export EXAMPLE_SERVICE_APIKEY=myapikey
+export EXAMPLE_SERVICE_AUTH_URL=https://example.mcsp.token-exchange.com
 ```
 Application code:
 ```java

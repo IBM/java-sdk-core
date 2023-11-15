@@ -96,6 +96,8 @@ public class ConfigBasedAuthenticatorFactory {
       authenticator = ContainerAuthenticator.fromConfiguration(props);
     } else if (authType.equalsIgnoreCase(Authenticator.AUTHTYPE_VPC)) {
       authenticator = VpcInstanceAuthenticator.fromConfiguration(props);
+    } else if (authType.equalsIgnoreCase(Authenticator.AUTHTYPE_MCSP)) {
+        authenticator = MCSPAuthenticator.fromConfiguration(props);
     } else if (authType.equalsIgnoreCase(Authenticator.AUTHTYPE_NOAUTH)) {
       authenticator = new NoAuthAuthenticator(props);
     } else {
