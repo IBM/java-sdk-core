@@ -61,6 +61,7 @@ public class HttpConfigTest {
     assertTrue(configOptions.shouldDisableSslVerification());
     assertEquals(authenticator, configOptions.getProxyAuthenticator());
     assertNull(configOptions.getGzipCompression());
+    assertEquals(Boolean.TRUE, configOptions.getCustomRedirects());
     assertEquals(proxy, configOptions.getProxy());
     assertEquals(HttpConfigOptions.LoggingLevel.HEADERS, configOptions.getLoggingLevel());
 
