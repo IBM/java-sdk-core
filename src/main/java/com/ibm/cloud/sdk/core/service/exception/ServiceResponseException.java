@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2019.
+ * (C) Copyright IBM Corp. 2015, 2024.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -23,6 +23,8 @@ import okhttp3.Response;
 import java.lang.reflect.Type;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * Generic Service Response Exception.
  */
@@ -45,6 +47,7 @@ public class ServiceResponseException extends RuntimeException {
   private String message;
   private Headers headers;
   private Map<String, Object> debuggingInfo;
+  private String responseBody;
 
   /**
    * Instantiates a new Service Response Exception for a response that resulted
@@ -63,7 +66,7 @@ public class ServiceResponseException extends RuntimeException {
    *
    * @param statusCode the status code
    * @param response the HTTP response
-   * @param message an message to include in this exception
+   * @param message a message to include in this exception
    * @param cause the specific exception to wrap inside this exception
    */
   public ServiceResponseException(int statusCode, Response response, String message, Throwable cause) {
@@ -78,23 +81,26 @@ public class ServiceResponseException extends RuntimeException {
 
     if (response != null) {
       String responseString = ResponseUtils.getString(response);
-      try {
-        final JsonObject jsonObject = ResponseUtils.getJsonObject(responseString);
-        if (jsonObject.has(ERRORS_KEY)) {
-          this.message = jsonObject.remove(ERRORS_KEY).getAsJsonArray().get(0).getAsJsonObject().remove(MESSAGE_STRING)
-              .getAsString();
-        } else if (jsonObject.has(ERROR_STRING)) {
-          this.message = jsonObject.remove(ERROR_STRING).getAsString();
-        } else if (jsonObject.has(MESSAGE_STRING)) {
-          this.message = jsonObject.remove(MESSAGE_STRING).getAsString();
-        } else if (jsonObject.has(ERROR_MESSAGE)) {
-          this.message = jsonObject.remove(ERROR_MESSAGE).getAsString();
+      if (StringUtils.isNotEmpty(responseString)) {
+        this.responseBody = responseString;
+        try {
+          final JsonObject jsonObject = ResponseUtils.getJsonObject(responseString);
+          if (jsonObject.has(ERRORS_KEY)) {
+            this.message = jsonObject.remove(ERRORS_KEY).getAsJsonArray().get(0).getAsJsonObject()
+                .remove(MESSAGE_STRING).getAsString();
+          } else if (jsonObject.has(ERROR_STRING)) {
+            this.message = jsonObject.remove(ERROR_STRING).getAsString();
+          } else if (jsonObject.has(MESSAGE_STRING)) {
+            this.message = jsonObject.remove(MESSAGE_STRING).getAsString();
+          } else if (jsonObject.has(ERROR_MESSAGE)) {
+            this.message = jsonObject.remove(ERROR_MESSAGE).getAsString();
+          }
+          this.debuggingInfo = GsonSingleton.getGson().fromJson(jsonObject, debuggingInfoType);
+        } catch (final Exception e) {
+          // Ignore any kind of exception parsing the json and use fallback String version
+          // of response
+          this.message = responseString;
         }
-        this.debuggingInfo = GsonSingleton.getGson().fromJson(jsonObject, debuggingInfoType);
-      } catch (final Exception e) {
-        // Ignore any kind of exception parsing the json and use fallback String version
-        // of response
-        this.message = responseString;
       }
     }
   }
@@ -143,5 +149,14 @@ public class ServiceResponseException extends RuntimeException {
    */
   public Map<String, Object> getDebuggingInfo() {
     return debuggingInfo;
+  }
+
+  /**
+   * Gets the error response body as a string.
+   *
+   * @return the response body as a string
+   */
+  public String getResponseBody() {
+    return responseBody;
   }
 }
