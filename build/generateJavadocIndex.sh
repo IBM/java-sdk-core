@@ -18,7 +18,7 @@ echo '<!DOCTYPE html>
     </div>
     <p>Javadoc by release:</p>
     <ul>'
-echo ${TRAVIS_BRANCH} | sed 's/^.*/        <li><a href="docs\/&">Latest release<\/a><\/li>/'
+echo ${TRAVIS_TAG} | sed 's/^.*/        <li><a href="docs\/&">Latest release<\/a><\/li>/'
 ls docs | grep --invert-match index.html | sed 's/^.*/        <li><a href="docs\/&">&<\/a><\/li>/'
 echo '    </ul>
 </div>
