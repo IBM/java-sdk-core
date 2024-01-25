@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2022.
+ * (C) Copyright IBM Corp. 2015, 2024.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -26,6 +26,7 @@ import com.ibm.cloud.sdk.core.service.exception.InternalServerErrorException;
 import com.ibm.cloud.sdk.core.service.exception.NotAcceptableException;
 import com.ibm.cloud.sdk.core.service.exception.NotFoundException;
 import com.ibm.cloud.sdk.core.service.exception.RequestTooLargeException;
+import com.ibm.cloud.sdk.core.service.exception.ServiceResponseException;
 import com.ibm.cloud.sdk.core.service.exception.ServiceUnavailableException;
 import com.ibm.cloud.sdk.core.service.exception.TooManyRequestsException;
 import com.ibm.cloud.sdk.core.service.exception.UnauthorizedException;
@@ -73,6 +74,14 @@ public class ErrorResponseTest extends BaseServiceUnitTest {
     service.setServiceUrl(getMockWebServerUrl());
   }
 
+  private void verifyException(ServiceResponseException e, int expectedStatusCode, String expectedMessage,
+      String expectedResponseBody) {
+
+    assertEquals(e.getStatusCode(), expectedStatusCode);
+    assertEquals(e.getMessage(), expectedMessage);
+    assertEquals(e.getResponseBody(), expectedResponseBody);
+  }
+
   /**
    * Test HTTP status code 400 (Bad Request) error response.
    */
@@ -80,18 +89,59 @@ public class ErrorResponseTest extends BaseServiceUnitTest {
   public void testBadRequest() {
 
     String message = "The request failed because the moon is full.";
+    String responseBody = "{\"error\": \"" + message + "\"}";
     server.enqueue(new MockResponse()
         .setResponseCode(400)
         .addHeader(CONTENT_TYPE, HttpMediaType.APPLICATION_JSON)
-        .setBody("{\"error\": \"" + message + "\"}"));
+        .setBody(responseBody));
 
     try {
       service.testMethod().execute();
     } catch (Exception e) {
       assertTrue(e instanceof BadRequestException);
       BadRequestException ex = (BadRequestException) e;
-      assertEquals(400, ex.getStatusCode());
-      assertEquals(message, ex.getMessage());
+      verifyException(ex, 400, message, responseBody);
+    }
+  }
+
+  /**
+   * Test HTTP status code 400 (Bad Request) error response with no response body.
+   */
+  @Test
+  public void testBadRequestNoBody() {
+
+    String message = "The request failed because the moon is full.";
+    server.enqueue(new MockResponse()
+        .setResponseCode(400)
+        .addHeader(CONTENT_TYPE, HttpMediaType.APPLICATION_JSON));
+
+    try {
+      service.testMethod().execute();
+    } catch (Exception e) {
+      assertTrue(e instanceof BadRequestException);
+      BadRequestException ex = (BadRequestException) e;
+      verifyException(ex, 400, "Bad request", null);
+    }
+  }
+
+  /**
+   * Test HTTP status code 400 (Bad Request) error response with non-JSON response body.
+   */
+  @Test
+  public void testBadRequestTextBody() {
+
+    String message = "The request failed because the moon is full.";
+    server.enqueue(new MockResponse()
+        .setResponseCode(400)
+        .addHeader(CONTENT_TYPE, HttpMediaType.TEXT_PLAIN)
+        .setBody(message));
+
+    try {
+      service.testMethod().execute();
+    } catch (Exception e) {
+      assertTrue(e instanceof BadRequestException);
+      BadRequestException ex = (BadRequestException) e;
+      verifyException(ex, 400, message, message);
     }
   }
 
@@ -102,18 +152,18 @@ public class ErrorResponseTest extends BaseServiceUnitTest {
   public void testUnauthorized() {
 
     String message = "The request failed because the moon is full.";
+    String responseBody = "{\"message\": \"" + message + "\", \"other_stuff\": \"foo\"}";
     server.enqueue(new MockResponse()
         .setResponseCode(401)
         .addHeader(CONTENT_TYPE, HttpMediaType.APPLICATION_JSON)
-        .setBody("{\"error\": \"" + message + "\"}"));
+        .setBody(responseBody));
 
     try {
       service.testMethod().execute();
     } catch (Exception e) {
       assertTrue(e instanceof UnauthorizedException);
       UnauthorizedException ex = (UnauthorizedException) e;
-      assertEquals(401, ex.getStatusCode());
-      assertEquals(message, ex.getMessage());
+      verifyException(ex, 401, message, responseBody);
     }
   }
 
@@ -124,18 +174,18 @@ public class ErrorResponseTest extends BaseServiceUnitTest {
   public void testForbidden() {
 
     String message = "The request failed because the moon is full.";
+    String responseBody = "{\"errors\": [{\"message\": \"" + message + "\"}, {\"message\": \"another error...\"}]}";
     server.enqueue(new MockResponse()
         .setResponseCode(403)
         .addHeader(CONTENT_TYPE, HttpMediaType.APPLICATION_JSON)
-        .setBody("{\"error\": \"" + message + "\"}"));
+        .setBody(responseBody));
 
     try {
       service.testMethod().execute();
     } catch (Exception e) {
       assertTrue(e instanceof ForbiddenException);
       ForbiddenException ex = (ForbiddenException) e;
-      assertEquals(403, ex.getStatusCode());
-      assertEquals(message, ex.getMessage());
+      verifyException(ex, 403, message, responseBody);
     }
   }
 
@@ -146,18 +196,18 @@ public class ErrorResponseTest extends BaseServiceUnitTest {
   public void testNotAcceptable() {
 
     String message = "The request failed because the moon is full.";
+    String responseBody = "{\"errorMessage\": \"" + message + "\"}";
     server.enqueue(new MockResponse()
         .setResponseCode(406)
         .addHeader(CONTENT_TYPE, HttpMediaType.APPLICATION_JSON)
-        .setBody("{\"error\": \"" + message + "\"}"));
+        .setBody(responseBody));
 
     try {
       service.testMethod().execute();
     } catch (Exception e) {
       assertTrue(e instanceof NotAcceptableException);
       NotAcceptableException ex = (NotAcceptableException) e;
-      assertEquals(ex.getStatusCode(), 406);
-      assertEquals(message, ex.getMessage());
+      verifyException(ex, 406, message, responseBody);
     }
   }
 
@@ -168,18 +218,18 @@ public class ErrorResponseTest extends BaseServiceUnitTest {
   public void testNotFound() {
 
     String message = "The request failed because the moon is full.";
+    String responseBody = "{\"error\": \"" + message + "\"}";
     server.enqueue(new MockResponse()
         .setResponseCode(404)
         .addHeader(CONTENT_TYPE, HttpMediaType.APPLICATION_JSON)
-        .setBody("{\"error\": \"" + message + "\"}"));
+        .setBody(responseBody));
 
     try {
       service.testMethod().execute();
     } catch (Exception e) {
       assertTrue(e instanceof NotFoundException);
       NotFoundException ex = (NotFoundException) e;
-      assertEquals(404, ex.getStatusCode());
-      assertEquals(message, ex.getMessage());
+      verifyException(ex, 404, message, responseBody);
     }
   }
 
@@ -190,18 +240,18 @@ public class ErrorResponseTest extends BaseServiceUnitTest {
   public void testConflict() {
 
     String message = "The request failed because the moon is full.";
+    String responseBody = "{\"error\": \"" + message + "\"}";
     server.enqueue(new MockResponse()
         .setResponseCode(409)
         .addHeader(CONTENT_TYPE, HttpMediaType.APPLICATION_JSON)
-        .setBody("{\"error\": \"" + message + "\"}"));
+        .setBody(responseBody));
 
     try {
       service.testMethod().execute();
     } catch (Exception e) {
       assertTrue(e instanceof ConflictException);
       ConflictException ex = (ConflictException) e;
-      assertEquals(409, ex.getStatusCode());
-      assertEquals(message, ex.getMessage());
+      verifyException(ex, 409, message, responseBody);
     }
   }
 
@@ -212,18 +262,18 @@ public class ErrorResponseTest extends BaseServiceUnitTest {
   public void testRequestTooLarge() {
 
     String message = "The request failed because the moon is full.";
+    String responseBody = "{\"error\": \"" + message + "\"}";
     server.enqueue(new MockResponse()
         .setResponseCode(413)
         .addHeader(CONTENT_TYPE, HttpMediaType.APPLICATION_JSON)
-        .setBody("{\"error\": \"" + message + "\"}"));
+        .setBody(responseBody));
 
     try {
       service.testMethod().execute();
     } catch (Exception e) {
       assertTrue(e instanceof RequestTooLargeException);
       RequestTooLargeException ex = (RequestTooLargeException) e;
-      assertEquals(413, ex.getStatusCode());
-      assertEquals(message, ex.getMessage());
+      verifyException(ex, 413, message, responseBody);
     }
   }
 
@@ -234,18 +284,18 @@ public class ErrorResponseTest extends BaseServiceUnitTest {
   public void testUnsupported() {
 
     String message = "The request failed because the moon is full.";
+    String responseBody = "{\"error\": \"" + message + "\"}";
     server.enqueue(new MockResponse()
         .setResponseCode(415)
         .addHeader(CONTENT_TYPE, HttpMediaType.APPLICATION_JSON)
-        .setBody("{\"error\": \"" + message + "\"}"));
+        .setBody(responseBody));
 
     try {
       service.testMethod().execute();
     } catch (Exception e) {
       assertTrue(e instanceof UnsupportedException);
       UnsupportedException ex = (UnsupportedException) e;
-      assertEquals(415, ex.getStatusCode());
-      assertEquals(message, ex.getMessage());
+      verifyException(ex, 415, message, responseBody);
     }
   }
 
@@ -256,18 +306,18 @@ public class ErrorResponseTest extends BaseServiceUnitTest {
   public void testTooManyRequests() {
 
     String message = "The request failed because the moon is full.";
+    String responseBody = "{\"error\": \"" + message + "\"}";
     server.enqueue(new MockResponse()
         .setResponseCode(429)
         .addHeader(CONTENT_TYPE, HttpMediaType.APPLICATION_JSON)
-        .setBody("{\"error\": \"" + message + "\"}"));
+        .setBody(responseBody));
 
     try {
       service.testMethod().execute();
     } catch (Exception e) {
       assertTrue(e instanceof TooManyRequestsException);
       TooManyRequestsException ex = (TooManyRequestsException) e;
-      assertEquals(429, ex.getStatusCode());
-      assertEquals(message, ex.getMessage());
+      verifyException(ex, 429, message, responseBody);
     }
   }
 
@@ -278,18 +328,18 @@ public class ErrorResponseTest extends BaseServiceUnitTest {
   public void testInternalServerError() {
 
     String message = "The request failed because the moon is full.";
+    String responseBody = "{\"error\": \"" + message + "\"}";
     server.enqueue(new MockResponse()
         .setResponseCode(500)
         .addHeader(CONTENT_TYPE, HttpMediaType.APPLICATION_JSON)
-        .setBody("{\"error\": \"" + message + "\"}"));
+        .setBody(responseBody));
 
     try {
       service.testMethod().execute();
     } catch (Exception e) {
       assertTrue(e instanceof InternalServerErrorException);
       InternalServerErrorException ex = (InternalServerErrorException) e;
-      assertEquals(500, ex.getStatusCode());
-      assertEquals(message, ex.getMessage());
+      verifyException(ex, 500, message, responseBody);
     }
   }
 
@@ -300,18 +350,18 @@ public class ErrorResponseTest extends BaseServiceUnitTest {
   public void testServiceUnavailable() {
 
     String message = "The request failed because the moon is full.";
+    String responseBody = "{\"error\": \"" + message + "\"}";
     server.enqueue(new MockResponse()
         .setResponseCode(503)
         .addHeader(CONTENT_TYPE, HttpMediaType.APPLICATION_JSON)
-        .setBody("{\"error\": \"" + message + "\"}"));
+        .setBody(responseBody));
 
     try {
       service.testMethod().execute();
     } catch (Exception e) {
       assertTrue(e instanceof ServiceUnavailableException);
       ServiceUnavailableException ex = (ServiceUnavailableException) e;
-      assertEquals(503, ex.getStatusCode());
-      assertEquals(message, ex.getMessage());
+      verifyException(ex, 503, message, responseBody);
       assertTrue(ex.getHeaders().names().contains(CONTENT_TYPE));
       assertTrue(ex.getHeaders().values(CONTENT_TYPE).contains(HttpMediaType.APPLICATION_JSON));
     }
@@ -322,22 +372,21 @@ public class ErrorResponseTest extends BaseServiceUnitTest {
     String message = "The request failed because the moon is full.";
     String level = "ERROR";
     String correlationId = "123456789-abcdefghi";
+    String responseBody = "{\"error\": \"" + message + "\"," + "\"level\": \"" + level + "\","
+        + "\"correlation_id\": \"" + correlationId + "\"}";
     server.enqueue(new MockResponse()
         .setResponseCode(500)
         .addHeader(CONTENT_TYPE, HttpMediaType.APPLICATION_JSON)
-        .setBody("{\"error\": \"" + message + "\"," +
-            "\"level\": \"" + level + "\"," +
-            "\"correlation_id\": \"" + correlationId + "\"}"));
+        .setBody(responseBody));
 
     try {
       service.testMethod().execute();
     } catch (Exception e) {
       assertTrue(e instanceof InternalServerErrorException);
       InternalServerErrorException ex = (InternalServerErrorException) e;
-      assertEquals(500, ex.getStatusCode());
-      assertEquals(message, ex.getMessage());
-      assertEquals(level, ex.getDebuggingInfo().get("level"));
-      assertEquals(correlationId, ex.getDebuggingInfo().get("correlation_id"));
+      verifyException(ex, 500, message, responseBody);
+      assertEquals(ex.getDebuggingInfo().get("level"), level);
+      assertEquals(ex.getDebuggingInfo().get("correlation_id"), correlationId);
     }
   }
 }
