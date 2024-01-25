@@ -1,3 +1,10 @@
+# [9.20.0](https://github.com/IBM/java-sdk-core/compare/9.19.0...9.20.0) (2024-01-25)
+
+
+### Features
+
+* **ServiceResponseException:** added getResponseBody() method ([#219](https://github.com/IBM/java-sdk-core/issues/219)) ([6e02344](https://github.com/IBM/java-sdk-core/commit/6e02344d52b8ae0c7a0e98f7eb0856c1c7bfbd9e))
+
 # [9.19.0](https://github.com/IBM/java-sdk-core/compare/9.18.7...9.19.0) (2023-11-15)
 
 
