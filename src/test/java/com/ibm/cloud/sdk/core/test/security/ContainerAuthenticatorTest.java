@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2023.
+ * (C) Copyright IBM Corp. 2015, 2024.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -251,8 +251,9 @@ public class ContainerAuthenticatorTest extends BaseServiceUnitTest {
 
   @Test
   public void testAuthenticateNewAndStoredToken() throws Throwable {
-    // Mock current time to ensure that we're way before the token expiration time.
-    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
+    // Mock current time to ensure that we're way before the first token's expiration time.
+    // This is because initially we have no access token at all so we should fetch one regardless of the current time.
+    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn(0L);
 
     ContainerAuthenticator authenticator = new ContainerAuthenticator.Builder()
         .crTokenFilename(mockCRTokenFile)
@@ -311,8 +312,10 @@ public class ContainerAuthenticatorTest extends BaseServiceUnitTest {
 
   @Test
   public void testAuthenticationExpiredToken() throws Throwable {
-    // Mock current time to ensure that we've passed the token expiration time.
-    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn((long) 1800000000);
+    // Mock current time to ensure that we're way before the first token's expiration time.
+    // This is because initially we have no access token at all so we should fetch one regardless of the current time.
+    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn(0L);
+
 
     ContainerAuthenticator authenticator = new ContainerAuthenticator.Builder()
         .crTokenFilename(mockCRTokenFile)
@@ -341,6 +344,57 @@ public class ContainerAuthenticatorTest extends BaseServiceUnitTest {
     assertFalse(formBody.containsKey("profile_name"));
     assertFalse(formBody.containsKey("scope"));
 
+    // Now set the mock time to reflect that the first access token ("tokenData1") has expired.
+    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn(tokenData1.getExpiration());
+
+    // Set mock server to return second access token.
+    server.enqueue(jsonResponse(tokenData2));
+
+    // Authenticator should detect the expiration and request a
+    // new access token when we call authenticate() again.
+    authenticator.authenticate(requestBuilder);
+    verifyAuthHeader(requestBuilder, "Bearer " + tokenData2.getAccessToken());
+  }
+
+  @Test
+  public void testAuthenticationExpiredToken10SecWindow() throws Throwable {
+    // Mock current time to ensure that we're way before the first token's expiration time.
+    // This is because initially we have no access token at all so we should fetch one regardless of the current time.
+    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn(0L);
+
+
+    ContainerAuthenticator authenticator = new ContainerAuthenticator.Builder()
+        .crTokenFilename(mockCRTokenFile)
+        .iamProfileId(mockIamProfileId)
+        .url(url)
+        .build();
+
+    Request.Builder requestBuilder = new Request.Builder().url("https://test.com");
+
+    // Set mock server to return first access token.
+    server.enqueue(jsonResponse(tokenData1));
+
+    // This will bootstrap the test by forcing the Authenticator to retrieve the first access token,
+    // which will appear as expired when we call authenticate() the second time below.
+    authenticator.authenticate(requestBuilder);
+
+    // Validate parts of the IAM request that was sent as a result of the authenticate() call above.
+    RecordedRequest tokenServerRequest = server.takeRequest();
+    assertNotNull(tokenServerRequest);
+
+    // Validate the form params included in the request.
+    Map<String, String> formBody = getFormBodyAsMap(tokenServerRequest);
+    assertEquals(formBody.get("cr_token"), mockCRToken);
+    assertEquals(formBody.get("grant_type"), "urn:ibm:params:oauth:grant-type:cr-token");
+    assertEquals(formBody.get("profile_id"), mockIamProfileId);
+    assertFalse(formBody.containsKey("profile_name"));
+    assertFalse(formBody.containsKey("scope"));
+
+    // Now set the mock time to reflect that the first access token ("tokenData") is considered to be "expired".
+    // We subtract 10s from the expiration time to test the boundary condition of the expiration window feature.
+    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn(
+        tokenData1.getExpiration() - IamToken.IamExpirationWindow);
+
     // Set mock server to return second access token.
     server.enqueue(jsonResponse(tokenData2));
 
@@ -352,8 +406,9 @@ public class ContainerAuthenticatorTest extends BaseServiceUnitTest {
 
   @Test
   public void testAuthenticationBackgroundTokenRefresh() throws InterruptedException {
-    // Mock current time to put us in the "refresh window" where the token is not expired but still needs refreshed.
-    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn((long) 1522788600);
+    // Set initial mock time to be epoch time.
+    // This is because initially we have no access token at all so we should fetch one regardless of the current time.
+    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn(0L);
 
     ContainerAuthenticator authenticator = new ContainerAuthenticator.Builder()
         .crTokenFilename(mockCRTokenFile)
@@ -383,13 +438,17 @@ public class ContainerAuthenticatorTest extends BaseServiceUnitTest {
     assertEquals(formBody.get("profile_id"), mockIamProfileId);
     assertFalse(formBody.containsKey("scope"));
 
-    // Set mock server to return second access token.
-    server.enqueue(jsonResponse(tokenData2).setBodyDelay(2, TimeUnit.SECONDS));
+    // Now set the mock time to put us in the "refresh window" where the token is not expired,
+    // but still needs to be refreshed.
+    long refreshWindow = (long) (tokenData1.getExpiresIn() * 0.2);
+    long refreshTime = tokenData1.getExpiration() - refreshWindow;
+    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn(refreshTime + 2L);
 
     // Authenticator should detect the need to refresh and request a new access token
     // IN THE BACKGROUND when we call authenticate() again.
     // The immediate response should be the token which was already stored, since it's not yet
     // expired.
+    server.enqueue(jsonResponse(tokenData2).setBodyDelay(2, TimeUnit.SECONDS));
     authenticator.authenticate(requestBuilder);
     verifyAuthHeader(requestBuilder, "Bearer " + tokenData1.getAccessToken());
 

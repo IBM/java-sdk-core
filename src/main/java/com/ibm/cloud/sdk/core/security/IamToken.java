@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2021.
+ * (C) Copyright IBM Corp. 2015, 2024.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -21,6 +21,10 @@ import com.ibm.cloud.sdk.core.util.Clock;
  * Represents response from IAM API.
  */
 public class IamToken extends AbstractToken implements ObjectModel, TokenServerResponse {
+
+  // The number of seconds before the IAM server-assigned (official) expiration time
+  // when we'll treat an otherwise valid access token as "expired".
+  public static final long IamExpirationWindow = 10L;
 
   // These fields are obtained from the IAM token service "getToken" operation response body.
   @SerializedName("access_token")
@@ -79,6 +83,10 @@ public class IamToken extends AbstractToken implements ObjectModel, TokenServerR
     return expiration;
   }
 
+  public Long getRefreshTime() {
+    return refreshTime;
+  }
+
   /**
    * Returns true iff currently stored access token should be refreshed.
    *
@@ -119,11 +127,18 @@ public class IamToken extends AbstractToken implements ObjectModel, TokenServerR
    * Check if the currently stored access token is valid. This is different from the needsRefresh method in that it
    * uses the actual TTL to calculate the expiration, rather than just a fraction.
    *
-   * @return true iff is the current access token is not expired
+   * @return true iff the current access token is valid and not expired
    */
   @Override
   public boolean isTokenValid() {
     return this.getException() == null
-        && (this.expiration == null || Clock.getCurrentTimeInSeconds() < this.expiration);
+        && (this.expiration == null || Clock.getCurrentTimeInSeconds() < (this.expiration - IamExpirationWindow));
+  }
+
+  public String toString() {
+    String s =
+        String.format("IamTokenData: accessToken=%s expiration=%d expiresIn=%d",
+            this.accessToken, this.expiration, this.expiresIn);
+    return s;
   }
 }
