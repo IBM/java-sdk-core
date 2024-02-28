@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2023.
+ * (C) Copyright IBM Corp. 2015, 2024.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -281,8 +281,9 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
   public void testAuthenticateNewAndStoredToken() throws Throwable {
     server.enqueue(jsonResponse(tokenData));
 
-    // Mock current time to ensure that we're way before the token expiration time.
-    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
+    // Mock current time to ensure that we're way before the first token's expiration time.
+    // This is because initially we have no access token at all so we should fetch one regardless of the current time.
+    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn(0L);
 
     IamAuthenticator authenticator = new IamAuthenticator.Builder()
         .apikey(API_KEY)
@@ -317,6 +318,9 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
     Headers actualHeaders = tokenServerRequest.getHeaders();
     assertNull(actualHeaders.get(HttpHeaders.AUTHORIZATION));
 
+    // Set mock time to be within tokenData's lifetime, but before the refresh/expiration times.
+    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn(tokenData.getExpiration() - 1000L);
+
     // Authenticator should just return the same token this time since we have a valid one stored.
     requestBuilder = new Request.Builder().url("https://test.com");
     authenticator.authenticate(requestBuilder);
@@ -330,17 +334,54 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
   public void testAuthenticationExpiredToken() {
     server.enqueue(jsonResponse(tokenData));
 
-    // Mock current time to ensure that we've passed the token expiration time.
-    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn((long) 1800000000);
+    // Mock current time to ensure that we're way before the first token's expiration time.
+    // This is because initially we have no access token at all so we should fetch one regardless of the current time.
+    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn(0L);
 
-    IamAuthenticator authenticator = new IamAuthenticator(API_KEY);
-    authenticator.setURL(url);
+    IamAuthenticator authenticator = new IamAuthenticator.Builder()
+        .apikey(API_KEY)
+        .url(url)
+        .build();
 
     Request.Builder requestBuilder = new Request.Builder().url("https://test.com");
 
     // This will bootstrap the test by forcing the Authenticator to store the expired token
     // set above in the mock server.
     authenticator.authenticate(requestBuilder);
+    verifyAuthHeader(requestBuilder, "Bearer " + tokenData.getAccessToken());
+
+    // Now set the mock time to reflect that the first access token ("tokenData") has expired.
+    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn(tokenData.getExpiration());
+
+    // Authenticator should detect the expiration and request a new access token when we call authenticate() again.
+    server.enqueue(jsonResponse(refreshedTokenData));
+    authenticator.authenticate(requestBuilder);
+    verifyAuthHeader(requestBuilder, "Bearer " + refreshedTokenData.getAccessToken());
+  }
+
+  @Test
+  public void testAuthenticationExpiredToken10SecWindow() {
+    server.enqueue(jsonResponse(tokenData));
+
+    // Set initial mock time to be epoch time.
+    // This is because initially we have no access token at all so we should fetch one regardless of the current time.
+    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn(0L);
+
+    IamAuthenticator authenticator = new IamAuthenticator.Builder()
+        .apikey(API_KEY)
+        .url(url)
+        .build();
+
+    Request.Builder requestBuilder = new Request.Builder().url("https://test.com");
+
+    // This will bootstrap the test by forcing the Authenticator to store the expired token
+    // set above in the mock server.
+    authenticator.authenticate(requestBuilder);
+
+    // Now set the mock time to reflect that the first access token ("tokenData") is considered to be "expired".
+    // We subtract 10s from the expiration time to test the boundary condition of the expiration window feature.
+    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn(
+        tokenData.getExpiration() - IamToken.IamExpirationWindow);
 
     // Authenticator should detect the expiration and request a new access token when we call authenticate() again.
     server.enqueue(jsonResponse(refreshedTokenData));
@@ -352,17 +393,25 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
   public void testAuthenticationBackgroundTokenRefresh() throws InterruptedException {
     server.enqueue(jsonResponse(tokenData));
 
-    // Mock current time to put us in the "refresh window" where the token is not expired but still needs refreshed.
-    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn((long) 1522788600);
+    // Set initial mock time to be epoch time.
+    // This is because initially we have no access token at all so we should fetch one regardless of the current time.
+    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn(0L);
 
-    IamAuthenticator authenticator = new IamAuthenticator.Builder().apikey(API_KEY).build();
-    authenticator.setURL(url);
+    IamAuthenticator authenticator = new IamAuthenticator.Builder()
+        .apikey(API_KEY)
+        .url(url)
+        .build();
 
     Request.Builder requestBuilder = new Request.Builder().url("https://test.com");
 
-    // This will bootstrap the test by forcing the Authenticator to store the token needing refreshed, which was
-    // set above in the mock server.
+    // This will bootstrap the test by forcing the Authenticator to store the first access token (tokenData).
     authenticator.authenticate(requestBuilder);
+
+    // Now set the mock time to put us in the "refresh window" where the token is not expired,
+    // but still needs to be refreshed.
+    long refreshWindow = (long) (tokenData.getExpiresIn() * 0.2);
+    long refreshTime = tokenData.getExpiration() - refreshWindow;
+    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn(refreshTime + 2L);
 
     // Authenticator should detect the need to refresh and request a new access token IN THE BACKGROUND when we call
     // authenticate() again. The immediate response should be the token which was already stored, since it's not yet
@@ -391,7 +440,11 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
     headers.put("header1", "value1");
     headers.put("header2", "value2");
     headers.put("Host", "iam.cloud.ibm.com:81");
-    IamAuthenticator authenticator = new IamAuthenticator(API_KEY, url, null, null, false, headers);
+    IamAuthenticator authenticator = new IamAuthenticator.Builder()
+        .apikey(API_KEY)
+        .url(url)
+        .headers(headers)
+        .build();
 
     Request.Builder requestBuilder = new Request.Builder().url("https://test.com");
 

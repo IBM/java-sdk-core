@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2022, 2023.
+ * (C) Copyright IBM Corp. 2022, 2024.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -453,9 +453,9 @@ public class VpcInstanceAuthenticatorTest extends BaseServiceUnitTest {
 
   @Test
   public void testAuthenticationExpiredToken() throws Throwable {
-    // Mock current time to ensure that we're past the token expiration time.
-    long mockTime = vpcIamAccessTokenResponse1.getExpiresAt().getTime() / 1000 + 1;
-    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn(mockTime);
+    // Mock current time to ensure that we're way before the first token's expiration time.
+    // This is because initially we have no access token at all so we should fetch one regardless of the current time.
+    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn(0L);
 
     VpcInstanceAuthenticator authenticator = new VpcInstanceAuthenticator.Builder()
         .iamProfileId(mockIamProfileId)
@@ -473,6 +473,44 @@ public class VpcInstanceAuthenticatorTest extends BaseServiceUnitTest {
     // Calling "authenticate()" the first time should result in a new, valid token.
     authenticator.authenticate(requestBuilder);
     verifyAuthHeader(requestBuilder, "Bearer " + vpcIamAccessTokenResponse1.getAccessToken());
+
+    // Mock current time so that we detect the first access token has expired.
+    long mockTime = vpcIamAccessTokenResponse1.getExpiresAt().getTime() / 1000;
+    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn(mockTime);
+
+    // Calling "authenticate()" again should result in a new access token
+    // because we should detect that the first one obtained above has expired.
+    authenticator.authenticate(requestBuilder);
+    verifyAuthHeader(requestBuilder, "Bearer " + vpcIamAccessTokenResponse2.getAccessToken());
+  }
+
+  @Test
+  public void testAuthenticationExpiredToken10SecWindow() throws Throwable {
+    // Mock current time to ensure that we're way before the first token's expiration time.
+    // This is because initially we have no access token at all so we should fetch one regardless of the current time.
+    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn(0L);
+
+    VpcInstanceAuthenticator authenticator = new VpcInstanceAuthenticator.Builder()
+        .iamProfileId(mockIamProfileId)
+        .url(url)
+        .build();
+
+    Request.Builder requestBuilder = new Request.Builder().url("https://test.com");
+
+    // Set mock server responses.
+    server.enqueue(jsonResponse(vpcInstanceIdentityTokenResponse));
+    server.enqueue(jsonResponse(vpcIamAccessTokenResponse1));
+    server.enqueue(jsonResponse(vpcInstanceIdentityTokenResponse));
+    server.enqueue(jsonResponse(vpcIamAccessTokenResponse2));
+
+    // Calling "authenticate()" the first time should result in a new, valid token.
+    authenticator.authenticate(requestBuilder);
+    verifyAuthHeader(requestBuilder, "Bearer " + vpcIamAccessTokenResponse1.getAccessToken());
+
+    // Mock current time so that we detect the first access token has expired.
+    // We subtract 10s from the expiration time to test the boundary condition of the expiration window feature.
+    long mockTime = vpcIamAccessTokenResponse1.getExpiresAt().getTime() / 1000;
+    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn(mockTime - IamToken.IamExpirationWindow);
 
     // Calling "authenticate()" again should result in a new access token
     // because we should detect that the first one obtained above has expired.
