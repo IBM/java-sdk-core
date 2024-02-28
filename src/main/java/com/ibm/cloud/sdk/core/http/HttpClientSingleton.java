@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2022.
+ * (C) Copyright IBM Corp. 2015, 2023.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -16,6 +16,8 @@ package com.ibm.cloud.sdk.core.http;
 import com.ibm.cloud.sdk.core.http.HttpConfigOptions.LoggingLevel;
 import com.ibm.cloud.sdk.core.http.gzip.GzipRequestInterceptor;
 import com.ibm.cloud.sdk.core.service.security.DelegatingSSLSocketFactory;
+import com.ibm.cloud.sdk.core.util.EnvironmentUtils;
+
 import okhttp3.Authenticator;
 import okhttp3.ConnectionSpec;
 import okhttp3.Interceptor;
@@ -179,6 +181,7 @@ public class HttpClientSingleton {
     final OkHttpClient.Builder builder = new OkHttpClient.Builder();
 
     addCookieJar(builder);
+    addRedirectInterceptor(builder);
 
     builder.connectTimeout(60, TimeUnit.SECONDS);
     builder.writeTimeout(60, TimeUnit.SECONDS);
@@ -197,11 +200,34 @@ public class HttpClientSingleton {
    *
    * @param builder the builder
    */
-  private void addCookieJar(final OkHttpClient.Builder builder) {
+  private OkHttpClient.Builder addCookieJar(final OkHttpClient.Builder builder) {
     final CookieManager cookieManager = new CookieManager();
     cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
 
     builder.cookieJar(new ServiceCookieJar(cookieManager));
+    return builder;
+  }
+
+  /**
+   * Adds the RedirectInterceptor to the client builder.
+   * @param builder
+   */
+  private OkHttpClient.Builder addRedirectInterceptor(final OkHttpClient.Builder builder) {
+      String envvar = EnvironmentUtils.getenv("IBMCLOUD_BYPASS_CUSTOM_REDIRECTS");
+      if (!Boolean.valueOf(envvar)) {
+          // Disable the built-in "followRedirects" so that okhttp will ignore redirects.
+          builder.followRedirects(false).followSslRedirects(false);
+
+          // Add our RedirectInterceptor to the client.
+          builder.addInterceptor(new RedirectInterceptor());
+          LOG.log(Level.FINE, "Registered the redirect interceptor.");
+      } else {
+          LOG.log(Level.FINE, "Bypassed redirect interceptor via options.");
+
+          // Set the defaults for these two options.
+          builder.followRedirects(true).followSslRedirects(true);
+      }
+      return builder;
   }
 
   /**
@@ -338,30 +364,6 @@ public class HttpClientSingleton {
   }
 
   /**
-   * Sets a new list of interceptors for the specified {@link OkHttpClient} instance by removing the specified
-   * interceptor and returns a new instance with the interceptors configured as requested.
-   *
-   * @param client the {@link OkHttpClient} instance to remove the interceptors from
-   * @param interceptorToRemove the class name of the interceptor to remove
-   * @return the new {@link OkHttpClient} instance with the new list of interceptors
-   */
-  private OkHttpClient reconfigureClientInterceptors(OkHttpClient client, String interceptorToRemove) {
-    OkHttpClient.Builder builder = client.newBuilder();
-
-    if (!builder.interceptors().isEmpty()) {
-      for (Iterator<Interceptor> iter = builder.interceptors().iterator(); iter.hasNext(); ) {
-        Interceptor element = iter.next();
-        if (interceptorToRemove.equals(element.getClass().getSimpleName())) {
-          LOG.log(Level.FINE, "Removing interceptor " + element.getClass().getName() + " from http client instance.");
-          iter.remove();
-        }
-      }
-    }
-
-    return builder.build();
-  }
-
-  /**
    * Sets a new list of interceptors for the specified {@link OkHttpClient} instance by removing any interceptors
    * that implement "interfaceToRemove".
    *
@@ -370,7 +372,7 @@ public class HttpClientSingleton {
    * @return the new {@link OkHttpClient} instance with the updated list of interceptors
    */
   private OkHttpClient reconfigureClientInterceptors(OkHttpClient client,
-      Class<? extends Interceptor> interfaceToRemove) {
+    Class<? extends Interceptor> interfaceToRemove) {
     OkHttpClient.Builder builder = client.newBuilder();
 
     if (!builder.interceptors().isEmpty()) {
@@ -395,6 +397,7 @@ public class HttpClientSingleton {
   public OkHttpClient createHttpClient() {
     Builder builder = okHttpClient.newBuilder();
     addCookieJar(builder);
+    addRedirectInterceptor(builder);
     return builder.build();
   }
 
@@ -419,7 +422,10 @@ public class HttpClientSingleton {
    * @return a new {@link OkHttpClient} instance with the specified options applied
    */
   public OkHttpClient configureClient(OkHttpClient client, HttpConfigOptions options) {
+    Boolean customRedirects = null;
     if (options != null) {
+      customRedirects = options.getCustomRedirects();
+
       if (options.shouldDisableSslVerification()) {
         client = disableSslVerification(client);
       }
@@ -443,6 +449,7 @@ public class HttpClientSingleton {
                   options.getAuthenticator());
           if (retryInterceptor != null) {
             client = client.newBuilder().addInterceptor(retryInterceptor).build();
+            LOG.log(Level.FINE, "Registered the retry interceptor.");
           } else {
             LOG.log(Level.WARNING,
                 "The retry interceptor factory returned a null IRetryInterceptor instance. Retries are disabled.");
@@ -453,14 +460,35 @@ public class HttpClientSingleton {
       // Configure the GZIP interceptor.
       Boolean enableGzip = options.getGzipCompression();
       if (enableGzip != null) {
-        client = reconfigureClientInterceptors(client, "GzipRequestInterceptor");
+        client = reconfigureClientInterceptors(client, GzipRequestInterceptor.class);
         if (enableGzip.booleanValue()) {
           client = client.newBuilder()
                   .addInterceptor(new GzipRequestInterceptor())
                   .build();
+          LOG.log(Level.FINE, "Registered the gzip interceptor.");
         }
       }
     }
+
+    // Configure the redirect interceptor.
+    // We want "custom redirects" to be enabled by default (including a scenario
+    // where "options" is null), hence the need to handle this feature outside the "if" above.
+    // We want to register the interceptor if:
+    // 1. options == null
+    // 2. options != null and "custom redirects" is explicitly set to Boolean.TRUE
+    //
+    // We also want to allow "custom redirects" to be bypassed by setting an environment variable.
+    // This may be only temporary until we are comfortable with this new function, but I'm
+    // adding support for this environment variable as a quick fix in case there are "unforeseen
+    // consequences" after this feature hits the street.
+    // Example:
+    //     export IBMCLOUD_BYPASS_CUSTOM_REDIRECTS=true
+    // Setting this environment variable will revert back to using the okhttp builtin support for redirects.
+    client = reconfigureClientInterceptors(client, RedirectInterceptor.class);
+    if (customRedirects == null || customRedirects.booleanValue()) {
+        client = addRedirectInterceptor(client.newBuilder()).build();
+    }
+
     return client;
   }
 }
