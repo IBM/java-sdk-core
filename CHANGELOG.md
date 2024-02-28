@@ -1,3 +1,10 @@
+## [9.20.1](https://github.com/IBM/java-sdk-core/compare/9.20.0...9.20.1) (2024-02-28)
+
+
+### Bug Fixes
+
+* adjust IAM token expiration time ([#221](https://github.com/IBM/java-sdk-core/issues/221)) ([7bd662f](https://github.com/IBM/java-sdk-core/commit/7bd662f3814c209d8c1b9aa57bcbc7f55edd8193))
+
 # [9.20.0](https://github.com/IBM/java-sdk-core/compare/9.19.0...9.20.0) (2024-01-25)
 
 
