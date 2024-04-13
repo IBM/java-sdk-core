@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2021.
+ * (C) Copyright IBM Corp. 2021, 2024.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -18,7 +18,9 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.ibm.cloud.sdk.core.http.HttpHeaders;
 import com.ibm.cloud.sdk.core.http.RequestBuilder;
+import com.ibm.cloud.sdk.core.util.RequestUtils;
 
 /**
  * This class provides an Authenticator implementation for the "CloudPakForData" environment.
@@ -209,7 +211,8 @@ public class CloudPakForDataServiceAuthenticator extends TokenRequestBasedAuthen
 
   // The default ctor is hidden to force the use of the non-default ctors.
   protected CloudPakForDataServiceAuthenticator() {
-  }
+    setUserAgent(RequestUtils.buildUserAgent("cp4d-service-authenticator"));
+}
 
   /**
    * Constructs a CloudPakForDataServiceAuthenticator instance from the configuration
@@ -218,6 +221,7 @@ public class CloudPakForDataServiceAuthenticator extends TokenRequestBasedAuthen
    * @param builder the Builder instance containing the configuration to be used
    */
   protected CloudPakForDataServiceAuthenticator(Builder builder) {
+    this();
     this.url = builder.url;
     this.username = builder.username;
     this.displayName = builder.displayName;
@@ -355,6 +359,7 @@ public class CloudPakForDataServiceAuthenticator extends TokenRequestBasedAuthen
   public Cp4dToken requestToken() {
     // Form a GET request to retrieve the service access token.
     RequestBuilder builder = RequestBuilder.get(RequestBuilder.resolveRequestUrl(this.url, SERVICE_TOKEN_URL));
+    builder.header(HttpHeaders.USER_AGENT, getUserAgent());
 
     // Add the secret header containing the zen broker secret
     builder.header("secret", this.serviceBrokerSecret);

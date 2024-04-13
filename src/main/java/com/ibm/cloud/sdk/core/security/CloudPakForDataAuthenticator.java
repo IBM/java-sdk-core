@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2019, 2021.
+ * (C) Copyright IBM Corp. 2019, 2024.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -22,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.google.gson.annotations.SerializedName;
 import com.ibm.cloud.sdk.core.http.HttpHeaders;
 import com.ibm.cloud.sdk.core.http.RequestBuilder;
+import com.ibm.cloud.sdk.core.util.RequestUtils;
 
 /**
  * This class provides an Authenticator implementation for the "CloudPakForData" environment.
@@ -165,7 +166,8 @@ public class CloudPakForDataAuthenticator extends TokenRequestBasedAuthenticator
 
   // The default ctor is hidden to force the use of the non-default ctors.
   protected CloudPakForDataAuthenticator() {
-  }
+    setUserAgent(RequestUtils.buildUserAgent("cp4d-authenticator"));
+ }
 
   /**
    * Constructs a CloudPakForDataAuthenticator instance from the configuration
@@ -174,6 +176,7 @@ public class CloudPakForDataAuthenticator extends TokenRequestBasedAuthenticator
    * @param builder the Builder instance containing the configuration to be used
    */
   protected CloudPakForDataAuthenticator(Builder builder) {
+    this();
     this.url = builder.url;
     this.username = builder.username;
     this.password = builder.password;
@@ -212,6 +215,7 @@ public class CloudPakForDataAuthenticator extends TokenRequestBasedAuthenticator
    */
   @Deprecated
   public CloudPakForDataAuthenticator(String url, String username, String password) {
+    this();
     init(url, username, password, false, null);
   }
 
@@ -236,6 +240,7 @@ public class CloudPakForDataAuthenticator extends TokenRequestBasedAuthenticator
   @Deprecated
   public CloudPakForDataAuthenticator(String url, String username, String password,
     boolean disableSSLVerification, Map<String, String> headers) {
+    this();
     init(url, username, password, disableSSLVerification, headers);
   }
 
@@ -249,6 +254,7 @@ public class CloudPakForDataAuthenticator extends TokenRequestBasedAuthenticator
    */
   @Deprecated
   public CloudPakForDataAuthenticator(Map<String, String> config) {
+    this();
     this.apikey = config.get(PROPNAME_APIKEY);
     init(config.get(PROPNAME_URL), config.get(PROPNAME_USERNAME),
       config.get(PROPNAME_PASSWORD), Boolean.valueOf(config.get(PROPNAME_DISABLE_SSL)).booleanValue(), null);
@@ -365,8 +371,9 @@ public class CloudPakForDataAuthenticator extends TokenRequestBasedAuthenticator
     // Form a POST request to retrieve the access token.
     RequestBuilder builder = RequestBuilder.post(RequestBuilder.resolveRequestUrl(this.url, "/v1/authorize"));
 
-    // Add the Content-Type header.
+    // Add the Content-Type and User-Agent headers.
     builder.header(HttpHeaders.CONTENT_TYPE, "application/json");
+    builder.header(HttpHeaders.USER_AGENT, getUserAgent());
 
     // Add the request body.
     CP4DRequestBody requestBody = new CP4DRequestBody(this.username, this.password, this.apikey);

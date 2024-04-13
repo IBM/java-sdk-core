@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2019, 2022.
+ * (C) Copyright IBM Corp. 2019, 2024.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -53,6 +53,7 @@ public abstract class TokenRequestBasedAuthenticator<T extends AbstractToken, R 
   private static final Logger logger = Logger.getLogger(TokenRequestBasedAuthenticator.class.getName());
 
   protected OkHttpClient client;
+  protected String userAgent;
 
   // Configuration properties that are common to all subclasses.
   private boolean disableSSLVerification;
@@ -85,6 +86,18 @@ public abstract class TokenRequestBasedAuthenticator<T extends AbstractToken, R 
    */
   public OkHttpClient getClient() {
     return this.client;
+  }
+
+  /**
+   * Sets the User-Agent header value to be included in each outbound token request.
+   * @param userAgent
+   */
+  protected void setUserAgent(String userAgent) {
+    this.userAgent = userAgent;
+  }
+
+  protected String getUserAgent() {
+    return this.userAgent;
   }
 
   /**

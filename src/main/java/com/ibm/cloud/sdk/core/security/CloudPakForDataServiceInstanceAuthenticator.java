@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2019, 2021.
+ * (C) Copyright IBM Corp. 2019, 2024.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -21,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.ibm.cloud.sdk.core.http.HttpHeaders;
 import com.ibm.cloud.sdk.core.http.RequestBuilder;
+import com.ibm.cloud.sdk.core.util.RequestUtils;
 
 /**
  * This class provides an Authenticator implementation for the "CloudPakForData" environment.
@@ -165,6 +166,7 @@ extends TokenRequestBasedAuthenticator<Cp4dToken, Cp4dServiceInstanceTokenRespon
 
   // The default ctor is hidden to force the use of the non-default ctors.
   protected CloudPakForDataServiceInstanceAuthenticator() {
+    setUserAgent(RequestUtils.buildUserAgent("cp4d-service-instance-authenticator"));
   }
 
   /**
@@ -174,6 +176,7 @@ extends TokenRequestBasedAuthenticator<Cp4dToken, Cp4dServiceInstanceTokenRespon
    * @param builder the Builder instance containing the configuration to be used
    */
   protected CloudPakForDataServiceInstanceAuthenticator(Builder builder) {
+    this();
     this.url = builder.url;
     this.username = builder.username;
     this.apikey = builder.apikey;
@@ -287,6 +290,7 @@ extends TokenRequestBasedAuthenticator<Cp4dToken, Cp4dServiceInstanceTokenRespon
     // Form a GET request to retrieve the access token.
     RequestBuilder builder = RequestBuilder.get(RequestBuilder.resolveRequestUrl(this.url,
         "/v3/service_instances/{service_instance_id}/token", pathParams));
+    builder.header(HttpHeaders.USER_AGENT, getUserAgent());
 
     // Add the Authorization header
     builder.header(HttpHeaders.AUTHORIZATION, constructBasicAuthHeader(this.username, this.apikey));

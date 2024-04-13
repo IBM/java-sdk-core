@@ -496,6 +496,7 @@ public class ContainerAuthenticatorTest extends BaseServiceUnitTest {
     assertEquals(actualHeaders.get("header1"), "value1");
     assertEquals(actualHeaders.get("header2"), "value2");
     assertEquals(actualHeaders.get("Host"), "iam.cloud.ibm.com:81");
+    assertTrue(actualHeaders.get(HttpHeaders.USER_AGENT).startsWith("ibm-java-sdk-core/container-authenticator"));
 
     // Authenticator should just return the same token this time since we have a valid one stored.
     requestBuilder = new Request.Builder().url("https://test.com");

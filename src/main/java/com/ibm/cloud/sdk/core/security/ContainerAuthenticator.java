@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2021, 2023.
+ * (C) Copyright IBM Corp. 2021, 2024.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -27,6 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.ibm.cloud.sdk.core.http.HttpHeaders;
 import com.ibm.cloud.sdk.core.http.HttpMediaType;
 import com.ibm.cloud.sdk.core.http.RequestBuilder;
+import com.ibm.cloud.sdk.core.util.RequestUtils;
 
 import okhttp3.FormBody;
 
@@ -214,7 +215,8 @@ public class ContainerAuthenticator extends IamRequestBasedAuthenticator impleme
 
   // The default ctor is hidden to force the use of the non-default ctors.
   protected ContainerAuthenticator() {
-  }
+    setUserAgent(RequestUtils.buildUserAgent("container-authenticator"));
+}
 
   /**
    * Constructs a ContainerAuthenticator instance from the configuration
@@ -223,6 +225,7 @@ public class ContainerAuthenticator extends IamRequestBasedAuthenticator impleme
    * @param builder the Builder instance containing the configuration to be used
    */
   protected ContainerAuthenticator(Builder builder) {
+    this();
     this.crTokenFilename = builder.crTokenFilename;
     this.iamProfileName = builder.iamProfileName;
     this.iamProfileId = builder.iamProfileId;
@@ -329,10 +332,11 @@ public class ContainerAuthenticator extends IamRequestBasedAuthenticator impleme
       // Form a POST request to retrieve the access token.
       RequestBuilder builder = RequestBuilder.post(RequestBuilder.resolveRequestUrl(this.getURL(), OPERATION_PATH));
 
-      // Now add the Accept, Content-Type and (optionally) the Authorization header to the
+      // Now add the Accept, Content-Type, User-Agent and (optionally) the Authorization header to the
       // token server request.
       builder.header(HttpHeaders.ACCEPT, HttpMediaType.APPLICATION_JSON);
       builder.header(HttpHeaders.CONTENT_TYPE, HttpMediaType.APPLICATION_FORM_URLENCODED);
+      builder.header(HttpHeaders.USER_AGENT, getUserAgent());
       addAuthorizationHeader(builder);
 
       // Build the form request body.

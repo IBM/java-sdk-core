@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2021, 2023.
+ * (C) Copyright IBM Corp. 2021, 2024.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -22,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.ibm.cloud.sdk.core.http.HttpHeaders;
 import com.ibm.cloud.sdk.core.http.HttpMediaType;
 import com.ibm.cloud.sdk.core.http.RequestBuilder;
+import com.ibm.cloud.sdk.core.util.RequestUtils;
 
 /**
  * VpcInstanceAuthenticator implements an authentication scheme in which it
@@ -124,7 +125,8 @@ public class VpcInstanceAuthenticator
 
   // The default ctor is hidden to force the use of the non-default ctors.
   protected VpcInstanceAuthenticator() {
-  }
+    setUserAgent(RequestUtils.buildUserAgent("vpc-instance-authenticator"));
+}
 
   /**
    * Constructs an IamAuthenticator instance from the configuration contained in
@@ -133,6 +135,7 @@ public class VpcInstanceAuthenticator
    * @param builder the Builder instance containing the configuration to be used
    */
   protected VpcInstanceAuthenticator(Builder builder) {
+    this();
     this.iamProfileCrn = builder.iamProfileCrn;
     this.iamProfileId = builder.iamProfileId;
     this.url = builder.url;
@@ -309,6 +312,7 @@ public class VpcInstanceAuthenticator
       builder.header(HttpHeaders.ACCEPT, HttpMediaType.APPLICATION_JSON);
       builder.header(HttpHeaders.CONTENT_TYPE, HttpMediaType.APPLICATION_JSON);
       builder.header(HttpHeaders.AUTHORIZATION, "Bearer " + instanceIdentityToken);
+      builder.header(HttpHeaders.USER_AGENT, getUserAgent());
 
       // Next, construct the optional request body to specify the linked IAM profile.
       // We previously verified that at most one of IBMProfileCRN or IAMProfileID was specified by the user,
