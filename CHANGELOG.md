@@ -1,3 +1,10 @@
+# [9.21.0](https://github.com/IBM/java-sdk-core/compare/9.20.1...9.21.0) (2024-04-17)
+
+
+### Features
+
+* send user-agent header with auth token requests ([#222](https://github.com/IBM/java-sdk-core/issues/222)) ([26824f9](https://github.com/IBM/java-sdk-core/commit/26824f9c8525de2161b62232af2deadbd26452c4))
+
 ## [9.20.1](https://github.com/IBM/java-sdk-core/compare/9.20.0...9.20.1) (2024-02-28)
 
 
