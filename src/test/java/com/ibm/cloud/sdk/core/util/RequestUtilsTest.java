@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2023.
+ * (C) Copyright IBM Corp. 2015, 2024.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -130,6 +130,12 @@ public class RequestUtilsTest {
   public void testUserAgent() {
     assertNotNull(RequestUtils.getUserAgent());
     assertTrue(RequestUtils.getUserAgent().startsWith("ibm-java-sdk-core-"));
+  }
+
+  @Test
+  public void testBuildUserAgent() {
+    assertTrue(RequestUtils.buildUserAgent(null).startsWith("ibm-java-sdk-core-"));
+    assertTrue(RequestUtils.buildUserAgent("sub-component").startsWith("ibm-java-sdk-core/sub-component-"));
   }
 
   @Test

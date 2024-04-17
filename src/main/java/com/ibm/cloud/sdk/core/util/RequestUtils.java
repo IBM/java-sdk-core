@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2019.
+ * (C) Copyright IBM Corp. 2015, 2024.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -30,6 +30,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Utility functions to use when creating a {@link com.ibm.cloud.sdk.core.http.RequestBuilder }.
@@ -158,18 +160,31 @@ public final class RequestUtils {
 
   /**
    * Builds the user agent using System properties.
+   * @param subComponent an optional sub-component to be included in the user agent value
    *
    * @return the string that represents the user agent
    */
-  private static String buildUserAgent() {
-    final List<String> details = new ArrayList<>();
-    for (String propertyName : properties) {
-      details.add(propertyName + "=" + System.getProperty(propertyName));
+  public static String buildUserAgent(String subComponent) {
+    StringBuilder sb = new StringBuilder();
+    sb.append("ibm-java-sdk-core");
+    if (StringUtils.isNotEmpty(subComponent)) {
+      sb.append("/");
+      sb.append(subComponent);
     }
+    sb.append("-");
+    sb.append(loadCoreVersion());
+    sb.append(" ");
+    sb.append(getSystemInfo());
 
-    return "ibm-java-sdk-core-" + loadCoreVersion() + " " + getSystemInfo();
+    return sb.toString();
   }
 
+  /**
+   * Returns the "system info" which consists of the values of system properties
+   * whose names are contained in the "properties" list defined above.
+   *
+   * @return the system info associated with the current environment
+   */
   public static String getSystemInfo() {
     final List<String> details = new ArrayList<>();
     for (String propertyName : properties) {
@@ -181,12 +196,11 @@ public final class RequestUtils {
 
   /**
    * Gets the user agent.
-   *
    * @return the user agent
    */
   public static synchronized String getUserAgent() {
     if (userAgent == null) {
-      userAgent = buildUserAgent();
+      userAgent = buildUserAgent(null);
     }
     return userAgent;
   }

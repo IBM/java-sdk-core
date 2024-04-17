@@ -459,6 +459,7 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
     Headers actualHeaders = tokenServerRequest.getHeaders();
     assertEquals("value1", actualHeaders.get("header1"));
     assertEquals("value2", actualHeaders.get("header2"));
+    assertTrue(actualHeaders.get(HttpHeaders.USER_AGENT).startsWith("ibm-java-sdk-core/iam-authenticator"));
     assertEquals("iam.cloud.ibm.com:81", actualHeaders.get("Host"));
 
     // Authenticator should just return the same token this time since we have a valid one stored.

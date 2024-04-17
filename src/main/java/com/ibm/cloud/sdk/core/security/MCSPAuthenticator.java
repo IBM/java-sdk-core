@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2023.
+ * (C) Copyright IBM Corp. 2023, 2024.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -21,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.ibm.cloud.sdk.core.http.HttpHeaders;
 import com.ibm.cloud.sdk.core.http.HttpMediaType;
 import com.ibm.cloud.sdk.core.http.RequestBuilder;
+import com.ibm.cloud.sdk.core.util.RequestUtils;
 
 /**
  * This class provides an Authenticator implementation for the Multi-Cloud Saas
@@ -155,6 +156,7 @@ public class MCSPAuthenticator extends TokenRequestBasedAuthenticator<MCSPToken,
      * The default ctor is "hidden" to force the use of the non-default ctors.
      */
     protected MCSPAuthenticator() {
+        setUserAgent(RequestUtils.buildUserAgent("mcsp-authenticator"));
     }
 
     /**
@@ -164,6 +166,7 @@ public class MCSPAuthenticator extends TokenRequestBasedAuthenticator<MCSPToken,
      * @param builder the Builder instance containing the configuration to be used
      */
     protected MCSPAuthenticator(Builder builder) {
+        this();
         this.apikey = builder.apikey;
         this.url = builder.url;
         setDisableSSLVerification(builder.disableSSLVerification);
@@ -242,6 +245,7 @@ public class MCSPAuthenticator extends TokenRequestBasedAuthenticator<MCSPToken,
         RequestBuilder builder = RequestBuilder.post(RequestBuilder.resolveRequestUrl(this.getURL(), OPERATION_PATH));
         builder.header(HttpHeaders.ACCEPT, HttpMediaType.APPLICATION_JSON);
         builder.header(HttpHeaders.CONTENT_TYPE, HttpMediaType.APPLICATION_JSON);
+        builder.header(HttpHeaders.USER_AGENT, getUserAgent());
 
         // Build the request body.
         String requestBody = String.format("{\"apikey\":\"%s\"}", this.getApiKey());

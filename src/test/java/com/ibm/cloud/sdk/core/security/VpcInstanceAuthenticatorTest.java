@@ -35,6 +35,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import com.ibm.cloud.sdk.core.http.HttpHeaders;
+import com.ibm.cloud.sdk.core.security.VpcTokenResponse;
 import com.ibm.cloud.sdk.core.service.exception.ServiceResponseException;
 import com.ibm.cloud.sdk.core.test.BaseServiceUnitTest;
 import com.ibm.cloud.sdk.core.util.Clock;
@@ -246,6 +247,7 @@ public class VpcInstanceAuthenticatorTest extends BaseServiceUnitTest {
     Headers actualHeaders = vpcIamTokenRequest.getHeaders();
     assertNotNull(actualHeaders);
     assertEquals(actualHeaders.get(HttpHeaders.AUTHORIZATION), "Bearer " + instanceIdentityToken);
+    assertTrue(actualHeaders.get(HttpHeaders.USER_AGENT).startsWith("ibm-java-sdk-core/vpc-instance-authenticator"));
   }
 
   @Test

@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2021.
+ * (C) Copyright IBM Corp. 2015, 2024.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -22,6 +22,7 @@ import com.ibm.cloud.sdk.core.http.HttpHeaders;
 import com.ibm.cloud.sdk.core.http.HttpMediaType;
 import com.ibm.cloud.sdk.core.http.RequestBuilder;
 import com.ibm.cloud.sdk.core.util.CredentialUtils;
+import com.ibm.cloud.sdk.core.util.RequestUtils;
 
 import okhttp3.FormBody;
 
@@ -173,6 +174,7 @@ public class IamAuthenticator extends IamRequestBasedAuthenticator implements Au
 
   // The default ctor is hidden to force the use of the non-default ctors.
   protected IamAuthenticator() {
+    setUserAgent(RequestUtils.buildUserAgent("iam-authenticator"));
   }
 
   /**
@@ -182,6 +184,7 @@ public class IamAuthenticator extends IamRequestBasedAuthenticator implements Au
    * @param builder the Builder instance containing the configuration to be used
    */
   protected IamAuthenticator(Builder builder) {
+    this();
     this.apikey = builder.apikey;
 
     setURL(builder.url);
@@ -215,6 +218,7 @@ public class IamAuthenticator extends IamRequestBasedAuthenticator implements Au
    */
   @Deprecated
   public IamAuthenticator(String apikey) {
+    this();
     init(apikey, null, null, null, false, null, null);
   }
 
@@ -240,6 +244,7 @@ public class IamAuthenticator extends IamRequestBasedAuthenticator implements Au
   @Deprecated
   public IamAuthenticator(String apikey, String url, String clientId, String clientSecret,
     boolean disableSSLVerification, Map<String, String> headers) {
+    this();
     init(apikey, url, clientId, clientSecret, disableSSLVerification, headers, null);
   }
 
@@ -268,6 +273,7 @@ public class IamAuthenticator extends IamRequestBasedAuthenticator implements Au
   @Deprecated
   public IamAuthenticator(String apikey, String url, String clientId, String clientSecret,
     boolean disableSSLVerification, Map<String, String> headers, String scope) {
+    this();
     init(apikey, url, clientId, clientSecret, disableSSLVerification, headers, scope);
   }
 
@@ -281,6 +287,7 @@ public class IamAuthenticator extends IamRequestBasedAuthenticator implements Au
    */
   @Deprecated
   public IamAuthenticator(Map<String, String> config) {
+    this();
     String apikey = config.get(PROPNAME_APIKEY);
     if (StringUtils.isEmpty(apikey)) {
       apikey = config.get("IAM_APIKEY");
@@ -421,9 +428,11 @@ public class IamAuthenticator extends IamRequestBasedAuthenticator implements Au
     // Form a POST request to retrieve the access token.
     RequestBuilder builder = RequestBuilder.post(RequestBuilder.resolveRequestUrl(this.getURL(), OPERATION_PATH));
 
-    // Now add the Accept, Content-Type and (optionally) the Authorization header to the token server request.
+    // Now add the Accept, Content-Type, User-Agent and (optionally) the Authorization header
+    // to the token server request.
     builder.header(HttpHeaders.ACCEPT, HttpMediaType.APPLICATION_JSON);
     builder.header(HttpHeaders.CONTENT_TYPE, HttpMediaType.APPLICATION_FORM_URLENCODED);
+    builder.header(HttpHeaders.USER_AGENT, getUserAgent());
     addAuthorizationHeader(builder);
 
     // Build the form request body.
