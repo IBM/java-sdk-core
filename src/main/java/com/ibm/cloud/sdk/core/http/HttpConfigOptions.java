@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2019.
+ * (C) Copyright IBM Corp. 2015, 2023.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -39,6 +39,7 @@ public class HttpConfigOptions {
   private Boolean enableRetries;
   private int maxRetries;
   private int maxRetryInterval;
+  private Boolean enableCustomRedirects = Boolean.TRUE;
   private Proxy proxy;
   private Authenticator proxyAuthenticator;
   private LoggingLevel loggingLevel;
@@ -64,6 +65,10 @@ public class HttpConfigOptions {
 
   public int getMaxRetryInterval() {
     return this.maxRetryInterval;
+  }
+
+  public Boolean getCustomRedirects() {
+      return this.enableCustomRedirects;
   }
 
   public Proxy getProxy() {
@@ -98,6 +103,7 @@ public class HttpConfigOptions {
     private Boolean enableRetries;
     private int maxRetries;
     private int maxRetryInterval;
+    private Boolean enableCustomRedirects = Boolean.TRUE;
     private Proxy proxy;
     private Authenticator proxyAuthenticator;
     private LoggingLevel loggingLevel;
@@ -122,10 +128,10 @@ public class HttpConfigOptions {
     }
 
     /**
-     * Sets flag to enable gzip compression of request bodies during HTTP requests. This should ONLY be used if truly
+     * Sets flag to enable compression of request bodies during HTTP requests. This should ONLY be used if truly
      * intended, as many webservers can't handle this.
      *
-     * @param enableGzipCompression whether to disable SSL verification or not
+     * @param enableGzipCompression whether to perform gzip-compression of request bodies or not
      * @return the builder
      */
     public Builder enableGzipCompression(Boolean enableGzipCompression) {
@@ -179,6 +185,17 @@ public class HttpConfigOptions {
     }
 
     /**
+     * Sets flag to enable our custom redirect behavior.
+     *
+     * @param enableCustomRedirects whether to enable our custom redirect behavior or not
+     * @return the builder
+     */
+    public Builder enableCustomRedirects(Boolean enableCustomRedirects) {
+      this.enableCustomRedirects = enableCustomRedirects;
+      return this;
+    }
+
+    /**
      * Sets HTTP proxy to be used by connections with the current client.
      *
      * @param proxy the desired {@link Proxy}
@@ -218,6 +235,7 @@ public class HttpConfigOptions {
     this.enableRetries = builder.enableRetries;
     this.maxRetries = builder.maxRetries;
     this.maxRetryInterval = builder.maxRetryInterval;
+    this.enableCustomRedirects = builder.enableCustomRedirects;
     this.proxy = builder.proxy;
     this.proxyAuthenticator = builder.proxyAuthenticator;
     this.loggingLevel = builder.loggingLevel;
