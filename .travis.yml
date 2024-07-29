@@ -27,37 +27,37 @@ stages:
   - name: Publish-Release
     if: (tag IS present) AND (fork = false)
 
-before_install:
-  - sudo apt-get update
-  - env | grep TRAVIS
-  - python -V
-
 jobs:
   include:
     - stage: Build-Test
       jdk: openjdk11
-      install: skip
+      install: true
       script:
         - build/setMavenVersion.sh
         - mvn clean package $MVN_ARGS
 
     - jdk: openjdk17
-      install: skip
+      install: true
       script:
         - mvn clean package $MVN_ARGS
 
-    - stage: Semantic-Release
-      jdk: openjdk11
+    - name: Detect-Secrets
+      language: python
+      python: 3.12
       install:
-        - nvm install 18
-        - node --version
-        - npm --version
+        - pip install --upgrade "git+https://github.com/ibm/detect-secrets.git@master#egg=detect-secrets"
+      script:
+        - detect-secrets scan --update .secrets.baseline
+        - detect-secrets -v audit --report --fail-on-unaudited --fail-on-live --fail-on-audited-real .secrets.baseline
+
+    - stage: Semantic-Release
+      language: node_js
+      node_js: 22
+      install:
         - npm install
         - pip install --user bump-my-version
       script:
         - npm run semantic-release
-      after_success:
-        - echo "Semantic release has successfully created a new tagged-release"
 
     - stage: Publish-Release
       jdk: openjdk11
