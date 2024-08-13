@@ -1,3 +1,10 @@
+## [9.21.1](https://github.com/IBM/java-sdk-core/compare/9.21.0...9.21.1) (2024-08-13)
+
+
+### Bug Fixes
+
+* **build:** bump dependency versions ([#225](https://github.com/IBM/java-sdk-core/issues/225)) ([ef5a2ec](https://github.com/IBM/java-sdk-core/commit/ef5a2ecd2712e990dbbba2ba789afe0a77fafa8b))
+
 # [9.21.0](https://github.com/IBM/java-sdk-core/compare/9.20.1...9.21.0) (2024-04-17)
 
 
