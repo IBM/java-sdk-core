@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2022.  All Rights Reserved.
+ * (C) Copyright IBM Corp. 2022, 2024.  All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -22,7 +22,7 @@ import com.ibm.cloud.sdk.core.security.Authenticator;
 public class DefaultRetryStrategy implements IRetryStrategy {
 
   @Override
-  public RetryInterceptor createRetryInterceptor(int maxRetries, int maxRetryInterval, Authenticator authenticator) {
+  public IRetryInterceptor createRetryInterceptor(int maxRetries, int maxRetryInterval, Authenticator authenticator) {
     return new RetryInterceptor(maxRetries, maxRetryInterval, authenticator);
   }
 }

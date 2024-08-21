@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2021.
+ * (C) Copyright IBM Corp. 2021, 2024.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -25,11 +25,13 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import com.ibm.cloud.sdk.core.http.DefaultRetryStrategy;
 import com.ibm.cloud.sdk.core.http.HttpClientSingleton;
 import com.ibm.cloud.sdk.core.http.HttpMediaType;
 import com.ibm.cloud.sdk.core.http.IRetryInterceptor;
@@ -55,6 +57,15 @@ import okhttp3.mockwebserver.RecordedRequest;
 public class RetryTest extends BaseServiceUnitTest {
   private static final Logger LOG = Logger.getLogger(RetryTest.class.getName());
 
+  @Override
+  @BeforeMethod
+  public void setUp() throws Exception {
+    super.setUp();
+    service = new RetryTest.TestService(new NoAuthAuthenticator());
+    service.enableRetries(3, 10);
+    service.setServiceUrl(getMockWebServerUrl());
+  }
+
   public class TestModel extends GenericModel {
     String success;
 
@@ -78,15 +89,6 @@ public class RetryTest extends BaseServiceUnitTest {
   }
 
   private RetryTest.TestService service;
-
-  @Override
-  @BeforeMethod
-  public void setUp() throws Exception {
-    super.setUp();
-    service = new RetryTest.TestService(new NoAuthAuthenticator());
-    service.enableRetries(3, 10);
-    service.setServiceUrl(getMockWebServerUrl());
-  }
 
   /**
    * Test that we don't endlessly retry on 429.
@@ -252,13 +254,13 @@ public class RetryTest extends BaseServiceUnitTest {
       assertEquals(1, server.getRequestCount());
     }
   }
-  
+
   // Simulated user-defined retry interceptor implementation.
   public static class UserRetryInterceptor extends RetryInterceptor {
     public UserRetryInterceptor(int maxRetries, int maxRetryInterval, Authenticator authenticator) {
       super(maxRetries, maxRetryInterval, authenticator);
     }
-    
+
     @Override
     public okhttp3.Response intercept(Interceptor.Chain chain) throws IOException {
       LOG.info("User-defined retry interceptor invoked!");
@@ -279,7 +281,7 @@ public class RetryTest extends BaseServiceUnitTest {
   public void testRetryWithStrategy() throws Exception {
     // Set our retry strategy.
     IRetryStrategy prevStrategy = HttpClientSingleton.setRetryStrategy(new UserRetryStrategy());
-    
+
     // Re-enable retries on our service client.
     service.enableRetries(10, 1);
 
@@ -296,7 +298,7 @@ public class RetryTest extends BaseServiceUnitTest {
     assertEquals(200, r.getStatusCode());
     assertEquals(message, r.getResult().getSuccess());
     assertEquals(5, server.getRequestCount());
-    
+
     // Reset the retry strategy to the default.
     HttpClientSingleton.setRetryStrategy(prevStrategy);
   }

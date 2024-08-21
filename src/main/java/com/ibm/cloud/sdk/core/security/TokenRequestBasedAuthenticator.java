@@ -50,7 +50,7 @@ import java.util.logging.Logger;
 public abstract class TokenRequestBasedAuthenticator<T extends AbstractToken, R extends TokenServerResponse>
   extends AuthenticatorBase implements Authenticator {
 
-  private static final Logger logger = Logger.getLogger(TokenRequestBasedAuthenticator.class.getName());
+  private static final Logger LOG = Logger.getLogger(TokenRequestBasedAuthenticator.class.getName());
 
   protected OkHttpClient client;
   protected String userAgent;
@@ -115,7 +115,7 @@ public abstract class TokenRequestBasedAuthenticator<T extends AbstractToken, R 
           .proxy(this.proxy)
           .proxyAuthenticator(this.proxyAuthenticator);
 
-      if (logger.isLoggable(Level.FINE)) {
+      if (LOG.isLoggable(Level.FINE)) {
         clientOptions.loggingLevel(LoggingLevel.BODY);
       }
 
@@ -223,6 +223,7 @@ public abstract class TokenRequestBasedAuthenticator<T extends AbstractToken, R 
     String headerValue = constructBearerTokenAuthHeader(getToken());
     if (headerValue != null) {
       builder.header(HttpHeaders.AUTHORIZATION, headerValue);
+      LOG.fine(String.format("Authenticated outbound request (type=%s)", this.authenticationType()));
     }
   }
 
@@ -257,9 +258,10 @@ public abstract class TokenRequestBasedAuthenticator<T extends AbstractToken, R 
     String token;
 
     if (this.tokenData == null || !this.tokenData.isTokenValid()) {
+      LOG.fine("Performing synchronous token fetch...");
       setTokenData(synchronizedRequestToken());
     } else if (this.tokenData.needsRefresh()) {
-
+      LOG.fine("Performing background asynchronous token fetch...");
       // Kick off background task to refresh token.
       Thread updateTokenCall = new Thread(new Runnable() {
         @Override
@@ -268,6 +270,8 @@ public abstract class TokenRequestBasedAuthenticator<T extends AbstractToken, R 
         }
       });
       updateTokenCall.start();
+    } else {
+      LOG.fine("Using cached access token...");
     }
 
     // Make sure we have a non-null tokenData object.

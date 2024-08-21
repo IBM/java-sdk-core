@@ -11,7 +11,7 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package com.ibm.cloud.sdk.core.security;
+package com.ibm.cloud.sdk.core.test.security;
 
 import static com.ibm.cloud.sdk.core.test.TestUtils.loadFixture;
 import static org.testng.Assert.assertEquals;
@@ -24,9 +24,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -35,6 +32,9 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import com.ibm.cloud.sdk.core.http.HttpHeaders;
+import com.ibm.cloud.sdk.core.security.Authenticator;
+import com.ibm.cloud.sdk.core.security.IamToken;
+import com.ibm.cloud.sdk.core.security.VpcInstanceAuthenticator;
 import com.ibm.cloud.sdk.core.security.VpcTokenResponse;
 import com.ibm.cloud.sdk.core.service.exception.ServiceResponseException;
 import com.ibm.cloud.sdk.core.test.BaseServiceUnitTest;
@@ -60,10 +60,6 @@ public class VpcInstanceAuthenticatorTest extends BaseServiceUnitTest {
   private static final String mockErrorResponseJson2 =
       "{\"errors\": [{\"message\": \"Your create_iam_token request was bad.\", \"code\": \"invalid_parameter_value\"}]}";
 
-  // Logging level used by this test.
-  // For debugging, set this to Level.FINE or Level.ALL, etc.
-  private static Level logLevel = Level.SEVERE;
-
   @Override
   @BeforeMethod
   public void setUp() throws Exception {
@@ -74,18 +70,6 @@ public class VpcInstanceAuthenticatorTest extends BaseServiceUnitTest {
     vpcInstanceIdentityTokenResponse = loadFixture("src/test/resources/vpc_iit_response.json", VpcTokenResponse.class);
     vpcIamAccessTokenResponse1 = loadFixture("src/test/resources/vpc_iam_access_response1.json", VpcTokenResponse.class);
     vpcIamAccessTokenResponse2 = loadFixture("src/test/resources/vpc_iam_access_response2.json", VpcTokenResponse.class);
-
-    // Set up java.util.logging to display messages on the console.
-    ConsoleHandler handler = new ConsoleHandler();
-    handler.setLevel(logLevel);
-    Logger logger;
-    logger = Logger.getLogger(VpcInstanceAuthenticator.class.getName());
-    logger.setLevel(logLevel);
-    logger.addHandler(handler);
-
-    logger = Logger.getLogger(TokenRequestBasedAuthenticator.class.getName());
-    logger.setLevel(logLevel);
-    logger.addHandler(handler);
   }
 
   // This will be our mocked version of the Clock class.

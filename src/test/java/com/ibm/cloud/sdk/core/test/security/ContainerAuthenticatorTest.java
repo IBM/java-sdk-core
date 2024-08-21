@@ -26,9 +26,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -66,10 +64,6 @@ public class ContainerAuthenticatorTest extends BaseServiceUnitTest {
   private static final String mockScope = "scope1";
   private static final String mockCRToken = "cr-token-1";
 
-  // Logging level used by this test.
-  // For debugging, set this to Level.FINE or Level.ALL, etc.
-  private static Level logLevel = Level.SEVERE;
-
   @Override
   @BeforeMethod
   public void setUp() throws Exception {
@@ -77,18 +71,6 @@ public class ContainerAuthenticatorTest extends BaseServiceUnitTest {
     url = getMockWebServerUrl();
     tokenData1 = loadFixture("src/test/resources/iam_token.json", IamToken.class);
     tokenData2 = loadFixture("src/test/resources/refreshed_iam_token.json", IamToken.class);
-
-    // Set up java.util.logging to display messages on the console.
-    ConsoleHandler handler = new ConsoleHandler();
-    handler.setLevel(logLevel);
-    Logger logger;
-    logger = Logger.getLogger(ContainerAuthenticator.class.getName());
-    logger.setLevel(logLevel);
-    logger.addHandler(handler);
-
-    logger = Logger.getLogger(TokenRequestBasedAuthenticator.class.getName());
-    logger.setLevel(logLevel);
-    logger.addHandler(handler);
   }
 
   // This will be our mocked version of the Clock class.

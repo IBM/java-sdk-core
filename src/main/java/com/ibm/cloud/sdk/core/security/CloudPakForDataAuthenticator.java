@@ -16,6 +16,8 @@ package com.ibm.cloud.sdk.core.security;
 import java.io.InputStream;
 import java.net.Proxy;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -36,6 +38,7 @@ import com.ibm.cloud.sdk.core.util.RequestUtils;
  */
 public class CloudPakForDataAuthenticator extends TokenRequestBasedAuthenticator<Cp4dToken, Cp4dTokenResponse>
   implements Authenticator {
+  private static final Logger LOG = Logger.getLogger(CloudPakForDataAuthenticator.class.getName());
 
   // Properties specific to a CloudPakForData authenticator.
   private String url;
@@ -382,9 +385,12 @@ public class CloudPakForDataAuthenticator extends TokenRequestBasedAuthenticator
     // Invoke the POST request.
     Cp4dToken token;
     try {
+      LOG.log(Level.FINE, "Invoking CP4D token service operation: POST {0}", builder.toUrl());
       Cp4dTokenResponse response = invokeRequest(builder, Cp4dTokenResponse.class);
+      LOG.log(Level.FINE, "Returned from CP4D token service operation");
       token = new Cp4dToken(response);
     } catch (Throwable t) {
+      LOG.log(Level.FINE, "Exception from CP4D token service operation: ", t);
       token = new Cp4dToken(t);
     }
 

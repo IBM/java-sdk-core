@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2021.
+ * (C) Copyright IBM Corp. 2015, 2024.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -117,6 +117,8 @@ public abstract class IamRequestBasedAuthenticator
   /**
    * If a basic auth Authorization header is cached in "this", then add it to
    * the specified request builder.
+   * This is used in situations where we want to add an Authorization header
+   * containing basic auth information to the token exchange request itself.
    * @param builder the request builder
    */
   protected void addAuthorizationHeader(RequestBuilder builder) {

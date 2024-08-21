@@ -264,8 +264,9 @@ public class VpcInstanceAuthenticator
    * Retrieves the local compute resource's instance identity token using
    * the "create_access_token" operation of the local VPC Instance Metadata Service API.
    * @return the instance identity token
+   * @throws Throwable if an error occurred
    */
-  protected String retrieveInstanceIdentityToken() throws Throwable {
+  public String retrieveInstanceIdentityToken() throws Throwable {
     String instanceIdentityToken = null;
     try {
       // Create a PUT request to retrieve the instance identity token.
@@ -281,14 +282,14 @@ public class VpcInstanceAuthenticator
       String requestBody = String.format("{\"expires_in\": %d}", instanceIdentityTokenLifetime);
       builder.bodyContent(requestBody, HttpMediaType.APPLICATION_JSON);
 
-      // Invoke the VPC IMDS "create_iam_token" operation.
-      LOG.log(Level.FINE, "Invoking VPC 'create_access_token' operation: {0}", builder.toUrl());
+      // Invoke the VPC IMDS "create_access_token" operation.
+      LOG.log(Level.FINE, "Invoking VPC create_access_token operation: PUT {0}", builder.toUrl());
       VpcTokenResponse vpcResponse = invokeRequest(builder, VpcTokenResponse.class);
-      LOG.log(Level.FINE, "Returned from VPC 'create_access_token' operation.");
+      LOG.log(Level.FINE, "Returned from VPC create_access_token operation.");
 
       instanceIdentityToken = vpcResponse.getAccessToken();
     } catch (Throwable t) {
-      LOG.log(Level.FINE, "Caught exception from VPC 'create_access_token' operation: ", t);
+      LOG.log(Level.FINE, "Exception from VPC create_access_token operation: ", t);
       throw t;
     }
 
@@ -300,7 +301,7 @@ public class VpcInstanceAuthenticator
    * @param instanceIdentityToken the current compute resource's instance identity token
    * @return the IamToken instance containing the IAM access token
    */
-  protected IamToken retrieveIamAccessToken(String instanceIdentityToken) {
+  public IamToken retrieveIamAccessToken(String instanceIdentityToken) {
     IamToken iamToken = null;
     try {
       // Create a POST request to retrieve the IAM access token.
@@ -332,15 +333,15 @@ public class VpcInstanceAuthenticator
       }
 
       // Invoke the VPC IMDS "create_iam_token" operation.
-      LOG.log(Level.FINE, "Invoking VPC 'create_iam_token' operation: {0}", builder.toUrl());
+      LOG.log(Level.FINE, "Invoking VPC create_iam_token operation: POST {0}", builder.toUrl());
       VpcTokenResponse vpcResponse = invokeRequest(builder, VpcTokenResponse.class);
-      LOG.log(Level.FINE, "Returned from VPC 'create_iam_token' operation.");
+      LOG.log(Level.FINE, "Returned from VPC create_iam_token operation.");
 
       // Convert the response to an IamToken instance.
       iamToken = new IamToken(vpcResponse);
     } catch (Throwable t) {
+      LOG.log(Level.FINE, "Exception from VPC create_iam_token operation: {0}", t);
       iamToken = new IamToken(t);
-      LOG.log(Level.FINE, "Caught exception from VPC 'create_iam_token' operation: ", t);
     }
 
     return iamToken;

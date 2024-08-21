@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2022.
+ * (C) Copyright IBM Corp. 2015, 2024.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -13,25 +13,6 @@
 
 package com.ibm.cloud.sdk.core.http;
 
-import com.ibm.cloud.sdk.core.http.HttpConfigOptions.LoggingLevel;
-import com.ibm.cloud.sdk.core.http.gzip.GzipRequestInterceptor;
-import com.ibm.cloud.sdk.core.service.security.DelegatingSSLSocketFactory;
-import okhttp3.Authenticator;
-import okhttp3.ConnectionSpec;
-import okhttp3.Interceptor;
-import okhttp3.OkHttpClient;
-import okhttp3.OkHttpClient.Builder;
-import okhttp3.TlsVersion;
-import okhttp3.logging.HttpLoggingInterceptor;
-
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
@@ -41,13 +22,33 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
-import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
+
+import com.ibm.cloud.sdk.core.http.HttpConfigOptions.LoggingLevel;
+import com.ibm.cloud.sdk.core.http.gzip.GzipRequestInterceptor;
+import com.ibm.cloud.sdk.core.service.security.DelegatingSSLSocketFactory;
+
+import okhttp3.Authenticator;
+import okhttp3.ConnectionSpec;
+import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
+import okhttp3.OkHttpClient.Builder;
+import okhttp3.TlsVersion;
 
 /**
  * This class encapsulate the {@link OkHttpClient} instance in a singleton pattern. OkHttp performs best when you create
@@ -98,14 +99,14 @@ public class HttpClientSingleton {
 
   private static final class FilteredSSLSocketFactory extends DelegatingSSLSocketFactory {
 
-      // Get the TLS verson names from the MODERN_TLS connection spec
+      // Get the TLS version names from the MODERN_TLS connection spec
       private static final List<String> MODERN_TLS_NAMES = new ArrayList<>();
 
       static {
         for (TlsVersion tlsVersion : ConnectionSpec.MODERN_TLS.tlsVersions()) {
           MODERN_TLS_NAMES.add(tlsVersion.javaName());
         }
-        LOG.log(Level.FINEST, "Modern TLS names {0}", MODERN_TLS_NAMES);
+        LOG.log(Level.FINEST, "Modern TLS names: {0}", MODERN_TLS_NAMES);
       }
 
       private FilteredSSLSocketFactory(SSLSocketFactory delegate) {
@@ -116,12 +117,12 @@ public class HttpClientSingleton {
       protected SSLSocket configureSocket(SSLSocket socket) throws IOException {
         // Find the TLS protocols supported by this socket
         List<String> supportedTlsNames = Arrays.asList(socket.getSupportedProtocols());
-        LOG.log(Level.FINEST, "Socket supported protocols {0}", supportedTlsNames);
+        LOG.log(Level.FINEST, "Socket supported TLS protocols: {0}", supportedTlsNames);
         // Get the union of MODERN_TLS_NAMES and the socket's supported protocols
         List<String> protocolsToEnable = new ArrayList<>();
         protocolsToEnable.addAll(supportedTlsNames);
         protocolsToEnable.retainAll(MODERN_TLS_NAMES);
-        LOG.log(Level.FINEST, "Filtered protocols to enable {0}", protocolsToEnable);
+        LOG.log(Level.FINEST, "Filtered TLS protocols to enable: {0}", protocolsToEnable);
         socket.setEnabledProtocols(protocolsToEnable.toArray(new String[]{}));
         return socket;
       }
@@ -132,7 +133,7 @@ public class HttpClientSingleton {
    *
    * @return single instance of HttpClientSingleton
    */
-  public static HttpClientSingleton getInstance() {
+  public static synchronized HttpClientSingleton getInstance() {
     if (instance == null) {
       instance = new HttpClientSingleton();
     }
@@ -200,7 +201,6 @@ public class HttpClientSingleton {
   private void addCookieJar(final OkHttpClient.Builder builder) {
     final CookieManager cookieManager = new CookieManager();
     cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
-
     builder.cookieJar(new ServiceCookieJar(cookieManager));
   }
 
@@ -268,36 +268,32 @@ public class HttpClientSingleton {
   private OkHttpClient setLoggingLevel(OkHttpClient client, LoggingLevel loggingLevel) {
     // First check to see if the client already has the http logging interceptor registered.
     // If not, then we'll register a new instance of one.
-    HttpLoggingInterceptor loggingInterceptor = null;
+    HttpLogger loggingInterceptor = null;
     for (Interceptor i : client.networkInterceptors()) {
-      if (i instanceof HttpLoggingInterceptor) {
-        loggingInterceptor = (HttpLoggingInterceptor) i;
+      if (i instanceof HttpLogger) {
+        loggingInterceptor = (HttpLogger) i;
       }
     }
 
     OkHttpClient updatedClient = client;
     if (loggingInterceptor == null) {
-      loggingInterceptor = new HttpLoggingInterceptor();
-      loggingInterceptor.redactHeader(HttpHeaders.AUTHORIZATION);
-      loggingInterceptor.redactHeader(HttpHeaders.WWW_AUTHENTICATE);
-      loggingInterceptor.redactHeader("Proxy-Authenticate");
-      loggingInterceptor.redactHeader("Proxy-Authorization");
+      loggingInterceptor = new HttpLogger();
       OkHttpClient.Builder builder = client.newBuilder().addNetworkInterceptor(loggingInterceptor);
       updatedClient = builder.build();
     }
 
     switch (loggingLevel) {
       case BODY:
-        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+        loggingInterceptor.setLevel(HttpLogger.Level.BODY);
         break;
       case HEADERS:
-        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.HEADERS);
+        loggingInterceptor.setLevel(HttpLogger.Level.HEADERS);
         break;
       case BASIC:
-        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BASIC);
+        loggingInterceptor.setLevel(HttpLogger.Level.BASIC);
         break;
       default:
-        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.NONE);
+        loggingInterceptor.setLevel(HttpLogger.Level.NONE);
     }
 
     return updatedClient;
@@ -352,7 +348,6 @@ public class HttpClientSingleton {
       for (Iterator<Interceptor> iter = builder.interceptors().iterator(); iter.hasNext(); ) {
         Interceptor element = iter.next();
         if (interceptorToRemove.equals(element.getClass().getSimpleName())) {
-          LOG.log(Level.FINE, "Removing interceptor " + element.getClass().getName() + " from http client instance.");
           iter.remove();
         }
       }
@@ -377,7 +372,6 @@ public class HttpClientSingleton {
       for (Iterator<Interceptor> iter = builder.interceptors().iterator(); iter.hasNext(); ) {
         Interceptor element = iter.next();
         if (interfaceToRemove.isAssignableFrom(element.getClass())) {
-          LOG.log(Level.FINE, "Removing interceptor " + element.getClass().getName() + " from http client instance.");
           iter.remove();
         }
       }

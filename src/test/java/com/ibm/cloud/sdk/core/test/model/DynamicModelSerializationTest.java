@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2023.
+ * (C) Copyright IBM Corp. 2015, 2024.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -12,6 +12,19 @@
  */
 
 package com.ibm.cloud.sdk.core.test.model;
+
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertTrue;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+
+import org.testng.annotations.Test;
 
 import com.google.gson.JsonSyntaxException;
 import com.ibm.cloud.sdk.core.service.model.DynamicModel;
@@ -26,17 +39,6 @@ import com.ibm.cloud.sdk.core.test.model.generated.ModelAPObject;
 import com.ibm.cloud.sdk.core.test.model.generated.ModelAPProtectedCtor;
 import com.ibm.cloud.sdk.core.test.model.generated.ModelAPString;
 import com.ibm.cloud.sdk.core.util.GsonSingleton;
-import org.testng.annotations.Test;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertNull;
-import static org.testng.Assert.assertTrue;
 
 /**
  * This class contains tests of our DynamicModelTypeAdapterFactory.
@@ -44,6 +46,7 @@ import static org.testng.Assert.assertTrue;
  * and then copied here to this project.
  */
 public class DynamicModelSerializationTest {
+
   private boolean displayOutput = false;
 
   private String serialize(Object obj) {

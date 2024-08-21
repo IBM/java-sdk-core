@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2022.
+ * (C) Copyright IBM Corp. 2015, 2024.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -41,7 +42,7 @@ import com.ibm.cloud.sdk.core.service.BaseService;
  * CredentialUtils retrieves service credentials from the environment.
  */
 public final class CredentialUtils {
-  private static final Logger log = Logger.getLogger(CredentialUtils.class.getName());
+  private static final Logger LOG = Logger.getLogger(CredentialUtils.class.getName());
 
   public static final String PLAN_STANDARD = "standard";
 
@@ -70,16 +71,26 @@ public final class CredentialUtils {
    * @return a Map of properties associated with the service
    */
   public static Map<String, String> getServiceProperties(String serviceName) {
+    LOG.log(Level.FINE, "Retrieving config properties for service: {0}", serviceName);
+
     Map<String, String> props = getFileCredentialsAsMap(serviceName);
     if (props.isEmpty()) {
+      LOG.log(Level.FINE, "Found no relevant properties in credential file");
       props = getEnvCredentialsAsMap(serviceName);
     }
     if (props.isEmpty()) {
+      LOG.log(Level.FINE, "Found no relevant properties in environment variables");
       props = getVcapCredentialsAsMap(serviceName);
     }
     if (props.isEmpty()) {
+      LOG.log(Level.FINE, "Found no relevant properties in VCAP credentials");
       props = getSystemPropsCredentialsAsMap(serviceName);
     }
+    if (props.isEmpty()) {
+      LOG.log(Level.FINE, "Found no relevant properties in JVM system properties");
+    }
+
+    LOG.log(Level.FINE, "Retrieved {0} properties", props.size());
     return props;
   }
 
@@ -156,13 +167,13 @@ public final class CredentialUtils {
       try {
         result = gson.fromJson(vcapValue, typeToken);
       } catch (Throwable t) {
-        log.log(Level.WARNING, "Error parsing VCAP_SERVICES", t);
+        LOG.log(Level.WARNING, "Error parsing VCAP_SERVICES", t);
       }
     }
     return result;
   }
 
-   /**
+  /**
    * Returns an appropriate "service" list item for the specific 'serviceName' value.
    *
    * @param serviceName the name used to locate the appropriate entry within the VCAP_SERVICES structure.
@@ -247,6 +258,15 @@ public final class CredentialUtils {
       files.add(new File(String.format("%s/%s", windowsSecondHomeDirectory, DEFAULT_CREDENTIAL_FILE_NAME)));
     }
 
+    if (LOG.isLoggable(Level.FINE)) {
+      if (files.isEmpty()) {
+        LOG.log(Level.FINE, "No candidate credential files detected");
+      } else {
+        String fileNames = files.stream().map(f -> f.getPath()).collect(Collectors.joining(", "));
+        LOG.log(Level.FINE, "Candidate credential files detected: {0}", fileNames);
+      }
+    }
+
     return files;
   }
 
@@ -261,12 +281,14 @@ public final class CredentialUtils {
     try {
       for (File file : files) {
         if (file.isFile()) {
+          LOG.log(Level.FINE, "Reading credentials from file: {0}", file.getPath());
           credentialFileContents = IOUtils.readLines(new FileInputStream(file), StandardCharsets.UTF_8);
+          LOG.log(Level.FINE, "Read {0} lines", credentialFileContents.size());
           break;
         }
       }
     } catch (IOException e) {
-      log.severe("There was a problem trying to read the credential file: " + e);
+      LOG.log(Level.SEVERE, "Error reading file: ", e);
     }
 
     return credentialFileContents;
@@ -282,7 +304,11 @@ public final class CredentialUtils {
     List<File> files = getFilesToCheck();
     List<String> contents = getFirstExistingFileContents(files);
     if (contents != null && !contents.isEmpty()) {
-      return parseCredentials(serviceName, contents);
+      Map<String, String> props = parseCredentials(serviceName, contents);
+      if (!props.isEmpty()) {
+        LOG.log(Level.FINE, "Found {0} properties in credential file", props.size());
+      }
+      return props;
     }
 
     return Collections.emptyMap();
@@ -312,6 +338,9 @@ public final class CredentialUtils {
             props.put(credentialName, value);
           }
         }
+      }
+      if (!props.isEmpty()) {
+        LOG.log(Level.FINE, "Found {0} properties in environment variables", props.size());
       }
       return props;
     }
@@ -351,6 +380,9 @@ public final class CredentialUtils {
             props.put(credentialName, value);
           }
         }
+      }
+      if (!props.isEmpty()) {
+        LOG.log(Level.FINE, "Found {0} properties in JVM system properties", props.size());
       }
       return props;
     }

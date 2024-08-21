@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -25,6 +26,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.ibm.cloud.sdk.core.http.HttpClientSingleton;
 import com.ibm.cloud.sdk.core.http.HttpConfigOptions;
+import com.ibm.cloud.sdk.core.http.HttpConfigOptions.LoggingLevel;
 import com.ibm.cloud.sdk.core.http.HttpHeaders;
 import com.ibm.cloud.sdk.core.http.HttpStatus;
 import com.ibm.cloud.sdk.core.http.ResponseConverter;
@@ -62,14 +64,13 @@ import javax.net.ssl.SSLHandshakeException;
  * Abstracts common functionality of various IBM Cloud services.
  */
 public abstract class BaseService {
+  private static final Logger LOG = Logger.getLogger(BaseService.class.getName());
   public static final String PROPNAME_URL = "URL";
   public static final String PROPNAME_DISABLE_SSL = "DISABLE_SSL";
   public static final String PROPNAME_ENABLE_GZIP = "ENABLE_GZIP";
   public static final String PROPNAME_ENABLE_RETRIES = "ENABLE_RETRIES";
   public static final String PROPNAME_MAX_RETRIES = "MAX_RETRIES";
   public static final String PROPNAME_RETRY_INTERVAL = "RETRY_INTERVAL";
-
-  private static final Logger LOG = Logger.getLogger(BaseService.class.getName());
 
   private static final String ERRORMSG_NO_AUTHENTICATOR = "Authentication information was not properly configured.";
   private static final String ERRORMSG_SSL = "The connection failed because the SSL certificate is not valid. To use"
@@ -111,12 +112,24 @@ public abstract class BaseService {
 
     // Configure a default client instance.
     this.client = configureHttpClient();
+
+    // If BaseService's logger is configured for FINE logging or lower (lower numbers mean more detail),
+    // then configure the HTTP client to do HTTP message logging.
+    if (LOG.isLoggable(Level.FINE)) {
+      HttpConfigOptions options = new HttpConfigOptions.Builder()
+          .loggingLevel(LoggingLevel.BODY)
+          .build();
+      this.configureClient(options);
+    }
   }
 
   public void configureService(String serviceName) {
     if (serviceName == null || serviceName.isEmpty()) {
       throw new IllegalArgumentException("Error configuring service. Service name is required.");
     }
+
+    LOG.log(Level.FINE, "Configuring BaseService instance using service name: {0}", serviceName);
+
     // Try to retrieve the service URL from either a credential file, environment, or VCAP_SERVICES.
     Map<String, String> props = CredentialUtils.getServiceProperties(serviceName);
     String url = props.get(PROPNAME_URL);
@@ -131,6 +144,7 @@ public abstract class BaseService {
           .disableSslVerification(true)
           .build();
       this.configureClient(options);
+      LOG.log(Level.FINE, "Disabled SSL verification");
     }
     // Check to see if "enable gzip" was set in the service properties.
     String s = props.get(PROPNAME_ENABLE_GZIP);
@@ -151,13 +165,13 @@ public abstract class BaseService {
       try {
         maxRetries = Integer.valueOf(props.get(PROPNAME_MAX_RETRIES));
       } catch (NumberFormatException e) {
-        LOG.warning("Non-numeric MAX_RETRIES value.");
+        LOG.log(Level.WARNING, "Non-numeric MAX_RETRIES value.");
       }
 
       try {
         maxRetryInterval = Integer.valueOf(props.get(PROPNAME_RETRY_INTERVAL));
       } catch (NumberFormatException e) {
-        LOG.warning("Non-numeric RETRY_INTERVAL value.");
+        LOG.log(Level.WARNING, "Non-numeric RETRY_INTERVAL value.");
       }
 
       enableRetries(maxRetries, maxRetryInterval);
@@ -175,6 +189,8 @@ public abstract class BaseService {
         .enableGzipCompression(shouldEnableCompression)
         .build();
     this.configureClient(options);
+    String verb = shouldEnableCompression ? "Enabled" : "Disabled";
+    LOG.log(Level.FINE, "{0} GZIP compression in HTTP client", verb);
   }
 
   /**
@@ -188,6 +204,8 @@ public abstract class BaseService {
       .enableRetries(this.authenticator, maxRetries, maxRetryInterval)
       .build();
     this.configureClient(options);
+    LOG.log(Level.FINE, "Enabled retries; maxRetries={0}, maxRetryInterval={1}",
+        new Object[] { maxRetries, maxRetryInterval });
   }
 
   /**
@@ -198,6 +216,7 @@ public abstract class BaseService {
       .disableRetries()
       .build();
     this.configureClient(options);
+    LOG.log(Level.FINE, "Disabled retries");
   }
 
   /**
@@ -485,6 +504,7 @@ public abstract class BaseService {
       newValue = newValue.endsWith("/") ? newValue.substring(0, newValue.length() - 1) : newValue;
     }
     this.serviceUrl = newValue;
+    LOG.log(Level.FINE, "Set service URL: {0}", this.serviceUrl);
   }
 
   /**
@@ -583,7 +603,7 @@ public abstract class BaseService {
         return new com.ibm.cloud.sdk.core.http.Response<>(responseModel, response);
       } catch (IOException e) {
         if (e instanceof SSLHandshakeException) {
-          LOG.warning(ERRORMSG_SSL);
+          LOG.log(Level.WARNING, ERRORMSG_SSL);
         }
         throw new RuntimeException(e);
       }
@@ -595,7 +615,7 @@ public abstract class BaseService {
         @Override
         public void onFailure(Call call, IOException e) {
           if (e instanceof SSLHandshakeException) {
-            LOG.warning(ERRORMSG_SSL);
+            LOG.log(Level.WARNING, ERRORMSG_SSL);
           }
           callback.onFailure(e);
         }
@@ -623,7 +643,7 @@ public abstract class BaseService {
             return new com.ibm.cloud.sdk.core.http.Response<>(responseModel, response);
           } catch (IOException e) {
             if (e instanceof SSLHandshakeException) {
-              LOG.warning(ERRORMSG_SSL);
+              LOG.log(Level.WARNING, ERRORMSG_SSL);
             }
             throw new RuntimeException(e);
           }
@@ -642,7 +662,8 @@ public abstract class BaseService {
 
       if (!call.isExecuted()) {
         final Request r = call.request();
-        LOG.warning(r.method() + " request to " + r.url() + " has not been sent. Did you forget to call execute()?");
+        LOG.log(Level.WARNING, "Request {0} {1} has not been sent.  Did you forget to call execute()?",
+            new Object[] { r.method(), r.url().toString() });
       }
     }
   }
