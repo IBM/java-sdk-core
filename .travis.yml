@@ -16,6 +16,13 @@ cache:
   directories:
   - "$HOME/.m2"
 
+addons:
+  hosts:
+    - region1.cloud.ibm.com
+    - region1.notcloud.ibm.com
+    - region2.cloud.ibm.com
+    - region2.notcloud.ibm.com
+
 env:
   global:
     - MVN_ARGS="--settings build/.travis.settings.xml"
