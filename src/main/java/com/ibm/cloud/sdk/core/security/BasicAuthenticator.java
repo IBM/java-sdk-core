@@ -14,6 +14,7 @@
 package com.ibm.cloud.sdk.core.security;
 
 import java.util.Map;
+import java.util.logging.Logger;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -26,6 +27,8 @@ import com.ibm.cloud.sdk.core.util.CredentialUtils;
  * and then add it to each outgoing REST API request.
  */
 public class BasicAuthenticator extends AuthenticatorBase implements Authenticator {
+  private static final Logger LOG = Logger.getLogger(BasicAuthenticator.class.getName());
+
   private String username;
   private String password;
 
@@ -201,5 +204,6 @@ public class BasicAuthenticator extends AuthenticatorBase implements Authenticat
   @Override
   public void authenticate(okhttp3.Request.Builder builder) {
     builder.header(HttpHeaders.AUTHORIZATION, this.authHeader);
+    LOG.fine(String.format("Authenticated outbound request (type=%s)", this.authenticationType()));
   }
 }

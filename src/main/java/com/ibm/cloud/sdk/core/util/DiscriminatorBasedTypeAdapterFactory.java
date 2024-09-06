@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2019.
+ * (C) Copyright IBM Corp. 2019, 2024.
  * Copyright (C) 2011 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
@@ -17,6 +17,7 @@ package com.ibm.cloud.sdk.core.util;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.lang3.StringUtils;
@@ -83,15 +84,16 @@ public class DiscriminatorBasedTypeAdapterFactory implements TypeAdapterFactory 
   @Override
   public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
     Class<? super T> rawType = type.getRawType();
-    LOGGER.fine(this.getClass().getSimpleName() + " examining class: " + rawType.getName());
+    LOGGER.log(Level.FINE, "{0} examining class: {1}",
+        new Object[] {this.getClass().getSimpleName(), rawType.getName()});
 
     DiscriminatorMetadata discMetadata = getDiscriminatorMetadata(rawType);
     if (discMetadata != null) {
-      LOGGER.fine("Returning TypeAdapter instance to handle class: " + rawType.getName());
+      LOGGER.log(Level.FINE, "Returning TypeAdapter instance to handle class: {0}", rawType.getName());
       return new Adapter<T>(gson, discMetadata);
     }
 
-    LOGGER.fine("Discriminator metadata not found in class: " + rawType.getName());
+    LOGGER.log(Level.FINE, "Discriminator metadata not found in class: {0}", rawType.getName());
     return null;
   }
 
@@ -190,6 +192,8 @@ public class DiscriminatorBasedTypeAdapterFactory implements TypeAdapterFactory 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public void write(JsonWriter out, T value) throws IOException {
+      LOGGER.log(Level.FINEST, "Serializing JSON object for discriminator class: {0}",
+          discMetadata.getDiscriminatorClass().getName());
 
       if (value == null) {
         out.nullValue();
@@ -209,6 +213,8 @@ public class DiscriminatorBasedTypeAdapterFactory implements TypeAdapterFactory 
       }
 
       // Delegate to the runtime type's adapter.
+      LOGGER.log(Level.FINEST, "Delegating serialization to adapter for runtime type: {0}",
+          value.getClass().getName());
       adapter.write(out, value);
     }
 
@@ -225,8 +231,8 @@ public class DiscriminatorBasedTypeAdapterFactory implements TypeAdapterFactory 
      */
     @Override
     public T read(JsonReader in) throws IOException {
-      LOGGER.finest("Attempting to deserialize JSON object for discriminator class: "
-        + discMetadata.getDiscriminatorClass().getName());
+      LOGGER.log(Level.FINEST, "Deserializing JSON object for discriminator class: {0}",
+        discMetadata.getDiscriminatorClass().getName());
 
       // If the "next" token is a null, then consume it and just return null now.
       if (in.peek() == JsonToken.NULL) {
@@ -236,15 +242,14 @@ public class DiscriminatorBasedTypeAdapterFactory implements TypeAdapterFactory 
 
       try {
         // 1) Parse the JSON object to produce the JsonElement parse tree.
-        JsonParser parser = new JsonParser();
-        JsonElement parseTree = parser.parse(in);
-        LOGGER.finest("Parsed JSON into JsonElement tree: " + parseTree.toString());
+        JsonElement parseTree = JsonParser.parseReader(in);
+        LOGGER.log(Level.FINEST, "Parsed JSON into JsonElement tree: {0}", parseTree.toString());
 
         // 2 & 3) Determine the deserialization target class by retrieving the
         // discriminator value from the JsonElement parse tree, then look that value up
         // in the mapping info.
         Class<? extends T> deserTargetClass = getDeserTargetClass(parseTree);
-        LOGGER.finest("Deserialization target class: " + deserTargetClass.getName());
+        LOGGER.log(Level.FINEST, "Deserialization target class: {0}", deserTargetClass.getName());
 
         // 4) Finally, tell Gson to deserialize the JsonElement parse tree into the
         // deserialization target class.
@@ -293,11 +298,11 @@ public class DiscriminatorBasedTypeAdapterFactory implements TypeAdapterFactory 
       // If this results in a class that extends the discriminator-containing class, then we're good.
       if (deserTargetClass == null) {
         String deserTargetName = discMetadata.getDiscriminatorClass().getPackage().getName() + "." + discValue;
-        LOGGER.finest("Explicit discriminator mapping not found for value: " + discValue);
+        LOGGER.log(Level.FINEST, "Explicit discriminator mapping not found for value: {0}", discValue);
 
         try {
           deserTargetClass = (Class<? extends T>) Class.forName(deserTargetName);
-          LOGGER.finest("Found implicit deserialization target class: " + deserTargetName);
+          LOGGER.log(Level.FINEST, "Found implicit deserialization target class: {0}", deserTargetName);
         } catch (Throwable t) {
           throw new IOException("Unable to determine implicit deserialization target class for discriminator value: "
             + discValue);

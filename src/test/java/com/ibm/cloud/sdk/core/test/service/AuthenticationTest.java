@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2019.
+ * (C) Copyright IBM Corp. 2015, 2024.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -56,28 +56,28 @@ public class AuthenticationTest {
   }
 
   @Test
-  public void authenticateIAM() {
+  public void testAuthenticateIAM() {
     IamAuthenticator auth = new IamAuthenticator(APIKEY);
     TestService service = new TestService(auth);
     assertEquals(Authenticator.AUTHTYPE_IAM, service.getAuthenticator().authenticationType());
   }
 
   @Test
-  public void authenticateBasicAuth() {
+  public void testAuthenticateBasicAuth() {
     BasicAuthenticator auth = new BasicAuthenticator(BASIC_USERNAME, "password1");
     TestService service = new TestService(auth);
     assertEquals(Authenticator.AUTHTYPE_BASIC, service.getAuthenticator().authenticationType());
   }
 
   @Test
-  public void authenticateNoauth() {
+  public void testAuthenticateNoauth() {
     NoAuthAuthenticator auth = new NoAuthAuthenticator();
     TestService service = new TestService(auth);
     assertEquals(Authenticator.AUTHTYPE_NOAUTH, service.getAuthenticator().authenticationType());
   }
 
   @Test
-  public void authenticateCP4D() {
+  public void testauthenticateCP4D() {
     CloudPakForDataAuthenticator auth = new CloudPakForDataAuthenticator("/my/icp4d/url", "icp4d_user", "password1");
     TestService service = new TestService(auth);
     assertEquals(Authenticator.AUTHTYPE_CP4D, service.getAuthenticator().authenticationType());

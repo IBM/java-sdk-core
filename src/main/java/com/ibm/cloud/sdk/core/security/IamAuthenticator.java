@@ -15,6 +15,8 @@ package com.ibm.cloud.sdk.core.security;
 
 import java.net.Proxy;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -33,6 +35,7 @@ import okhttp3.FormBody;
  * When the access token expires, a new access token will be fetched.
  */
 public class IamAuthenticator extends IamRequestBasedAuthenticator implements Authenticator {
+  private static final Logger LOG = Logger.getLogger(IamAuthenticator.class.getName());
   private static final String DEFAULT_IAM_URL = "https://iam.cloud.ibm.com";
   private static final String OPERATION_PATH = "/identity/token";
 
@@ -452,8 +455,11 @@ public class IamAuthenticator extends IamRequestBasedAuthenticator implements Au
     // Invoke the POST request.
     IamToken token;
     try {
+      LOG.log(Level.FINE, "Invoking IAM get_token operation: POST {0}", builder.toUrl());
       token = invokeRequest(builder, IamToken.class);
+      LOG.log(Level.FINE, "Returned from IAM get_token operation");
     } catch (Throwable t) {
+      LOG.log(Level.FINE, "Exception from IAM get_token operation: ", t);
       token = new IamToken(t);
     }
     return token;

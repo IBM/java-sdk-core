@@ -148,12 +148,16 @@ public final class RequestUtils {
    * @return the core library's version number
    */
   private static String loadCoreVersion() {
+    LOG.log(Level.FINE, "Reading java core metadata from file: {0}", VERSION_PROPS_FILENAME);
     try (InputStream is = RequestUtils.class.getClassLoader().getResourceAsStream(VERSION_PROPS_FILENAME)) {
       Properties properties = new Properties();
       properties.load(is);
-      return properties.getProperty("version", "unknown-version");
+      String v = properties.getProperty("version", "unknown-version");
+      LOG.log(Level.FINE, "Detected java core version: {0}", v);
+      return v;
     } catch (Exception e) {
-      LOG.log(Level.WARNING, "Could not load file: " + VERSION_PROPS_FILENAME, e);
+      String msg = String.format("Error loading file: %s", VERSION_PROPS_FILENAME);
+      LOG.log(Level.WARNING, msg, e);
       return "unknown-version";
     }
   }

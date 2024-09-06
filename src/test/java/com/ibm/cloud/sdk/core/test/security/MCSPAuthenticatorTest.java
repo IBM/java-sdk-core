@@ -64,10 +64,6 @@ public class MCSPAuthenticatorTest extends BaseServiceUnitTest {
   private static final String API_KEY = "123456789";
   private static final String AUTH_URL = "https://mcsp.token-exchange.com";
 
-  // Logging level used by this test.
-  // For debugging, set this to Level.FINE or Level.ALL, etc.
-  private static Level logLevel = Level.SEVERE;
-
   @Override
   @BeforeMethod
   public void setUp() throws Exception {
@@ -75,18 +71,6 @@ public class MCSPAuthenticatorTest extends BaseServiceUnitTest {
     url = getMockWebServerUrl();
     tokenData = loadFixture("src/test/resources/mcsp_token.json", MCSPTokenResponse.class);
     refreshedTokenData = loadFixture("src/test/resources/refreshed_mcsp_token.json", MCSPTokenResponse.class);
-
-    // Set up java.util.logging to display messages on the console.
-    ConsoleHandler handler = new ConsoleHandler();
-    handler.setLevel(logLevel);
-    Logger logger;
-    logger = Logger.getLogger(MCSPAuthenticator.class.getName());
-    logger.setLevel(logLevel);
-    logger.addHandler(handler);
-
-    logger = Logger.getLogger(TokenRequestBasedAuthenticator.class.getName());
-    logger.setLevel(logLevel);
-    logger.addHandler(handler);
   }
 
   // This will be our mocked version of the Clock class.

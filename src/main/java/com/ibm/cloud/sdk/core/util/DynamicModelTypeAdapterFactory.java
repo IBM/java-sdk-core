@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2019, 2022.
+ * (C) Copyright IBM Corp. 2019, 2024.
  * Copyright (C) 2011 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
@@ -26,6 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.google.gson.Gson;
@@ -86,23 +87,24 @@ public class DynamicModelTypeAdapterFactory implements TypeAdapterFactory {
 
     // Grab the Class associated with the instance to be serialized/deserialized.
     Class<? super T> rawType = type.getRawType();
-    LOGGER.fine(this.getClass().getSimpleName() + " examining class: " + rawType.getName());
+    LOGGER.log(Level.FINE, "{0} examining class: {1}",
+        new Object[] {this.getClass().getSimpleName(), rawType.getName()});
 
     // If "type" represents a type OTHER THAN a DynamicModel subclass, then bail out now.
     if (!DynamicModel.class.isAssignableFrom(rawType)) {
-      LOGGER.fine("Class '" + rawType.getName() + "' is not a DynamicModel.");
+      LOGGER.log(Level.FINE, "Class {0} is not a DynamicModel", rawType.getName());
       return null;
     }
 
     // Retrieve the type's default ctor. If one is not present, then bail out now.
     Constructor<?> ctor = getDefaultCtor(rawType);
     if (ctor == null) {
-      LOGGER.warning("Instance of class " + rawType.getName() + " is a subclass of DynamicModel, but it doesn't "
-        + "define a default constructor.  This instance will be ignored by " + this.getClass().getSimpleName());
+      LOGGER.warning(String.format("Class %s is a subclass of DynamicModel, but has no default ctor. "
+          + "This instance will be ignored by %s", rawType.getName(), this.getClass().getSimpleName()));
       return null;
     }
 
-    LOGGER.fine("Returning TypeAdapter instance to handle class: " + rawType.getName());
+    LOGGER.log(Level.FINE, "Returning TypeAdapter instance to handle class: {0}", rawType.getName());
     return new Adapter<T>(gson, ctor, getBoundFields(gson, type));
   }
 

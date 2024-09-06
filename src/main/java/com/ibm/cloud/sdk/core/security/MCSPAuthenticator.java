@@ -15,6 +15,8 @@ package com.ibm.cloud.sdk.core.security;
 
 import java.net.Proxy;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -32,6 +34,7 @@ import com.ibm.cloud.sdk.core.util.RequestUtils;
  */
 public class MCSPAuthenticator extends TokenRequestBasedAuthenticator<MCSPToken, MCSPTokenResponse>
         implements Authenticator {
+    private static final Logger LOG = Logger.getLogger(ContainerAuthenticator.class.getName());
     private static final String OPERATION_PATH = "/siusermgr/api/1.0/apikeys/token";
 
     // Properties specific to an MCSP authenticator.
@@ -254,10 +257,13 @@ public class MCSPAuthenticator extends TokenRequestBasedAuthenticator<MCSPToken,
         // Invoke the POST request.
         MCSPToken token;
         try {
+            LOG.log(Level.FINE, "Invoking MCSP token service operation: POST {0}", builder.toUrl());
             MCSPTokenResponse response = invokeRequest(builder, MCSPTokenResponse.class);
+            LOG.log(Level.FINE, "Returned from MCSP token service operation");
             token = new MCSPToken(response);
         } catch (Throwable t) {
             token = new MCSPToken(t);
+            LOG.log(Level.FINE, "Exception from MCSP token service operation: ", t);
         }
         return token;
     }

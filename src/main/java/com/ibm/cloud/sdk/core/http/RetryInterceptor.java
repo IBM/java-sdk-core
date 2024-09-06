@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2021, 2022.
+ * (C) Copyright IBM Corp. 2021, 2024.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -22,6 +22,7 @@ import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.ibm.cloud.sdk.core.security.Authenticator;
@@ -40,7 +41,6 @@ import org.apache.commons.lang3.StringUtils;
  * </ul>
  */
 public class RetryInterceptor implements IRetryInterceptor {
-
   private static final Logger LOG = Logger.getLogger(RetryInterceptor.class.getName());
 
   // The default "starting" retry interval in milliseconds.
@@ -106,10 +106,10 @@ public class RetryInterceptor implements IRetryInterceptor {
       int interval = getInterval(response, request);
 
       try {
-        LOG.fine("Will retry after: " + interval + "ms");
+        LOG.log(Level.FINE, "Will retry after {0} ms", interval);
         Thread.sleep(interval);
       } catch (InterruptedException e) {
-        LOG.fine("Thread was interrupted, likely the call has been cancelled.");
+        LOG.log(Level.FINE, "Thread was interrupted; the invocation has likely been cancelled.");
       }
 
       Request.Builder builder = request.newBuilder();
@@ -145,6 +145,7 @@ public class RetryInterceptor implements IRetryInterceptor {
     String headerVal = response.header("Retry-After");
 
     if (StringUtils.isNotEmpty(headerVal)) {
+      LOG.log(Level.FINE, "Detected Retry-After header in response: {0}", headerVal);
       int responseInterval = 0;
       // First, try to parse as an integer (number of seconds to wait).
       try {
@@ -155,16 +156,17 @@ public class RetryInterceptor implements IRetryInterceptor {
           Date retryTime = DateUtils.parseAsDateTime(headerVal);
           responseInterval = (int) Instant.now().until(retryTime.toInstant(), ChronoUnit.MILLIS);
         } catch (DateTimeException dte) {
-          LOG.warning("Response included a non numberic and non HTTP Date value for Retry-After: " + headerVal);
+          LOG.log(Level.WARNING,
+              "Response included a non-numeric and non-HTTP Date value for Retry-After: {0}", headerVal);
         }
       }
       // Just in case it's a negative number.
       if (responseInterval > 0) {
-        interval = responseInterval;
+        interval = Integer.valueOf(responseInterval);
       }
     }
 
-    // So we cannot use interval from the response so let's calculate it.
+    // We couldn't infer the interval from the response, so let's calculate it.
     if (interval == null) {
       RetryContext context = request.tag(RetryContext.class);
       if (context != null) {
@@ -185,17 +187,23 @@ public class RetryInterceptor implements IRetryInterceptor {
    * @return true if the specified request should be retried, false otherwise
    */
   protected boolean shouldRetry(Response response, Request request) {
+    LOG.log(Level.FINE, "Considering retry attempt; status_code={0}, method={1}, url={2}",
+        new Object[] { response.code(), request.method(), request.url().toString()});
+
     // First check the response.
     if (response.code() == 429 || (response.code() >= 500 && response.code() <= 599 && response.code() != 501)) {
       // Now check if we exhausted the max number of retries or not.
       RetryContext context = request.tag(RetryContext.class);
       if (context != null && !context.incCountAndCheck()) {
+        LOG.log(Level.FINE, "No retry, maximum number of retries reached");
         return false;
       }
 
+      LOG.log(Level.FINE, "Retry will be attempted");
       return true;
     }
 
+    LOG.log(Level.FINE, "No retry, response code not eligible");
     return false;
   }
 

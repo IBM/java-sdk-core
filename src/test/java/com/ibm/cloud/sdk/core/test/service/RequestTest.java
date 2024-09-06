@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2022.
+ * (C) Copyright IBM Corp. 2015, 2024.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -13,10 +13,12 @@
 
 package com.ibm.cloud.sdk.core.test.service;
 
+import static com.ibm.cloud.sdk.core.http.HttpHeaders.CONTENT_ENCODING;
+import static com.ibm.cloud.sdk.core.test.TestUtils.loadFixture;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertNull;
 import static org.testng.Assert.fail;
 
 import org.testng.annotations.BeforeMethod;
@@ -26,7 +28,6 @@ import com.google.gson.JsonObject;
 import com.ibm.cloud.sdk.core.http.RequestBuilder;
 import com.ibm.cloud.sdk.core.http.Response;
 import com.ibm.cloud.sdk.core.http.ServiceCall;
-import static com.ibm.cloud.sdk.core.http.HttpHeaders.CONTENT_ENCODING;
 import com.ibm.cloud.sdk.core.security.Authenticator;
 import com.ibm.cloud.sdk.core.security.IamAuthenticator;
 import com.ibm.cloud.sdk.core.security.IamToken;
@@ -34,9 +35,7 @@ import com.ibm.cloud.sdk.core.service.BaseService;
 import com.ibm.cloud.sdk.core.service.model.GenericModel;
 import com.ibm.cloud.sdk.core.test.BaseServiceUnitTest;
 import com.ibm.cloud.sdk.core.util.ResponseConverterUtils;
-import static com.ibm.cloud.sdk.core.test.TestUtils.loadFixture;
 
-import okhttp3.HttpUrl;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.RecordedRequest;
 

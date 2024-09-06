@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2019, 2022.
+ * (C) Copyright IBM Corp. 2019, 2024.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -14,6 +14,8 @@
 package com.ibm.cloud.sdk.core.security;
 
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -24,6 +26,7 @@ import com.ibm.cloud.sdk.core.util.CredentialUtils;
  * It will detect and use various configuration sources in order to produce an Authenticator instance.
  */
 public class ConfigBasedAuthenticatorFactory {
+  private static final Logger LOG = Logger.getLogger(ConfigBasedAuthenticatorFactory.class.getName());
   public static final String ERRORMSG_AUTHTYPE_UNKNOWN = "Unrecognized authentication type: %s";
 
   // The default ctor is hidden since this is a utility class.
@@ -37,6 +40,8 @@ public class ConfigBasedAuthenticatorFactory {
    * @return an Authenticator that reflects the properties that were found in the various config sources
    */
   public static Authenticator getAuthenticator(String serviceName) {
+    LOG.log(Level.FINE, "Get authenticator from environment, key={0}", serviceName);
+
     Authenticator authenticator = null;
 
     // Gather authentication-related properties from all the supported config sources:
@@ -48,6 +53,9 @@ public class ConfigBasedAuthenticatorFactory {
     // Now create an authenticator from the map.
     if (!authProps.isEmpty()) {
       authenticator = createAuthenticator(authProps);
+      if (authenticator != null) {
+        LOG.log(Level.FINE, "Returning authenticator, type={0}", authenticator.authenticationType());
+      }
     }
 
     return authenticator;
@@ -77,6 +85,7 @@ public class ConfigBasedAuthenticatorFactory {
       } else {
         authType = Authenticator.AUTHTYPE_CONTAINER;
       }
+      LOG.log(Level.FINE, "Assuming default authentication type: {0}", authType);
     }
 
     // Create the appropriate authenticator based on the auth type.

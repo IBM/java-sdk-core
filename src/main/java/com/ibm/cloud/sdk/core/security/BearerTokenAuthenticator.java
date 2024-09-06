@@ -14,6 +14,7 @@
 package com.ibm.cloud.sdk.core.security;
 
 import java.util.Map;
+import java.util.logging.Logger;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -27,6 +28,8 @@ import okhttp3.Request.Builder;
  * token, then add the header to each outgoing REST API request.
  */
 public class BearerTokenAuthenticator extends AuthenticatorBase implements Authenticator {
+  private static final Logger LOG = Logger.getLogger(BearerTokenAuthenticator.class.getName());
+
   private String bearerToken;
 
   // The cached value of the Authorization header.
@@ -108,5 +111,6 @@ public class BearerTokenAuthenticator extends AuthenticatorBase implements Authe
   @Override
   public void authenticate(Builder builder) {
     builder.header(HttpHeaders.AUTHORIZATION, this.cachedAuthHeader);
+    LOG.fine(String.format("Authenticated outbound request (type=%s)", this.authenticationType()));
   }
 }

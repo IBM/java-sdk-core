@@ -365,9 +365,12 @@ public class ContainerAuthenticator extends IamRequestBasedAuthenticator impleme
       builder.body(formBody);
 
       // Invoke the POST request.
+      LOG.log(Level.FINE, "Invoking IAM get_token operation: POST {0}", builder.toUrl());
       token = invokeRequest(builder, IamToken.class);
-    } catch (Throwable t) {
+      LOG.log(Level.FINE, "Returned from IAM get_token operation");
+   } catch (Throwable t) {
       token = new IamToken(t);
+      LOG.log(Level.FINE, "Exception from IAM get_token operation: ", t);
     }
     return token;
   }
@@ -407,10 +410,10 @@ public class ContainerAuthenticator extends IamRequestBasedAuthenticator impleme
       try {
           String crToken = null;
           // Read the entire file into a byte array, then convert to string.
-          LOG.log(Level.FINE, "Attempting to read CR token from file: ", filename);
+          LOG.log(Level.FINE, "Attempting to read CR token from file: {0}", filename);
           byte[] bytes = Files.readAllBytes(Paths.get(filename));
           crToken = new String(bytes, StandardCharsets.UTF_8);
-          LOG.log(Level.FINE, "Successfully read CR token from file: ", filename);
+          LOG.log(Level.FINE, "Successfully read CR token from file: {0}", filename);
           return crToken;
       } catch (Throwable t) {
           LOG.log(Level.FINE, "Error reading CR token: ", t);

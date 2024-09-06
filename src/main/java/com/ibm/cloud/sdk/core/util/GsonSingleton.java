@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2015, 2020.
+ * (C) Copyright IBM Corp. 2015, 2024.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -15,6 +15,8 @@ package com.ibm.cloud.sdk.core.util;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -31,6 +33,7 @@ import com.google.gson.stream.JsonWriter;
  * pretty print the result
  */
 public final class GsonSingleton {
+  private static final Logger LOG = Logger.getLogger(GsonSingleton.class.getName());
 
   private static Gson gson;
   private static Gson gsonWithoutPrinting;
@@ -42,10 +45,14 @@ public final class GsonSingleton {
   /**
    * Creates a {@link com.google.gson.Gson} object that can be use to serialize and deserialize Java objects.
    *
-   * @param prettyPrint if true the JSON will be pretty printed
+   * @param prettyPrint if true, the JSON will be pretty printed
+   * @param serializeNulls if true, then null values will be serialized in the JSON
    * @return the {@link Gson}
    */
   private static Gson createGson(boolean prettyPrint, boolean serializeNulls) {
+    LOG.log(Level.FINE, "Creating new Gson context; prettyPrint={0}, serializeNulls={1}",
+        new Object[] { prettyPrint, serializeNulls });
+
     GsonBuilder builder = new GsonBuilder()
         .setObjectToNumberStrategy(ToNumberPolicy.LAZILY_PARSED_NUMBER)
         .setNumberToNumberStrategy(ToNumberPolicy.LAZILY_PARSED_NUMBER);
@@ -66,18 +73,26 @@ public final class GsonSingleton {
     // Date serializer/deserializer.
     // We treat Date's as date-time by default.
     builder.registerTypeAdapter(Date.class, new DateTimeTypeAdapter());
+    LOG.log(Level.FINE, "Registered type adapter {0} for type {1}",
+        new Object[] {DateTimeTypeAdapter.class.getSimpleName(), Date.class.getName()});
 
     // Make sure that byte[] ser/deser includes base64 encoding/decoding.
     builder.registerTypeAdapter(byte[].class, new ByteArrayTypeAdapter());
+    LOG.log(Level.FINE, "Registered type adapter {0} for type {1}",
+        new Object[] {ByteArrayTypeAdapter.class.getSimpleName(), "byte[]"});
 
     // Make sure we serialize LazilyParsedNumber properly to avoid unnecessary decimal places in serialized integers.
     builder.registerTypeAdapter(LazilyParsedNumber.class, LAZILY_PARSED_NUMBER_ADAPTER);
+    LOG.log(Level.FINE, "Registered type adapter {0} for type {1}",
+        new Object[] {LAZILY_PARSED_NUMBER_ADAPTER.getClass().getName(), LazilyParsedNumber.class.getName()});
 
     // Type adapter factory for DynamicModel subclasses.
     builder.registerTypeAdapterFactory(new DynamicModelTypeAdapterFactory());
+    LOG.log(Level.FINE, "Registered type adapter factory {0}", DynamicModelTypeAdapterFactory.class.getName());
 
     // Type adapter factory for classes that use a discriminator.
     builder.registerTypeAdapterFactory(new DiscriminatorBasedTypeAdapterFactory());
+    LOG.log(Level.FINE, "Registered type adapter factory {0}", DiscriminatorBasedTypeAdapterFactory.class.getName());
   }
 
   /**
