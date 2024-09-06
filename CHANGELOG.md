@@ -1,3 +1,10 @@
+## [9.21.2](https://github.com/IBM/java-sdk-core/compare/9.21.1...9.21.2) (2024-09-06)
+
+
+### Bug Fixes
+
+* **logging:** improve java core's debug logging ([#226](https://github.com/IBM/java-sdk-core/issues/226)) ([6100e24](https://github.com/IBM/java-sdk-core/commit/6100e24e6310fc275ad51c2d8f2eb70bd7e8231a))
+
 ## [9.21.1](https://github.com/IBM/java-sdk-core/compare/9.21.0...9.21.1) (2024-08-13)
 
 
