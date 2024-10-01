@@ -2,21 +2,22 @@
 The java-sdk-core project supports the following types of authentication:
 - Basic Authentication
 - Bearer Token Authentication
-- Identity and Access Management (IAM) Authentication
+- Identity and Access Management (IAM) Authentication (grant type: apikey)
+- Identity and Access Management (IAM) Authentication (grant type: assume)
 - Container Authentication
 - VPC Instance Authentication
 - Cloud Pak for Data Authentication
 - Multi-Cloud Saas Platform (MCSP) Authentication
 - No Authentication (for testing)
 
-The SDK user configures the appropriate type of authentication for use with service instances.  
+The SDK user configures the appropriate type of authentication for use with service instances.
 The authentication types that are appropriate for a particular service may vary from service to service,
 so it is important for the SDK user to consult with the appropriate service documentation to understand
-which authenticators are supported for that service.
+which authentication types are supported for that service.
 
 The java-sdk-core allows an authenticator to be specified in one of two ways:
 1. programmatically - the SDK user constructs an instance of the desired authenticator using the appropriate Builder class or constructor,
-and then passes the authenticator instance when constructing an instance of the service.
+and then passes the authenticator instance when constructing an instance of the service client.
 2. configuration - the SDK user provides external configuration information (in the form of environment variables
 or a credentials file) to indicate the type of authenticator, along with the configuration of the necessary properties
 for that authenticator.
@@ -29,7 +30,7 @@ which will include the following:
 - The properties associated with the authenticator
 - An example of how to construct the authenticator programmatically
 - An example of how to configure the authenticator through the use of external
-configuration information.  The configuration examples below will use
+configuration information. The configuration examples below will use
 environment variables, although the same properties could be specified in a
 credentials file instead.
 
@@ -133,16 +134,16 @@ ExampleService service = ExampleService.newInstance("example_service");
 
 Note that the use of external configuration is not as useful with the `BearerTokenAuthenticator` as it
 is for other authenticator types because bearer tokens typically need to be obtained and refreshed
-programmatically since they normally have a relatively short lifespan before they expire.  This
+programmatically since they normally have a relatively short lifespan before they expire. This
 authenticator type is intended for situations in which the application will be managing the bearer 
 token itself in terms of initial acquisition and refreshing as needed.
 
 
-## Identity and Access Management (IAM) Authentication
-The `IamAuthenticator` will accept a user-supplied api key and will perform
+## Identity and Access Management (IAM) Authentication (grant type: apikey)
+The `IamAuthenticator` will accept a user-supplied apikey and will perform
 the necessary interactions with the IAM token service to obtain a suitable
-bearer token for the specified api key.  The authenticator will also obtain 
-a new bearer token when the current token expires.  The bearer token is 
+bearer token for the specified apikey. The authenticator will also obtain 
+a new bearer token when the current token expires. The bearer token is 
 then added to each outbound request in the `Authorization` header in the
 form:
 ```
@@ -151,7 +152,7 @@ form:
 
 ### Properties
 
-- apikey: (required) the IAM api key
+- apikey: (required) the IAM apikey to be used to obtain an IAM access token.
 
 - url: (optional) The base endpoint URL of the IAM token service.
 The default value of this property is the "prod" IAM token service endpoint
@@ -168,13 +169,13 @@ endpoint as well (`https://iam.test.cloud.ibm.com`).
 
 - clientId/clientSecret: (optional) The `clientId` and `clientSecret` fields are used to form a 
 "basic auth" Authorization header for interactions with the IAM token server. If neither field 
-is specified, then no Authorization header will be sent with token server requests.  These fields 
+is specified, then no Authorization header will be sent with token server requests. These fields 
 are optional, but must be specified together.
 
 - scope: (optional) the scope to be associated with the IAM access token.
 If not specified, then no scope will be associated with the access token.
 
-- disableSSLVerification: (optional) A flag that indicates whether verificaton of the server's SSL 
+- disableSSLVerification: (optional) A flag that indicates whether verification of the server's SSL 
 certificate should be disabled or not. The default value is `false`.
 
 - headers: (optional) A set of key/value pairs that will be sent as HTTP headers in requests
@@ -214,6 +215,124 @@ ExampleService service = ExampleService.newInstance("example_service");
 ```
 
 
+## Identity and Access Management (IAM) Authentication (grant type: assume)
+The `IamAssumeAuthenticator` performs a two-step token fetch sequence to obtain
+a bearer token that allows the application to assume the identity of a trusted profile:
+1. First, the authenticator obtains an initial bearer token using grant type
+`urn:ibm:params:oauth:grant-type:apikey`.
+This initial token will reflect the identity associated with the input apikey.
+2. Second, the authenticator uses the grant type `urn:ibm:params:oauth:grant-type:assume` to obtain a bearer token
+that reflects the identity of the trusted profile, passing in the initial bearer token
+from the first step, along with the trusted profile-related inputs.
+
+The authenticator will also obtain a new bearer token when the current token expires.
+The bearer token is then added to each outbound request in the `Authorization` header in the
+form:
+```
+   Authorization: Bearer <bearer-token>
+```
+
+### Properties
+
+- apikey: (required) the IAM apikey to be used to obtain the initial IAM access token.
+
+- iamProfileCrn: (optional) the Cloud Resource Name (CRN) associated with the trusted profile
+for which an access token should be fetched.
+Exactly one of iamProfileCrn, iamProfileId or iamProfileName must be specified.
+
+- iamProfileId: (optional) the ID associated with the trusted profile
+for which an access token should be fetched.
+Exactly one of iamProfileCrn, iamProfileId or iamProfileName must be specified.
+
+- iamProfileName: (optional) the name associated with the trusted profile
+for which an access token should be fetched. When specifying this property, you must also
+specify the iamAccountId property as well.
+Exactly one of iamProfileCrn, iamProfileId or iamProfileName must be specified.
+
+- iamAccountId: (optional) the ID associated with the IAM account that contains the trusted profile
+referenced by the iamProfileName property. The imaAccountId property must be specified if and only if
+the iamProfileName property is specified.
+
+- url: (optional) The base endpoint URL of the IAM token service.
+The default value of this property is the "prod" IAM token service endpoint
+(`https://iam.cloud.ibm.com`).
+Make sure that you use an IAM token service endpoint that is appropriate for the
+location of the service being used by your application.
+For example, if you are using an instance of a service in the "production" environment
+(e.g. `https://resource-controller.cloud.ibm.com`),
+then the default "prod" IAM token service endpoint should suffice.
+However, if your application is using an instance of a service in the "staging" environment
+(e.g. `https://resource-controller.test.cloud.ibm.com`),
+then you would also need to configure the authenticator to use the IAM token service "staging"
+endpoint as well (`https://iam.test.cloud.ibm.com`).
+
+- clientId/clientSecret: (optional) The `clientId` and `clientSecret` fields are used to form a 
+"basic auth" Authorization header for interactions with the IAM token server when fetching the
+initial IAM access token. These fields are optional, but must be specified together.
+
+- scope: (optional) the scope to be used when obtaining the initial IAM access token.
+If not specified, then no scope will be associated with the access token.
+
+- disableSSLVerification: (optional) A flag that indicates whether verification of the server's SSL 
+certificate should be disabled or not. The default value is `false`.
+
+- headers: (optional) A set of key/value pairs that will be sent as HTTP headers in requests
+made to the IAM token service.
+
+### Usage Notes
+- The IamAssumeAuthenticator is used to obtain an access token (a bearer token) from the IAM token service
+that allows an application to "assume" the identity of a trusted profile.
+
+- The authenticator first uses the apikey, url, clientId/clientSecret, scope, disableSSLVerification, and headers
+properties to obtain an initial access token by invoking the IAM `getToken`
+(grant_type=`urn:ibm:params:oauth:grant-type:apikey`) operation.
+
+- The authenticator then uses the initial access token along with the url, iamProfileCrn, iamProfileId,
+iamProfileName, iamAccountId, disableSSLVerification, and headers properties to obtain an access token by invoking
+the IAM `getToken` (grant_type=`urn:ibm:params:oauth:grant-type:assume`) operation.
+The access token resulting from this second step will reflect the identity of the specified trusted profile.
+
+- When providing the trusted profile information, you must specify exactly one of: iamProfileCrn, iamProfileId
+or iamProfileName. If you specify iamProfileCrn or iamProfileId, then the trusted profile must exist in the same account that is
+associated with the input apikey. If you specify iamProfileName, then you must also specify the iamAccountId property
+to indicate the IAM account in which the named trusted profile can be found.
+
+### Programming example
+```java
+import com.ibm.cloud.sdk.core.security.IamAssumeAuthenticator;
+import <sdk_base_package>.ExampleService.v1.ExampleService;
+...
+// Create the authenticator.
+IamAssumeAuthenticator authenticator = new IamAssumeAuthenticator.Builder()
+    .iamProfileId("myprofile-1")
+    .apikey("myapikey")
+    .build();
+
+// Create the service instance.
+ExampleService service = new ExampleService(ExampleService.DEFAULT_SERVICE_NAME, authenticator);
+
+// 'service' can now be used to invoke operations.
+```
+
+### Configuration example
+External configuration:
+```
+export EXAMPLE_SERVICE_AUTH_TYPE=iamAssume
+export EXAMPLE_SERVICE_APIKEY=myapikey
+export EXAMPLE_SERVICE_IAM_PROFILE_ID=myprofile-1
+```
+Application code:
+```java
+import <sdk_base_package>.ExampleService.v1.ExampleService;
+...
+
+// Create the service instance.
+ExampleService service = ExampleService.newInstance("example_service");
+
+// 'service' can now be used to invoke operations.
+```
+
+
 ## Container Authentication
 The `ContainerAuthenticator` is intended to be used by application code
 running inside a compute resource managed by the IBM Kubernetes Service (IKS)
@@ -222,7 +341,7 @@ within the compute resource's local file system.
 The CR token is similar to an IAM apikey except that it is managed automatically by
 the compute resource provider (IKS).
 This allows the application developer to:
-- avoid storing credentials in application code, configuraton files or a password vault
+- avoid storing credentials in application code, configuration files or a password vault
 - avoid managing or rotating credentials
 
 The `ContainerAuthenticator` will retrieve the CR token from
@@ -266,13 +385,13 @@ endpoint as well (`https://iam.test.cloud.ibm.com`).
 
 - clientId/clientSecret: (optional) The `clientId` and `clientSecret` fields are used to form a 
 "basic auth" Authorization header for interactions with the IAM token service. If neither field 
-is specified, then no Authorization header will be sent with token server requests.  These fields 
+is specified, then no Authorization header will be sent with token server requests. These fields 
 are optional, but must be specified together.
 
 - scope: (optional) the scope to be associated with the IAM access token.
 If not specified, then no scope will be associated with the access token.
 
-- disableSSLVerification: (optional) A flag that indicates whether verificaton of the server's SSL 
+- disableSSLVerification: (optional) A flag that indicates whether verification of the server's SSL 
 certificate should be disabled or not. The default value is `false`.
 
 - headers: (optional) A set of key/value pairs that will be sent as HTTP headers in requests
@@ -320,7 +439,7 @@ The compute resource identity feature allows you to assign a trusted IAM profile
 This, in turn, allows applications running within the compute resource to take on this identity when interacting with
 IAM-secured IBM Cloud services.
 This results in a simplified security model that allows the application developer to:
-- avoid storing credentials in application code, configuraton files or a password vault
+- avoid storing credentials in application code, configuration files or a password vault
 - avoid managing or rotating credentials
 
 The `VpcInstanceAuthenticator` will invoke the appropriate operations on the compute resource's locally-available
@@ -334,16 +453,16 @@ The IAM access token is added to each outbound request in the `Authorization` he
 
 ### Properties
 
-- iamProfileCrn: (optional) the crn of the linked trusted IAM profile to be used when obtaining the IAM access token. 
+- iamProfileCrn: (optional) the crn of the linked trusted IAM profile to be used when obtaining the IAM access token.
 
 - iamProfileId: (optional) the id of the linked trusted IAM profile to be used when obtaining the IAM access token.
 
-- url: (optional) The base endpoint URL of the VPC Instance Metadata Service.  
-The default value of this property is `http://169.254.169.254`.  However, if the VPC Instance Metadata Service is configured
+- url: (optional) The base endpoint URL of the VPC Instance Metadata Service.
+The default value of this property is `http://169.254.169.254`. However, if the VPC Instance Metadata Service is configured
 with the HTTP Secure Protocol setting (`https`), then you should configure this property to be `https://api.metadata.cloud.ibm.com`.
 
 Usage Notes:
-1. At most one of `iamProfileCrn` or `iamProfileId` may be specified.  The specified value must map
+1. At most one of `iamProfileCrn` or `iamProfileId` may be specified. The specified value must map
 to a trusted IAM profile that has been linked to the compute resource (virtual server instance).
 
 2. If both `iamProfileCrn` and `iamProfileId` are specified, then an error occurs.
@@ -391,7 +510,7 @@ ExampleService service = ExampleService.newInstance("example_service");
 The `CloudPakForDataAuthenticator` will accept a user-supplied username value, along with either a
 password or apikey, and will 
 perform the necessary interactions with the Cloud Pak for Data token service to obtain a suitable
-bearer token.  The authenticator will also obtain a new bearer token when the current token expires.
+bearer token. The authenticator will also obtain a new bearer token when the current token expires.
 The bearer token is then added to each outbound request in the `Authorization` header in the
 form:
 ```
@@ -408,7 +527,7 @@ form:
 
 - url: (required) The base URL associated with the Cloud Pak for Data token service.
 
-- disableSSLVerification: (optional) A flag that indicates whether verificaton of the server's SSL 
+- disableSSLVerification: (optional) A flag that indicates whether verification of the server's SSL 
 certificate should be disabled or not. The default value is `false`.
 
 - headers: (optional) A set of key/value pairs that will be sent as HTTP headers in requests
@@ -474,7 +593,7 @@ form:
 - url: (required) The URL representing the MCSP token service endpoint's base URL string. Do not include the
 operation path (e.g. `/siusermgr/api/1.0/apikeys/token`) as part of this property's value.
 
-- disableSSLVerification: (optional) A flag that indicates whether verificaton of the server's SSL 
+- disableSSLVerification: (optional) A flag that indicates whether verification of the server's SSL 
 certificate should be disabled or not. The default value is `false`.
 
 - headers: (optional) A set of key/value pairs that will be sent as HTTP headers in requests

@@ -39,21 +39,23 @@ You can find the Javadoc for this project here: https://ibm.github.io/java-sdk-c
 The java-sdk-core project supports the following types of authentication:
 - Basic Authentication
 - Bearer Token Authentication
-- Identity and Access Management (IAM) Authentication
+- Identity and Access Management (IAM) Authentication (grant type: apikey)
+- Identity and Access Management (IAM) Authentication (grant type: assume)
 - Container Authentication
 - VPC Instance Authentication
 - Cloud Pak for Data Authentication
+- Multi-Cloud Saas Platform (MCSP) Authentication
 - No Authentication (for testing)
 
 For more information about the various authentication types and how to use them with your services, click [here](Authentication.md).
 
 ## Logging
 This project uses the [java.util.logging](https://docs.oracle.com/en/java/javase/11/core/java-logging-overview.html)
-framework for logging errors, warnings, informational and debug messages.  The output is controlled by configuring the desired
+framework for logging errors, warnings, informational and debug messages. The output is controlled by configuring the desired
 logging level (SEVERE, WARNING, INFO, FINE, etc.) for various loggers.
 
 Each class within the project creates its own logger which is named after the class (e.g. `com.ibm.cloud.sdk.core.service.BaseService`).
-The logger names form a hierarchy that mirrors the package/class hierarchy.  A logging level can be configured for an individual logger
+The logger names form a hierarchy that mirrors the package/class hierarchy. A logging level can be configured for an individual logger
 or for a group of loggers by leveraging the package name hierarchy.
 
 You can configure the logging framework programmatically by using the [java.util.logging API](https://docs.oracle.com/javase/8/docs/api/java/util/logging/package-summary.html) to create and configure
@@ -85,7 +87,7 @@ This can be very useful in diagnosing problems or simply verifying that the appl
 The easiest way to enable HTTP message logging in the Java SDK core library is to simply configure
 logging level FINE (or FINER or FINEST) for the `com.ibm.cloud.sdk.core.service.BaseService` logger.
 This has the side-effect of causing an interceptor to be registered with the underlying `okhttp3` HTTP transport layer which performs
-logging of HTTP request and response messages.  Note that the `debug-logging.properties` file contains a configuration that will
+logging of HTTP request and response messages. Note that the `debug-logging.properties` file contains a configuration that will
 include HTTP message logging.
 
 

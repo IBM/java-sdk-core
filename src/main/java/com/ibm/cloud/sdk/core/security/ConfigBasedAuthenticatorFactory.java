@@ -101,6 +101,8 @@ public class ConfigBasedAuthenticatorFactory {
       authenticator = CloudPakForDataServiceInstanceAuthenticator.fromConfiguration(props);
     } else if (authType.equalsIgnoreCase(Authenticator.AUTHTYPE_IAM)) {
       authenticator = IamAuthenticator.fromConfiguration(props);
+    } else if (authType.equalsIgnoreCase(Authenticator.AUTHTYPE_IAM_ASSUME)) {
+      authenticator = IamAssumeAuthenticator.fromConfiguration(props);
     } else if (authType.equalsIgnoreCase(Authenticator.AUTHTYPE_CONTAINER)) {
       authenticator = ContainerAuthenticator.fromConfiguration(props);
     } else if (authType.equalsIgnoreCase(Authenticator.AUTHTYPE_VPC)) {
