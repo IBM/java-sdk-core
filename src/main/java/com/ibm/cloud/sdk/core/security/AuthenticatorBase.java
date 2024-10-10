@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2019, 2023.
+ * (C) Copyright IBM Corp. 2019, 2024.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -32,7 +32,10 @@ public class AuthenticatorBase {
   public static final String ERRORMSG_ATLEAST_ONE_PROP_ERROR = "At least one of %s or %s must be specified.";
   public static final String ERRORMSG_ATMOST_ONE_PROP_ERROR = "At most one of %s or %s may be specified.";
   public static final String ERRORMSG_PROP_INVALID_INTEGER_VALUE =
-          "The %s property must be a valid integer but was %s.";
+      "The %s property must be a valid integer but was %s.";
+  public static final String ERRORMSG_ACCOUNTID_PROP_ERROR    =
+      "iamAccountId must be specified if and only if iamProfileName is specified";
+
   /**
    * Returns a "Basic" Authorization header value for the specified username and password.
    * @param username the username

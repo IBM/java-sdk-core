@@ -13,79 +13,24 @@
 
 package com.ibm.cloud.sdk.core.security;
 
-import org.apache.commons.lang3.StringUtils;
+import java.net.Proxy;
+import java.util.Map;
 
-import com.ibm.cloud.sdk.core.http.HttpHeaders;
-import com.ibm.cloud.sdk.core.http.RequestBuilder;
+import okhttp3.OkHttpClient;
 
 /**
- * This class contains code that is common to all authenticators that need to
- * interact with the IAM tokens service to obtain an access token.
+ * This class effectively adds some setter functions to the IamRequestBasedAuthenticatorImmutable class in order
+ * to allow subclasses (e.g. IamAuthenticator, ContainerAuthenticator) to be mutable after construction.
  */
-public abstract class IamRequestBasedAuthenticator
-  extends TokenRequestBasedAuthenticator<IamToken, IamToken>
+public abstract class IamRequestBasedAuthenticator extends IamRequestBasedAuthenticatorImmutable
   implements Authenticator {
-
-  private static final String DEFAULT_IAM_URL = "https://iam.cloud.ibm.com";
-
-  // Properties common to IAM-based authenticators.
-  private String url;
-  private String scope;
-  private String clientId;
-  private String clientSecret;
-
-  // This is the value of the Authorization header we'll use when interacting with the token server.
-  protected String cachedAuthorizationHeader = null;
-
-
-  @Override
-  public void validate() {
-    if (StringUtils.isEmpty(getClientId()) && StringUtils.isEmpty(getClientSecret())) {
-      // both empty is ok.
-    } else {
-      if (StringUtils.isEmpty(getClientId())) {
-        throw new IllegalArgumentException(String.format(ERRORMSG_PROP_MISSING, "clientId"));
-      }
-      if (StringUtils.isEmpty(getClientSecret())) {
-        throw new IllegalArgumentException(String.format(ERRORMSG_PROP_MISSING, "clientSecret"));
-      }
-    }
-
-    // Assuming everything validates clean, let's cache the basic auth header if
-    // the clientId/clientSecret properties are configured.
-    this.cachedAuthorizationHeader = constructBasicAuthHeader(this.clientId, this.clientSecret);
-  }
-
-  /**
-   * @return the URL configured on this Authenticator.
-   */
-  public String getURL() {
-    return this.url;
-  }
 
   /**
    * Sets the URL on this Authenticator.
    * @param url the URL representing the IAM token server endpoint
    */
   public void setURL(String url) {
-    if (StringUtils.isEmpty(url)) {
-      url = DEFAULT_IAM_URL;
-    }
-    this.url = url;
-  }
-
-  /**
-   * @return the clientId configured on this Authenticator.
-   */
-  public String getClientId() {
-    return this.clientId;
-  }
-
-  /**
-   * @return the clientSecret configured on this Authenticator.
-   */
-  public String getClientSecret() {
-    return this.clientSecret;
+    this._setURL(url);
   }
 
   /**
@@ -100,13 +45,6 @@ public abstract class IamRequestBasedAuthenticator
   }
 
   /**
-   * @return the scope parameter
-   */
-  public String getScope() {
-    return this.scope;
-  }
-
-  /**
    * Sets the "scope" parameter to use when fetching the bearer token from the IAM token server.
    * @param value a space seperated string that makes up the scope parameter.
    */
@@ -115,15 +53,44 @@ public abstract class IamRequestBasedAuthenticator
   }
 
   /**
-   * If a basic auth Authorization header is cached in "this", then add it to
-   * the specified request builder.
-   * This is used in situations where we want to add an Authorization header
-   * containing basic auth information to the token exchange request itself.
-   * @param builder the request builder
+   * Sets the disableSSLVerification flag.
+   * @param disableSSLVerification a flag indicating whether SSL host verification should be disabled
    */
-  protected void addAuthorizationHeader(RequestBuilder builder) {
-    if (StringUtils.isNotEmpty(this.cachedAuthorizationHeader)) {
-      builder.header(HttpHeaders.AUTHORIZATION, this.cachedAuthorizationHeader);
-    }
+  public void setDisableSSLVerification(boolean disableSSLVerification) {
+    this._setDisableSSLVerification(disableSSLVerification);
+  }
+
+  /**
+   * Sets a Map of key/value pairs which will be sent as HTTP headers in any interactions with the token service.
+   *
+   * @param headers
+   *          the user-supplied headers to be included in token service interactions
+   */
+  public void setHeaders(Map<String, String> headers) {
+    this._setHeaders(headers);
+  }
+
+  /**
+   * Sets a Proxy object on this Authenticator.
+   * @param proxy the proxy object to be associated with the Client used to interact with the token service.
+   */
+  public void setProxy(Proxy proxy) {
+    this._setProxy(proxy);
+  }
+
+  /**
+   * Sets a proxy authenticator on this Authenticator instance.
+   * @param proxyAuthenticator the proxy authenticator
+   */
+  public void setProxyAuthenticator(okhttp3.Authenticator proxyAuthenticator) {
+    this._setProxyAuthenticator(proxyAuthenticator);
+  }
+
+  /**
+   * Sets the OkHttpClient instance to be used when interacting with the token service.
+   * @param client the OkHttpClient instance to use
+   */
+  public void setClient(OkHttpClient client) {
+    this._setClient(client);
   }
 }

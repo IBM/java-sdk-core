@@ -36,7 +36,6 @@ import okhttp3.FormBody;
  */
 public class IamAuthenticator extends IamRequestBasedAuthenticator implements Authenticator {
   private static final Logger LOG = Logger.getLogger(IamAuthenticator.class.getName());
-  private static final String DEFAULT_IAM_URL = "https://iam.cloud.ibm.com";
   private static final String OPERATION_PATH = "/identity/token";
 
   // Properties specific to an IAM authenticator.

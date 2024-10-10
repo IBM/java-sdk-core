@@ -126,7 +126,7 @@ public class VpcInstanceAuthenticator
   // The default ctor is hidden to force the use of the non-default ctors.
   protected VpcInstanceAuthenticator() {
     setUserAgent(RequestUtils.buildUserAgent("vpc-instance-authenticator"));
-}
+  }
 
   /**
    * Constructs an IamAuthenticator instance from the configuration contained in

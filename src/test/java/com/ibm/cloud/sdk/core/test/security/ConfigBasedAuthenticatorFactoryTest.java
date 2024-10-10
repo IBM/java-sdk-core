@@ -35,6 +35,7 @@ import com.ibm.cloud.sdk.core.security.CloudPakForDataServiceAuthenticator;
 import com.ibm.cloud.sdk.core.security.CloudPakForDataServiceInstanceAuthenticator;
 import com.ibm.cloud.sdk.core.security.ConfigBasedAuthenticatorFactory;
 import com.ibm.cloud.sdk.core.security.ContainerAuthenticator;
+import com.ibm.cloud.sdk.core.security.IamAssumeAuthenticator;
 import com.ibm.cloud.sdk.core.security.IamAuthenticator;
 import com.ibm.cloud.sdk.core.security.MCSPAuthenticator;
 import com.ibm.cloud.sdk.core.security.VpcInstanceAuthenticator;
@@ -111,6 +112,19 @@ public class ConfigBasedAuthenticatorFactoryTest {
     env.put("SERVICE10_AUTH_TYPE", "mCsP");
     env.put("SERVICE10_AUTH_URL", "https://mcsp.ibm.com");
     env.put("SERVICE10_APIKEY", "my-api-key");
+
+    env.put("SERVICE11_AUTH_TYPE", "iamASsumE");
+    env.put("SERVICE11_APIKEY", "my-api-key");
+    env.put("SERVICE11_IAM_PROFILE_CRN", "my-profile-crn-1");
+
+    env.put("SERVICE12_AUTH_TYPE", "iamAssume");
+    env.put("SERVICE12_APIKEY", "my-api-key");
+    env.put("SERVICE12_IAM_PROFILE_ID", "my-profile-id-1");
+
+    env.put("SERVICE13_AUTH_TYPE", "IAMassume");
+    env.put("SERVICE13_APIKEY", "my-api-key");
+    env.put("SERVICE13_IAM_PROFILE_NAME", "my-profile-1");
+    env.put("SERVICE13_IAM_ACCOUNT_ID", "my-account-id-1");
 
     env.put("ERROR1_AUTH_TYPE", Authenticator.AUTHTYPE_CP4D);
     env.put("ERROR2_AUTH_TYPE", "BAD_AUTH_TYPE");
@@ -218,6 +232,15 @@ public class ConfigBasedAuthenticatorFactoryTest {
   }
 
   @Test
+  public void testFileCredentialsService5() {
+    envMock.when(() ->EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
+
+    Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service5");
+    assertNotNull(auth);
+    assertEquals(auth.authenticationType(), Authenticator.AUTHTYPE_BEARER_TOKEN);
+  }
+
+  @Test
   public void testFileCredentialsService11() {
     envMock.when(() ->EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
 
@@ -310,12 +333,48 @@ public class ConfigBasedAuthenticatorFactoryTest {
   }
 
   @Test
-  public void testFileCredentialsService5() {
+  public void testFileCredentialsService18() {
     envMock.when(() ->EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
 
-    Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service5");
+    Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service_18");
     assertNotNull(auth);
-    assertEquals(auth.authenticationType(), Authenticator.AUTHTYPE_BEARER_TOKEN);
+    assertEquals(auth.authenticationType(), Authenticator.AUTHTYPE_IAM_ASSUME);
+    IamAssumeAuthenticator iamAuth = (IamAssumeAuthenticator) auth;
+    assertEquals(iamAuth.getIamProfileCrn(), "my-profile-crn-1");
+    assertNull(iamAuth.getIamProfileId());
+    assertNull(iamAuth.getIamProfileName());
+    assertNull(iamAuth.getIamAccountId());
+    assertEquals(iamAuth.getURL(), "https://iam.cloud.ibm.com");
+  }
+
+  @Test
+  public void testFileCredentialsService19() {
+    envMock.when(() ->EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
+
+    Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service_19");
+    assertNotNull(auth);
+    assertEquals(auth.authenticationType(), Authenticator.AUTHTYPE_IAM_ASSUME);
+    IamAssumeAuthenticator iamAuth = (IamAssumeAuthenticator) auth;
+    assertNull(iamAuth.getIamProfileCrn());
+    assertEquals(iamAuth.getIamProfileId(), "my-profile-id-1");
+    assertNull(iamAuth.getIamProfileName());
+    assertNull(iamAuth.getIamAccountId());
+    assertEquals(iamAuth.getURL(), "https://iam.cloud.ibm.com");
+  }
+
+  @Test
+  public void testFileCredentialsService20() {
+    envMock.when(() ->EnvironmentUtils.getenv("IBM_CREDENTIALS_FILE")).thenReturn(ALTERNATE_CRED_FILENAME);
+
+    Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service_20");
+    assertNotNull(auth);
+    assertEquals(auth.authenticationType(), Authenticator.AUTHTYPE_IAM_ASSUME);
+    IamAssumeAuthenticator iamAuth = (IamAssumeAuthenticator) auth;
+    assertNull(iamAuth.getIamProfileCrn());
+    assertNull(iamAuth.getIamProfileId());
+    assertEquals(iamAuth.getIamProfileName(), "my-profile-1");
+    assertEquals(iamAuth.getIamAccountId(), "my-account-id-1");
+    assertEquals(iamAuth.getURL(), "https://iam.cloud.ibm.com");
   }
 
   @Test(expectedExceptions = IllegalArgumentException.class)
@@ -442,6 +501,54 @@ public class ConfigBasedAuthenticatorFactoryTest {
     assertEquals(mcspAuth.getURL(), "https://mcsp.ibm.com");
     assertEquals(mcspAuth.getApiKey(), "my-api-key");
     assertFalse(mcspAuth.getDisableSSLVerification());
+  }
+
+  @Test
+  public void testEnvCredentialsService11() {
+    envMock.when(() ->EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
+
+    Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service11");
+    assertNotNull(auth);
+    assertEquals(auth.authenticationType(), Authenticator.AUTHTYPE_IAM_ASSUME);
+    IamAssumeAuthenticator iamAuth = (IamAssumeAuthenticator) auth;
+    assertEquals(iamAuth.getURL(), "https://iam.cloud.ibm.com");
+    assertEquals(iamAuth.getIamProfileCrn(), "my-profile-crn-1");
+    assertNull(iamAuth.getIamProfileId());
+    assertNull(iamAuth.getIamProfileName());
+    assertNull(iamAuth.getIamAccountId());
+    assertFalse(iamAuth.getDisableSSLVerification());
+  }
+
+  @Test
+  public void testEnvCredentialsService12() {
+    envMock.when(() ->EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
+
+    Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service12");
+    assertNotNull(auth);
+    assertEquals(auth.authenticationType(), Authenticator.AUTHTYPE_IAM_ASSUME);
+    IamAssumeAuthenticator iamAuth = (IamAssumeAuthenticator) auth;
+    assertEquals(iamAuth.getURL(), "https://iam.cloud.ibm.com");
+    assertNull(iamAuth.getIamProfileCrn());
+    assertEquals(iamAuth.getIamProfileId(), "my-profile-id-1");
+    assertNull(iamAuth.getIamProfileName());
+    assertNull(iamAuth.getIamAccountId());
+    assertFalse(iamAuth.getDisableSSLVerification());
+  }
+
+  @Test
+  public void testEnvCredentialsService13() {
+    envMock.when(() ->EnvironmentUtils.getenv()).thenReturn(getTestProcessEnvironment());
+
+    Authenticator auth = ConfigBasedAuthenticatorFactory.getAuthenticator("service13");
+    assertNotNull(auth);
+    assertEquals(auth.authenticationType(), Authenticator.AUTHTYPE_IAM_ASSUME);
+    IamAssumeAuthenticator iamAuth = (IamAssumeAuthenticator) auth;
+    assertEquals(iamAuth.getURL(), "https://iam.cloud.ibm.com");
+    assertNull(iamAuth.getIamProfileCrn());
+    assertNull(iamAuth.getIamProfileId());
+    assertEquals(iamAuth.getIamProfileName(), "my-profile-1");
+    assertEquals(iamAuth.getIamAccountId(), "my-account-id-1");
+    assertFalse(iamAuth.getDisableSSLVerification());
   }
 
   @Test(expectedExceptions = IllegalArgumentException.class)

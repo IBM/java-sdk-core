@@ -26,7 +26,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -39,7 +38,6 @@ import com.ibm.cloud.sdk.core.security.Authenticator;
 import com.ibm.cloud.sdk.core.security.AuthenticatorBase;
 import com.ibm.cloud.sdk.core.security.ContainerAuthenticator;
 import com.ibm.cloud.sdk.core.security.IamToken;
-import com.ibm.cloud.sdk.core.security.TokenRequestBasedAuthenticator;
 import com.ibm.cloud.sdk.core.service.exception.ServiceResponseException;
 import com.ibm.cloud.sdk.core.test.BaseServiceUnitTest;
 import com.ibm.cloud.sdk.core.util.Clock;
