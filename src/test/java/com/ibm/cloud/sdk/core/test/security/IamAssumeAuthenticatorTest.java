@@ -221,8 +221,6 @@ public class IamAssumeAuthenticatorTest extends BaseServiceUnitTest {
     IamAssumeAuthenticator auth = new IamAssumeAuthenticator.Builder()
         .iamProfileCrn(PROFILE_CRN).apikey(API_KEY).build();
     assertFalse(auth.getDisableSSLVerification());
-    auth.setDisableSSLVerification(true);
-    assertTrue(auth.getDisableSSLVerification());
 
     auth = new IamAssumeAuthenticator.Builder()
         .iamProfileId(PROFILE_ID).apikey(API_KEY).disableSSLVerification(true).build();
@@ -259,7 +257,7 @@ public class IamAssumeAuthenticatorTest extends BaseServiceUnitTest {
         .readTimeout(120, TimeUnit.SECONDS)
         .connectionSpecs(Arrays.asList(spec, ConnectionSpec.CLEARTEXT))
         .build();
-    authenticator.setClient(client);
+    authenticator = authenticator.newBuilder().client(client).build();
     assertEquals(authenticator.getClient(), client);
 
     Request.Builder requestBuilder = new Request.Builder().url("https://test.com");

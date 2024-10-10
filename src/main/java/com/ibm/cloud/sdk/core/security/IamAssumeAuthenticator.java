@@ -26,6 +26,7 @@ import com.ibm.cloud.sdk.core.http.RequestBuilder;
 import com.ibm.cloud.sdk.core.util.RequestUtils;
 
 import okhttp3.FormBody;
+import okhttp3.OkHttpClient;
 
 /**
  * The IamAssumeAuthenticator obtains an IAM access token for a user-supplied apikey and a trusted profile
@@ -34,9 +35,8 @@ import okhttp3.FormBody;
  * token that reflects the identity of the trusted profile.
  * When the access token expires, a new access token will be fetched.
  */
-public class IamAssumeAuthenticator extends IamRequestBasedAuthenticator implements Authenticator {
+public class IamAssumeAuthenticator extends IamRequestBasedAuthenticatorImmutable implements Authenticator {
   private static final Logger LOG = Logger.getLogger(IamAssumeAuthenticator.class.getName());
-  private static final String DEFAULT_IAM_URL = "https://iam.cloud.ibm.com";
   private static final String OPERATION_PATH = "/identity/token";
 
   // Properties specific to an IamAssumeAuthenticator instance.
@@ -70,6 +70,8 @@ public class IamAssumeAuthenticator extends IamRequestBasedAuthenticator impleme
     private Map<String, String> headers;
     private Proxy proxy;
     private okhttp3.Authenticator proxyAuthenticator;
+
+    private OkHttpClient client;
 
     // Default ctor.
     public Builder() { }
@@ -235,6 +237,16 @@ public class IamAssumeAuthenticator extends IamRequestBasedAuthenticator impleme
       this.proxyAuthenticator = proxyAuthenticator;
       return this;
     }
+
+    /**
+     * Sets the OkHttpClient instance to be used when interacting with the IAM token service.
+     * @param client the OkHttpClient instance to use
+     * @return the Builder
+     */
+    public Builder client(OkHttpClient client) {
+      this.client = client;
+      return this;
+    }
   }
 
   // The default ctor is hidden to force the use of the non-default ctors.
@@ -263,16 +275,18 @@ public class IamAssumeAuthenticator extends IamRequestBasedAuthenticator impleme
         .proxyAuthenticator(builder.proxyAuthenticator)
         .build();
     this.iamDelegate = iamDelegate;
+    iamDelegate.setClient(builder.client);
 
     this.iamProfileCrn = builder.iamProfileCrn;
     this.iamProfileId = builder.iamProfileId;
     this.iamProfileName = builder.iamProfileName;
     this.iamAccountId = builder.iamAccountId;
-    this.setURL(builder.url);
-    this.setDisableSSLVerification(builder.disableSSLVerification);
-    this.setHeaders(builder.headers);
-    this.setProxy(builder.proxy);
-    this.setProxyAuthenticator(builder.proxyAuthenticator);
+    this._setURL(builder.url);
+    this._setDisableSSLVerification(builder.disableSSLVerification);
+    this._setHeaders(builder.headers);
+    this._setProxy(builder.proxy);
+    this._setProxyAuthenticator(builder.proxyAuthenticator);
+    this._setClient(builder.client);
 
     this.validate();
   }
@@ -320,10 +334,10 @@ public class IamAssumeAuthenticator extends IamRequestBasedAuthenticator impleme
 
     if (StringUtils.isEmpty(this.getURL())) {
       // If no base URL was configured, then use the default IAM base URL.
-      this.setURL(DEFAULT_IAM_URL);
+      this._setURL(DEFAULT_IAM_URL);
     } else {
       // Canonicalize the URL by removing the operation path from it if present.
-      this.setURL(StringUtils.removeEnd(this.getURL(), OPERATION_PATH));
+      this._setURL(StringUtils.removeEnd(this.getURL(), OPERATION_PATH));
     }
 
     int numParams = 0;
