@@ -1,3 +1,10 @@
+# [9.22.0](https://github.com/IBM/java-sdk-core/compare/9.21.2...9.22.0) (2024-10-15)
+
+
+### Features
+
+* **IamAssumeAuthenticator:** introduce new authenticator type ([#227](https://github.com/IBM/java-sdk-core/issues/227)) ([35abbf0](https://github.com/IBM/java-sdk-core/commit/35abbf05c9a9e617f6f60d672ed41943872a36a5))
+
 ## [9.21.2](https://github.com/IBM/java-sdk-core/compare/9.21.1...9.21.2) (2024-09-06)
 
 
