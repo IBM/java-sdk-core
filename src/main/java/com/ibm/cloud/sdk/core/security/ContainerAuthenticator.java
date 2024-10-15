@@ -40,7 +40,6 @@ import okhttp3.FormBody;
  */
 public class ContainerAuthenticator extends IamRequestBasedAuthenticator implements Authenticator {
   private static final Logger LOG = Logger.getLogger(ContainerAuthenticator.class.getName());
-  private static final String DEFAULT_IAM_URL = "https://iam.cloud.ibm.com";
   private static final String OPERATION_PATH = "/identity/token";
   private static final String DEFAULT_CR_TOKEN_FILENAME1 = "/var/run/secrets/tokens/vault-token";
   private static final String DEFAULT_CR_TOKEN_FILENAME2 = "/var/run/secrets/tokens/sa-token";
@@ -216,7 +215,7 @@ public class ContainerAuthenticator extends IamRequestBasedAuthenticator impleme
   // The default ctor is hidden to force the use of the non-default ctors.
   protected ContainerAuthenticator() {
     setUserAgent(RequestUtils.buildUserAgent("container-authenticator"));
-}
+  }
 
   /**
    * Constructs a ContainerAuthenticator instance from the configuration
