@@ -37,7 +37,7 @@ jobs:
           gpg-passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
       - name: Set artifact version to ${{ github.ref_name }}
-        run: mvn versions:set -DnewVersion=${{ github.ref_name}} -DgenerateBackupPoms=false
+        run: mvn -B versions:set -DnewVersion=${{ github.ref_name}} -DgenerateBackupPoms=false
 
       - name: Publish Javadocs
         env:
@@ -45,7 +45,7 @@ jobs:
           GH_REPO_SLUG: ${{ github.repository }}
           GH_TAG: ${{ github.ref_name}}
         run: |
-          mvn clean javadoc:javadoc -B
+          mvn -B clean javadoc:javadoc
           build/publishJavadoc-gha.sh
 
       - name: Publish to Maven Central
@@ -55,7 +55,4 @@ jobs:
           GPG_KEYNAME: ${{ secrets.GPG_KEYNAME }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
-          echo "Publishing to maven central"
-          # build only the "verify" goal for now until we're brave enough to try to deploy to MC :)
-          mvn verify -B -DskipTests -P central
-          ls -al target
+          mvn -B deploy -DskipTests -P central
