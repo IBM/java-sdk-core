@@ -9,6 +9,8 @@ printf "\n>>>>> Publishing javadoc for release build: repo=%s tag=%s\n" ${GH_REP
 
 printf "\n>>>>> Cloning repository's gh-pages branch into directory 'gh-pages'\n"
 rm -fr ./gh-pages
+git config --global user.email "devxsdk@us.ibm.com"
+git config --global user.name "ibm-devx-sdk"
 git clone --branch=gh-pages https://${GH_TOKEN}@github.com/IBM/java-sdk-core.git gh-pages
 
 printf "\n>>>>> Finished cloning...\n"
