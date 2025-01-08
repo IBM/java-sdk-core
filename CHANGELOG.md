@@ -1,3 +1,10 @@
+## [9.22.1](https://github.com/IBM/java-sdk-core/compare/9.22.0...9.22.1) (2025-01-08)
+
+
+### Bug Fixes
+
+* enable github actions ([dcadb9f](https://github.com/IBM/java-sdk-core/commit/dcadb9f281154cfb182029071f469302cf6416c8))
+
 # [9.22.0](https://github.com/IBM/java-sdk-core/compare/9.21.2...9.22.0) (2024-10-15)
 
 
