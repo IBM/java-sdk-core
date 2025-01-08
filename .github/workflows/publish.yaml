@@ -1,0 +1,61 @@
+# This workflow is responsible for:
+# - publishing artifacts to Maven Central
+# - building and publishing javadocs to the git repository.
+# It is triggered when a new release is created.
+
+name: Publish
+
+on:
+  release:
+    types: [created]
+  workflow_dispatch:
+    # Allow this workflow to be triggered manually
+
+jobs:
+  publish:
+    name: Publish Release
+    runs-on: ubuntu-latest
+ 
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: 11
+          distribution: 'adopt'
+          cache: 'maven'
+          # Configure ~/.m2/settings.xml
+          server-id: ossrh
+          server-username: OSSRH_USERNAME
+          server-password: OSSRH_PASSWORD
+          # Import GPG key into build agent's local keystore
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          gpg-passphrase: ${{ secrets.GPG_PASSPHRASE }}
+
+      - name: Set artifact version to ${{ github.ref_name }}
+        run: mvn versions:set -DnewVersion=${{ github.ref_name}} -DgenerateBackupPoms=false
+
+      - name: Publish Javadocs
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_REPO_SLUG: ${{ github.repository }}
+          GH_TAG: ${{ github.ref_name}}
+        run: |
+          mvn clean javadoc:javadoc -B
+          build/publishJavadoc-gha.sh
+
+      - name: Publish to Maven Central
+        env:
+          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+          GPG_KEYNAME: ${{ secrets.GPG_KEYNAME }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: |
+          echo "Publishing to maven central"
+          # build only the "verify" goal for now until we're brave enough to try to deploy to MC :)
+          mvn verify -B -DskipTests -P central
+          ls -al target
