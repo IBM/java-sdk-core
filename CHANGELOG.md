@@ -1,3 +1,10 @@
+## [9.22.2](https://github.com/IBM/java-sdk-core/compare/9.22.1...9.22.2) (2025-01-08)
+
+
+### Bug Fixes
+
+* fix workflows ([e9e21cb](https://github.com/IBM/java-sdk-core/commit/e9e21cb1f069046714e622b1483164859019fcf2))
+
 ## [9.22.1](https://github.com/IBM/java-sdk-core/compare/9.22.0...9.22.1) (2025-01-08)
 
 
