@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2021, 2024.
+ * (C) Copyright IBM Corp. 2021, 2025.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -43,6 +43,8 @@ public class ContainerAuthenticator extends IamRequestBasedAuthenticator impleme
   private static final String OPERATION_PATH = "/identity/token";
   private static final String DEFAULT_CR_TOKEN_FILENAME1 = "/var/run/secrets/tokens/vault-token";
   private static final String DEFAULT_CR_TOKEN_FILENAME2 = "/var/run/secrets/tokens/sa-token";
+  private static final String
+    DEFAULT_CR_TOKEN_FILENAME3 = "/var/run/secrets/codeengine.cloud.ibm.com/compute-resource-token/token";
   private static final String ERRORMSG_CR_TOKEN_ERROR = "Error reading CR token file: %s";
 
   // Properties specific to a ContainerAuthenticator.
@@ -385,11 +387,15 @@ public class ContainerAuthenticator extends IamRequestBasedAuthenticator impleme
               // Try to read from the file specified by the user.
               crToken = readFile(getCrTokenFilename());
           } else {
-              // If no filename was supplied by the user, then try our two default filenames.
+              // If no filename was supplied by the user, then try our three default filenames.
               try {
                   crToken = readFile(DEFAULT_CR_TOKEN_FILENAME1);
               } catch (Throwable t) {
-                  crToken = readFile(DEFAULT_CR_TOKEN_FILENAME2);
+                  try {
+                    crToken = readFile(DEFAULT_CR_TOKEN_FILENAME2);
+                  } catch (Throwable t1) {
+                    crToken = readFile(DEFAULT_CR_TOKEN_FILENAME3);
+                  }
               }
           }
           return crToken;
