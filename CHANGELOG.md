@@ -1,3 +1,10 @@
+# [9.23.0](https://github.com/IBM/java-sdk-core/compare/9.22.2...9.23.0) (2025-03-07)
+
+
+### Features
+
+* **ContainerAuthenticator:** add support for code engine workload ([#232](https://github.com/IBM/java-sdk-core/issues/232)) ([166d8f6](https://github.com/IBM/java-sdk-core/commit/166d8f61a131e039647ab097996f848a726e0599))
+
 ## [9.22.2](https://github.com/IBM/java-sdk-core/compare/9.22.1...9.22.2) (2025-01-08)
 
 
