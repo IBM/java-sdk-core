@@ -77,6 +77,33 @@ public class MCSPToken extends AbstractToken {
   }
 
   /**
+   * This ctor will extract the access token from the specified MCSPV2TokenResponse instance,
+   * and compute the refresh time as "80% of the timeToLive added to the issued-at time".
+   * This means that we'll trigger the acquisition of a new token shortly before it is set to expire.
+   * @param response the MCSPTokenResponse instance
+   */
+  public MCSPToken(MCSPV2TokenResponse response) {
+    super();
+    this.accessToken = response.getToken();
+
+    // To compute the expiration time, we'll need to crack open the accessToken value
+    // which is a JWT (Json Web Token) instance.
+    JsonWebToken jwt = new JsonWebToken(this.accessToken);
+
+    Long iat = jwt.getPayload().getIssuedAt();
+    Long exp = jwt.getPayload().getExpiresAt();
+
+    if (iat != null && exp != null) {
+      long ttl = exp - iat;
+
+      this.expirationTime = exp;
+      this.refreshTime = iat + (long) (0.8 * ttl);
+    } else {
+      throw new RuntimeException("Properties 'iat' and 'exp' MUST be present within the encoded access token");
+    }
+  }
+
+  /**
    * Returns true iff this object does not hold a valid access token or has one which has crossed our refresh
    * time. This method also updates the refresh time if it determines the token needs to be refreshed to
    * prevent other threads from making multiple refresh calls.
