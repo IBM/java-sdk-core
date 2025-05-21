@@ -34,6 +34,7 @@ public interface Authenticator {
   String AUTHTYPE_CONTAINER = "container";
   String AUTHTYPE_VPC = "vpc";
   String AUTHTYPE_MCSP = "mcsp";
+  String AUTHTYPE_MCSPV2 = "mcspv2";
 
   /**
    * Constants which define the names of external config propreties (credential file, environment variable, etc.).
@@ -59,6 +60,13 @@ public interface Authenticator {
   String PROPNAME_IAM_PROFILE_ID = "IAM_PROFILE_ID";
   String PROPNAME_IAM_PROFILE_NAME = "IAM_PROFILE_NAME";
   String PROPNAME_IAM_ACCOUNT_ID = "IAM_ACCOUNT_ID";
+  String PROPNAME_SCOPE_COLLECTION_TYPE = "SCOPE_COLLECTION_TYPE";
+  String PROPNAME_SCOPE_ID = "SCOPE_ID";
+  String PROPNAME_INCLUDE_BUILTIN_ACTIONS = "INCLUDE_BUILTIN_ACTIONS";
+  String PROPNAME_INCLUDE_CUSTOM_ACTIONS = "INCLUDE_CUSTOM_ACTIONS";
+  String PROPNAME_INCLUDE_ROLES = "INCLUDE_ROLES";
+  String PROPNAME_PREFIX_ROLES = "PREFIX_ROLES";
+  String PROPNAME_CALLER_EXT_CLAIM = "CALLER_EXT_CLAIM";
 
   /**
    * Validates the current set of configuration information in the Authenticator.
