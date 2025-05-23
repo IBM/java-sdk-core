@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2023, 2024.
+ * (C) Copyright IBM Corp. 2023, 2025.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -34,7 +34,7 @@ import com.ibm.cloud.sdk.core.util.RequestUtils;
  */
 public class MCSPAuthenticator extends TokenRequestBasedAuthenticator<MCSPToken, MCSPTokenResponse>
         implements Authenticator {
-    private static final Logger LOG = Logger.getLogger(ContainerAuthenticator.class.getName());
+    private static final Logger LOG = Logger.getLogger(MCSPAuthenticator.class.getName());
     private static final String OPERATION_PATH = "/siusermgr/api/1.0/apikeys/token";
 
     // Properties specific to an MCSP authenticator.

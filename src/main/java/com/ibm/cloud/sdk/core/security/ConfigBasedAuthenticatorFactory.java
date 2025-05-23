@@ -109,6 +109,8 @@ public class ConfigBasedAuthenticatorFactory {
       authenticator = VpcInstanceAuthenticator.fromConfiguration(props);
     } else if (authType.equalsIgnoreCase(Authenticator.AUTHTYPE_MCSP)) {
         authenticator = MCSPAuthenticator.fromConfiguration(props);
+    } else if (authType.equalsIgnoreCase(Authenticator.AUTHTYPE_MCSPV2)) {
+        authenticator = MCSPV2Authenticator.fromConfiguration(props);
     } else if (authType.equalsIgnoreCase(Authenticator.AUTHTYPE_NOAUTH)) {
       authenticator = new NoAuthAuthenticator(props);
     } else {

@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2024.
+ * (C) Copyright IBM Corp. 2024, 2025.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -82,7 +82,7 @@ public abstract class TokenRequestBasedAuthenticatorImmutable<T extends Abstract
 
   /**
    * Returns the OkHttpClient instance to be used when interacting with the token service.
-   * @return the client instance or null if a client insance has not yet been set
+   * @return the client instance or null if a client instance has not yet been set
    */
   public OkHttpClient getClient() {
     return this.client;
