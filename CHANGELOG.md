@@ -1,3 +1,10 @@
+# [9.24.0](https://github.com/IBM/java-sdk-core/compare/9.23.1...9.24.0) (2025-05-30)
+
+
+### Features
+
+* **auth:** add support for MCSP V2 authentication ([d9c0a93](https://github.com/IBM/java-sdk-core/commit/d9c0a93396072dea5bd7ad6a2d91c039b4beebbc))
+
 ## [9.23.1](https://github.com/IBM/java-sdk-core/compare/9.23.0...9.23.1) (2025-04-16)
 
 
