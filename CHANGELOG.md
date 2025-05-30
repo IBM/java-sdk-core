@@ -1,3 +1,10 @@
+## [9.24.1](https://github.com/IBM/java-sdk-core/compare/9.24.0...9.24.1) (2025-05-30)
+
+
+### Bug Fixes
+
+* **build:** mark secret as false positive ([7d57370](https://github.com/IBM/java-sdk-core/commit/7d57370874c85b78791eb0d64b449dc07a4a305a))
+
 # [9.24.0](https://github.com/IBM/java-sdk-core/compare/9.23.1...9.24.0) (2025-05-30)
 
 
