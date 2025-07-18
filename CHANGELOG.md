@@ -1,3 +1,10 @@
+## [9.24.3](https://github.com/IBM/java-sdk-core/compare/9.24.2...9.24.3) (2025-07-18)
+
+
+### Bug Fixes
+
+* **build:** migrate to the central publishing plugin ([#240](https://github.com/IBM/java-sdk-core/issues/240)) ([d5a861b](https://github.com/IBM/java-sdk-core/commit/d5a861b8175c042b476497f077d29b74750fe232))
+
 ## [9.24.2](https://github.com/IBM/java-sdk-core/compare/9.24.1...9.24.2) (2025-07-16)
 
 
