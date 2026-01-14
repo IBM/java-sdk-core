@@ -15,7 +15,7 @@ package com.ibm.cloud.sdk.core.http;
 
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
-import okhttp3.internal.Util;
+import okhttp3.internal._UtilCommonKt;
 import okio.BufferedSink;
 import okio.Okio;
 import okio.Source;
@@ -98,7 +98,7 @@ public class InputStreamRequestBody extends RequestBody {
       }
       sink.writeAll(source);
     } finally {
-      Util.closeQuietly(source);
+      _UtilCommonKt.closeQuietly(source);
     }
   }
 }
