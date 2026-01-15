@@ -1,3 +1,10 @@
+# [9.25.0](https://github.com/IBM/java-sdk-core/compare/9.24.3...9.25.0) (2026-01-15)
+
+
+### Features
+
+* **deps:** upgrade okhttp3 to major version 5p3 to 5.3.2 ([#243](https://github.com/IBM/java-sdk-core/issues/243)) ([ed50a99](https://github.com/IBM/java-sdk-core/commit/ed50a99c7066cabcffccb0af672fe90932ea2dbd))
+
 ## [9.24.3](https://github.com/IBM/java-sdk-core/compare/9.24.2...9.24.3) (2025-07-18)
 
 
