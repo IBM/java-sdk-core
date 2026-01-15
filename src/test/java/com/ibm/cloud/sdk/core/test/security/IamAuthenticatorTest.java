@@ -537,7 +537,7 @@ public class IamAuthenticatorTest extends BaseServiceUnitTest {
     RecordedRequest tokenServerRequest = server.takeRequest();
     assertNotNull(tokenServerRequest);
     String body = tokenServerRequest.getBody().readUtf8();
-    String expectedBody = "grant_type=urn%3Aibm%3Aparams%3Aoauth%3Agrant-type%3Aapikey&apikey=123456789&response_type=cloud_iam&scope=scope1%20scope2%20scope3";
+    String expectedBody = "grant_type=urn%3Aibm%3Aparams%3Aoauth%3Agrant-type%3Aapikey&apikey=123456789&response_type=cloud_iam&scope=scope1+scope2+scope3";
     assertEquals(expectedBody, body);
   }
 
