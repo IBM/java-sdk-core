@@ -50,7 +50,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Java ${{matrix.java-version}}
-        uses: actions/setup-java@v4 
+        uses: actions/setup-java@v4
         with:
           java-version: ${{matrix.java-version}}
           distribution: 'adopt'
@@ -58,6 +58,20 @@ jobs:
 
       - name: Build & Test
         run: mvn -B clean package
+
+  results:
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    name: Final Test Results
+    needs: [build]
+    steps:
+      - run: |
+          result="${{ needs.build.result }}"
+          if [[ $result == "success" || $result == "skipped" ]]; then
+            exit 0
+          else
+            exit 1
+          fi
 
   create-release:
     name: semantic-release
