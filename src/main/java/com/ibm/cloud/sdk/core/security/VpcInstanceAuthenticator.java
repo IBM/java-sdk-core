@@ -50,6 +50,8 @@ public class VpcInstanceAuthenticator
   private String iamProfileCrn;
   private String iamProfileId;
   private String url;
+  private String serviceVersion;
+  private int tokenLifetime;
 
 
   /**
@@ -59,6 +61,8 @@ public class VpcInstanceAuthenticator
     private String iamProfileCrn;
     private String iamProfileId;
     private String url;
+    private String serviceVersion;
+    private int tokenLifetime;
 
     // Default ctor.
     public Builder() {
@@ -69,6 +73,8 @@ public class VpcInstanceAuthenticator
       this.iamProfileCrn = obj.iamProfileCrn;
       this.iamProfileId = obj.iamProfileId;
       this.url = obj.url;
+      this.serviceVersion = obj.serviceVersion;
+      this.tokenLifetime = obj.tokenLifetime;
     }
 
     /**
@@ -121,6 +127,27 @@ public class VpcInstanceAuthenticator
       this.url = url;
       return this;
     }
+
+    /**
+     * Sets the serviceVersion Property.
+     *
+     * @param serviceVersion the base service version to use with the service.
+     * @return the Builder
+     */
+    public Builder serviceVersion(String serviceVersion) {
+      this.serviceVersion = serviceVersion;
+      return this;
+    }
+
+    /**
+     * Sets the tokenLifetime Property.
+     * @param tokenLifetime the base token lifetime to use.
+     * @return the Builder
+     */
+    public Builder tokenLifetime(int tokenLifetime) {
+      this.tokenLifetime = tokenLifetime;
+      return this;
+    }
   }
 
   // The default ctor is hidden to force the use of the non-default ctors.
@@ -139,6 +166,8 @@ public class VpcInstanceAuthenticator
     this.iamProfileCrn = builder.iamProfileCrn;
     this.iamProfileId = builder.iamProfileId;
     this.url = builder.url;
+    this.serviceVersion = StringUtils.isEmpty(builder.serviceVersion) ? metadataServiceVersion : builder.serviceVersion;
+    this.tokenLifetime = builder.tokenLifetime == 0 ? instanceIdentityTokenLifetime : builder.tokenLifetime;
     this.validate();
   }
 
@@ -161,7 +190,8 @@ public class VpcInstanceAuthenticator
    */
   public static VpcInstanceAuthenticator fromConfiguration(Map<String, String> config) {
     return new Builder().iamProfileCrn(config.get(PROPNAME_IAM_PROFILE_CRN))
-        .iamProfileId(config.get(PROPNAME_IAM_PROFILE_ID)).url(config.get(PROPNAME_URL)).build();
+        .iamProfileId(config.get(PROPNAME_IAM_PROFILE_ID)).url(config.get(PROPNAME_URL))
+        .serviceVersion(config.get(PROPNAME_VPC_IMS_VERSION)).build();
   }
 
   /**
@@ -236,8 +266,69 @@ public class VpcInstanceAuthenticator
     this.url = url;
   }
 
+  /**
+   * @return the VPC ServiceVersion configured in this Authenticator.
+   */
+  public String getServiceVersion() {
+    return this.serviceVersion;
+  }
+
+    /**
+   * Sets the ServiceVersion in this Authenticator.
+   *
+   * @return the VPC ServiceVersion
+   */
+  protected void setServiceVersion(String serviceVersion) {
+    if (StringUtils.isEmpty(serviceVersion)) {
+      serviceVersion = metadataServiceVersion;
+    }
+    this.serviceVersion = serviceVersion;
+  }
+
+  /**
+   * @return the TokenLifetime configured on this Authenticator.
+   */
+  public int getTokenLifetime() {
+    return this.tokenLifetime;
+  }
+
+  /**
+   * Sets the TokenLifetime in this Authenticator.
+   * @param tokenLifetime
+   */
+  protected void setTokenLifetime(int tokenLifetime) {
+    if (tokenLifetime == 0) {
+      tokenLifetime = instanceIdentityTokenLifetime;
+    }
+    this.tokenLifetime = tokenLifetime;
+  }
+
   private String getImsEndpoint() {
     return (StringUtils.isEmpty(this.url) ? defaultIMSEndpoint : this.url);
+  }
+
+  /**
+   * Gets the operation path for creating an access token based on the service version.
+   *
+   * @return the correct access token path
+   */
+  public String getCreateAccessTokenPath() {
+    if (this.serviceVersion.equals("2025-08-26")) {
+      return "/identity/v1/token";
+    }
+    return operationPathCreateAccessToken;
+  }
+
+  /**
+   * Gets the operation path for creating an IAM token based on the service version.
+   *
+   * @return the correct IAM token path
+   */
+  public String getCreateIamTokenPath() {
+    if (this.serviceVersion.equals("2025-08-26")) {
+      return "/identity/v1/iam_tokens";
+    }
+    return operationPathCreateIamToken;
   }
 
   /**
@@ -271,15 +362,15 @@ public class VpcInstanceAuthenticator
     try {
       // Create a PUT request to retrieve the instance identity token.
       RequestBuilder builder = RequestBuilder
-          .put(RequestBuilder.resolveRequestUrl(getImsEndpoint(), operationPathCreateAccessToken));
+          .put(RequestBuilder.resolveRequestUrl(getImsEndpoint(), this.getCreateAccessTokenPath()));
 
       // Set the params and request body.
-      builder.query("version", metadataServiceVersion);
+      builder.query("version", this.getServiceVersion());
       builder.header(HttpHeaders.ACCEPT, HttpMediaType.APPLICATION_JSON);
       builder.header(HttpHeaders.CONTENT_TYPE, HttpMediaType.APPLICATION_JSON);
       builder.header("Metadata-Flavor", metadataFlavor);
 
-      String requestBody = String.format("{\"expires_in\": %d}", instanceIdentityTokenLifetime);
+      String requestBody = String.format("{\"expires_in\": %d}", this.getTokenLifetime());
       builder.bodyContent(requestBody, HttpMediaType.APPLICATION_JSON);
 
       // Invoke the VPC IMDS "create_access_token" operation.
@@ -306,10 +397,10 @@ public class VpcInstanceAuthenticator
     try {
       // Create a POST request to retrieve the IAM access token.
       RequestBuilder builder =
-          RequestBuilder.post(RequestBuilder.resolveRequestUrl(getImsEndpoint(), operationPathCreateIamToken));
+          RequestBuilder.post(RequestBuilder.resolveRequestUrl(getImsEndpoint(), this.getCreateIamTokenPath()));
 
       // Set the params and request body.
-      builder.query("version", metadataServiceVersion);
+      builder.query("version", this.getServiceVersion());
       builder.header(HttpHeaders.ACCEPT, HttpMediaType.APPLICATION_JSON);
       builder.header(HttpHeaders.CONTENT_TYPE, HttpMediaType.APPLICATION_JSON);
       builder.header(HttpHeaders.AUTHORIZATION, "Bearer " + instanceIdentityToken);
@@ -347,3 +438,4 @@ public class VpcInstanceAuthenticator
     return iamToken;
   }
 }
+

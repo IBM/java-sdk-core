@@ -623,4 +623,71 @@ public class VpcInstanceAuthenticatorTest extends BaseServiceUnitTest {
       fail("Expected RuntimeException, not " + t.getClass().getSimpleName());
     }
   }
+
+  @Test
+  public void testVpcAuthServiceVersionDefaults() {
+    VpcInstanceAuthenticator authenticator = new VpcInstanceAuthenticator.Builder()
+        .build();
+    assertNotNull(authenticator);
+
+    assertEquals(authenticator.getServiceVersion(), "2022-03-01");
+    assertEquals(authenticator.getTokenLifetime(), 300);
+
+    assertEquals("/instance_identity/v1/token", authenticator.getCreateAccessTokenPath());
+    assertEquals("/instance_identity/v1/iam_token", authenticator.getCreateIamTokenPath());
+  }
+
+  @Test
+  public void testVpcAuthServiceVersionBuilder() {
+    VpcInstanceAuthenticator authenticator = new VpcInstanceAuthenticator.Builder()
+        .serviceVersion("2025-08-26")
+        .tokenLifetime(600)
+        .build();
+    assertNotNull(authenticator);
+
+    assertEquals(authenticator.getServiceVersion(), "2025-08-26");
+    assertEquals(authenticator.getTokenLifetime(), 600);
+
+    assertEquals("/identity/v1/token", authenticator.getCreateAccessTokenPath());
+    assertEquals("/identity/v1/iam_tokens", authenticator.getCreateIamTokenPath());
+  }
+
+  @Test
+  public void testVpcAuthServiceVersionFromMap() {
+    Map<String, String> properties = new HashMap<>();
+    properties.put(Authenticator.PROPNAME_VPC_IMS_VERSION, "2025-08-26");
+
+    VpcInstanceAuthenticator authenticator = VpcInstanceAuthenticator.fromConfiguration(properties);
+    assertNotNull(authenticator);
+
+    assertEquals(authenticator.getServiceVersion(), "2025-08-26");
+
+    assertEquals("/identity/v1/token", authenticator.getCreateAccessTokenPath());
+    assertEquals("/identity/v1/iam_tokens", authenticator.getCreateIamTokenPath());
+  }
+
+  @Test
+  public void testVpcAuthServiceVersionOldVersion() {
+    VpcInstanceAuthenticator authenticator = new VpcInstanceAuthenticator.Builder()
+        .serviceVersion("2022-03-01")
+        .build();
+    assertNotNull(authenticator);
+
+    assertEquals(authenticator.getServiceVersion(), "2022-03-01");
+
+    assertEquals("/instance_identity/v1/token", authenticator.getCreateAccessTokenPath());
+    assertEquals("/instance_identity/v1/iam_token", authenticator.getCreateIamTokenPath());
+  }
+
+  @Test
+  public void testVpcAuthServiceVersionCustomVersion() {
+    VpcInstanceAuthenticator authenticator = new VpcInstanceAuthenticator.Builder()
+        .serviceVersion("2024-01-01")
+        .build();
+    assertNotNull(authenticator);
+
+    assertEquals(authenticator.getServiceVersion(), "2024-01-01");
+    assertEquals("/instance_identity/v1/token", authenticator.getCreateAccessTokenPath());
+    assertEquals("/instance_identity/v1/iam_token", authenticator.getCreateIamTokenPath());
+  }
 }
