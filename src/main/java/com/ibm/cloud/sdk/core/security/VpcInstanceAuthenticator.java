@@ -13,6 +13,8 @@
 
 package com.ibm.cloud.sdk.core.security;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -42,9 +44,14 @@ public class VpcInstanceAuthenticator
   private static final String defaultIMSEndpoint = "http://169.254.169.254";
   private static final String operationPathCreateAccessToken = "/instance_identity/v1/token";
   private static final String operationPathCreateIamToken = "/instance_identity/v1/iam_token";
+  private static final String operationPathCreateAccessToken2 = "/identity/v1/token";
+  private static final String operationPathCreateIamToken2 = "/identity/v1/iam_tokens";
   private static final String metadataFlavor = "ibm";
   private static final String metadataServiceVersion = "2022-03-01";
   private static final int instanceIdentityTokenLifetime = 300;
+
+  private ArrayList<String> defaultServiceSupportedVersions = new ArrayList<>(List.of("2022-03-01", "2025-08-26"));
+
 
   // Properties specific to a VpcInstanceAuthenticator.
   private String iamProfileCrn;
@@ -52,7 +59,6 @@ public class VpcInstanceAuthenticator
   private String url;
   private String serviceVersion;
   private int tokenLifetime;
-
 
   /**
    * This Builder class is used to construct IamAuthenticator instances.
@@ -204,6 +210,11 @@ public class VpcInstanceAuthenticator
       throw new IllegalArgumentException(
           String.format(ERRORMSG_ATMOST_ONE_PROP_ERROR, "iamProfileCrn", "iamProfileId"));
     }
+
+    if (!this.defaultServiceSupportedVersions.contains(this.serviceVersion)) {
+      throw new IllegalArgumentException(
+        String.format(ERRORMSG_INVALID_SERVICE_VERSION, this.defaultServiceSupportedVersions));
+    }
   }
 
   /**
@@ -314,7 +325,7 @@ public class VpcInstanceAuthenticator
    */
   public String getCreateAccessTokenPath() {
     if (this.serviceVersion.equals("2025-08-26")) {
-      return "/identity/v1/token";
+      return operationPathCreateAccessToken2;
     }
     return operationPathCreateAccessToken;
   }
@@ -326,7 +337,7 @@ public class VpcInstanceAuthenticator
    */
   public String getCreateIamTokenPath() {
     if (this.serviceVersion.equals("2025-08-26")) {
-      return "/identity/v1/iam_tokens";
+      return operationPathCreateIamToken2;
     }
     return operationPathCreateIamToken;
   }
@@ -400,7 +411,7 @@ public class VpcInstanceAuthenticator
           RequestBuilder.post(RequestBuilder.resolveRequestUrl(getImsEndpoint(), this.getCreateIamTokenPath()));
 
       // Set the params and request body.
-      builder.query("version", this.getServiceVersion());
+      builder.query("version", this.serviceVersion);
       builder.header(HttpHeaders.ACCEPT, HttpMediaType.APPLICATION_JSON);
       builder.header(HttpHeaders.CONTENT_TYPE, HttpMediaType.APPLICATION_JSON);
       builder.header(HttpHeaders.AUTHORIZATION, "Bearer " + instanceIdentityToken);

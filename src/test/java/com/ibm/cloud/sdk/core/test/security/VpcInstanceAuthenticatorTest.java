@@ -55,6 +55,11 @@ public class VpcInstanceAuthenticatorTest extends BaseServiceUnitTest {
   private static final String mockIamProfileCrn = "crn:iam-profile:123";
   private static final String mockIamProfileId = "iam-id-123";
 
+  private static final String operationPathCreateAccessToken = "/instance_identity/v1/token";
+  private static final String operationPathCreateIamToken = "/instance_identity/v1/iam_token";
+  private static final String operationPathCreateAccessToken2 = "/identity/v1/token";
+  private static final String operationPathCreateIamToken2 = "/identity/v1/iam_tokens";
+
   private static final String mockErrorResponseJson1 =
       "{\"errors\": [{\"message\": \"Your create_access_token request was bad.\", \"code\": \"invalid_parameter_value\"}]}";
   private static final String mockErrorResponseJson2 =
@@ -633,8 +638,8 @@ public class VpcInstanceAuthenticatorTest extends BaseServiceUnitTest {
     assertEquals(authenticator.getServiceVersion(), "2022-03-01");
     assertEquals(authenticator.getTokenLifetime(), 300);
 
-    assertEquals("/instance_identity/v1/token", authenticator.getCreateAccessTokenPath());
-    assertEquals("/instance_identity/v1/iam_token", authenticator.getCreateIamTokenPath());
+    assertEquals(operationPathCreateAccessToken, authenticator.getCreateAccessTokenPath());
+    assertEquals(operationPathCreateIamToken, authenticator.getCreateIamTokenPath());
   }
 
   @Test
@@ -648,8 +653,8 @@ public class VpcInstanceAuthenticatorTest extends BaseServiceUnitTest {
     assertEquals(authenticator.getServiceVersion(), "2025-08-26");
     assertEquals(authenticator.getTokenLifetime(), 600);
 
-    assertEquals("/identity/v1/token", authenticator.getCreateAccessTokenPath());
-    assertEquals("/identity/v1/iam_tokens", authenticator.getCreateIamTokenPath());
+    assertEquals(operationPathCreateAccessToken2, authenticator.getCreateAccessTokenPath());
+    assertEquals(operationPathCreateIamToken2, authenticator.getCreateIamTokenPath());
   }
 
   @Test
@@ -662,8 +667,8 @@ public class VpcInstanceAuthenticatorTest extends BaseServiceUnitTest {
 
     assertEquals(authenticator.getServiceVersion(), "2025-08-26");
 
-    assertEquals("/identity/v1/token", authenticator.getCreateAccessTokenPath());
-    assertEquals("/identity/v1/iam_tokens", authenticator.getCreateIamTokenPath());
+    assertEquals(operationPathCreateAccessToken2, authenticator.getCreateAccessTokenPath());
+    assertEquals(operationPathCreateIamToken2, authenticator.getCreateIamTokenPath());
   }
 
   @Test
@@ -675,19 +680,19 @@ public class VpcInstanceAuthenticatorTest extends BaseServiceUnitTest {
 
     assertEquals(authenticator.getServiceVersion(), "2022-03-01");
 
-    assertEquals("/instance_identity/v1/token", authenticator.getCreateAccessTokenPath());
-    assertEquals("/instance_identity/v1/iam_token", authenticator.getCreateIamTokenPath());
+    assertEquals(operationPathCreateAccessToken, authenticator.getCreateAccessTokenPath());
+    assertEquals(operationPathCreateIamToken, authenticator.getCreateIamTokenPath());
   }
 
   @Test
   public void testVpcAuthServiceVersionCustomVersion() {
-    VpcInstanceAuthenticator authenticator = new VpcInstanceAuthenticator.Builder()
-        .serviceVersion("2024-01-01")
-        .build();
-    assertNotNull(authenticator);
-
-    assertEquals(authenticator.getServiceVersion(), "2024-01-01");
-    assertEquals("/instance_identity/v1/token", authenticator.getCreateAccessTokenPath());
-    assertEquals("/instance_identity/v1/iam_token", authenticator.getCreateIamTokenPath());
+    try {
+      new VpcInstanceAuthenticator.Builder()
+          .serviceVersion("2024-01-01")
+          .build();
+      fail("Expected build() to throw an exception!");
+    } catch (IllegalArgumentException e) {
+      assertEquals(e.getMessage(), "Invalid service version. Supported values are: [2022-03-01, 2025-08-26]");
+    }
   }
 }
