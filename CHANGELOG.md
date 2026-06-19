@@ -1,3 +1,10 @@
+# [9.26.0](https://github.com/IBM/java-sdk-core/compare/9.25.0...9.26.0) (2026-06-19)
+
+
+### Features
+
+* **auth:** add support for new service version in VPC Instance Auth ([#247](https://github.com/IBM/java-sdk-core/issues/247)) ([ada802f](https://github.com/IBM/java-sdk-core/commit/ada802fbeafed0e2d804c321682e13fa80078e1e))
+
 # [9.25.0](https://github.com/IBM/java-sdk-core/compare/9.24.3...9.25.0) (2026-01-15)
 
 
