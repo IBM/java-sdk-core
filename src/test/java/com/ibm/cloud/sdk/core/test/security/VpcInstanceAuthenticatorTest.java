@@ -55,6 +55,11 @@ public class VpcInstanceAuthenticatorTest extends BaseServiceUnitTest {
   private static final String mockIamProfileCrn = "crn:iam-profile:123";
   private static final String mockIamProfileId = "iam-id-123";
 
+  private static final String operationPathCreateAccessToken = "/instance_identity/v1/token";
+  private static final String operationPathCreateIamToken = "/instance_identity/v1/iam_token";
+  private static final String operationPathCreateAccessToken2 = "/identity/v1/token";
+  private static final String operationPathCreateIamToken2 = "/identity/v1/iam_tokens";
+
   private static final String mockErrorResponseJson1 =
       "{\"errors\": [{\"message\": \"Your create_access_token request was bad.\", \"code\": \"invalid_parameter_value\"}]}";
   private static final String mockErrorResponseJson2 =
@@ -621,6 +626,73 @@ public class VpcInstanceAuthenticatorTest extends BaseServiceUnitTest {
       assertTrue(causedBy instanceof IllegalStateException);
     } catch (Throwable t) {
       fail("Expected RuntimeException, not " + t.getClass().getSimpleName());
+    }
+  }
+
+  @Test
+  public void testVpcAuthServiceVersionDefaults() {
+    VpcInstanceAuthenticator authenticator = new VpcInstanceAuthenticator.Builder()
+        .build();
+    assertNotNull(authenticator);
+
+    assertEquals(authenticator.getServiceVersion(), "2022-03-01");
+    assertEquals(authenticator.getTokenLifetime(), 300);
+
+    assertEquals(operationPathCreateAccessToken, authenticator.getCreateAccessTokenPath());
+    assertEquals(operationPathCreateIamToken, authenticator.getCreateIamTokenPath());
+  }
+
+  @Test
+  public void testVpcAuthServiceVersionBuilder() {
+    VpcInstanceAuthenticator authenticator = new VpcInstanceAuthenticator.Builder()
+        .serviceVersion("2025-08-26")
+        .tokenLifetime(600)
+        .build();
+    assertNotNull(authenticator);
+
+    assertEquals(authenticator.getServiceVersion(), "2025-08-26");
+    assertEquals(authenticator.getTokenLifetime(), 600);
+
+    assertEquals(operationPathCreateAccessToken2, authenticator.getCreateAccessTokenPath());
+    assertEquals(operationPathCreateIamToken2, authenticator.getCreateIamTokenPath());
+  }
+
+  @Test
+  public void testVpcAuthServiceVersionFromMap() {
+    Map<String, String> properties = new HashMap<>();
+    properties.put(Authenticator.PROPNAME_VPC_IMS_VERSION, "2025-08-26");
+
+    VpcInstanceAuthenticator authenticator = VpcInstanceAuthenticator.fromConfiguration(properties);
+    assertNotNull(authenticator);
+
+    assertEquals(authenticator.getServiceVersion(), "2025-08-26");
+
+    assertEquals(operationPathCreateAccessToken2, authenticator.getCreateAccessTokenPath());
+    assertEquals(operationPathCreateIamToken2, authenticator.getCreateIamTokenPath());
+  }
+
+  @Test
+  public void testVpcAuthServiceVersionOldVersion() {
+    VpcInstanceAuthenticator authenticator = new VpcInstanceAuthenticator.Builder()
+        .serviceVersion("2022-03-01")
+        .build();
+    assertNotNull(authenticator);
+
+    assertEquals(authenticator.getServiceVersion(), "2022-03-01");
+
+    assertEquals(operationPathCreateAccessToken, authenticator.getCreateAccessTokenPath());
+    assertEquals(operationPathCreateIamToken, authenticator.getCreateIamTokenPath());
+  }
+
+  @Test
+  public void testVpcAuthServiceVersionCustomVersion() {
+    try {
+      new VpcInstanceAuthenticator.Builder()
+          .serviceVersion("2024-01-01")
+          .build();
+      fail("Expected build() to throw an exception!");
+    } catch (IllegalArgumentException e) {
+      assertEquals(e.getMessage(), "Invalid service version. Supported values are: [2022-03-01, 2025-08-26]");
     }
   }
 }

@@ -37,6 +37,7 @@ public class AuthenticatorBase {
       "iamAccountId must be specified if and only if iamProfileName is specified";
   public static final String ERRORMSG_PROP_INVALID_BOOL =
           "The %s property must be a valid boolean but was '%s'. Valid values are 'true' and 'false'.";
+  public static final String ERRORMSG_INVALID_SERVICE_VERSION = "Invalid service version. Supported values are: %s";
 
   /**
    * Returns a "Basic" Authorization header value for the specified username and password.
