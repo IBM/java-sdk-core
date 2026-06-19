@@ -419,6 +419,7 @@ public class VpcInstanceAuthenticator
       builder.header(HttpHeaders.CONTENT_TYPE, HttpMediaType.APPLICATION_JSON);
       builder.header(HttpHeaders.AUTHORIZATION, "Bearer " + instanceIdentityToken);
       builder.header(HttpHeaders.USER_AGENT, getUserAgent());
+      builder.header("Metadata-Flavor", metadataFlavor);
 
       // Next, construct the optional request body to specify the linked IAM profile.
       // We previously verified that at most one of IBMProfileCRN or IAMProfileID was specified by the user,
