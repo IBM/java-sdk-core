@@ -48,9 +48,11 @@ public class VpcInstanceAuthenticator
   private static final String operationPathCreateIamToken2 = "/identity/v1/iam_tokens";
   private static final String metadataFlavor = "ibm";
   private static final String metadataServiceVersion = "2022-03-01";
+  private static final String metadataServiceVersion2 = "2025-08-26";
   private static final int instanceIdentityTokenLifetime = 300;
 
-  private ArrayList<String> defaultServiceSupportedVersions = new ArrayList<>(List.of("2022-03-01", "2025-08-26"));
+  private ArrayList<String> defaultServiceSupportedVersions = new ArrayList<>(
+      List.of(metadataServiceVersion, metadataServiceVersion2));
 
 
   // Properties specific to a VpcInstanceAuthenticator.
@@ -147,6 +149,7 @@ public class VpcInstanceAuthenticator
 
     /**
      * Sets the tokenLifetime Property.
+     *
      * @param tokenLifetime the base token lifetime to use.
      * @return the Builder
      */
@@ -278,14 +281,14 @@ public class VpcInstanceAuthenticator
   }
 
   /**
-   * @return the VPC ServiceVersion configured in this Authenticator.
+   * @return the VPC Instance Metadata Service ServiceVersion configured in this Authenticator.
    */
   public String getServiceVersion() {
     return this.serviceVersion;
   }
 
     /**
-   * Sets the ServiceVersion in this Authenticator.
+   * Sets the VPC Instance Metadata Service ServiceVersion in this Authenticator.
    *
    * @return the VPC ServiceVersion
    */
@@ -324,7 +327,7 @@ public class VpcInstanceAuthenticator
    * @return the correct access token path
    */
   public String getCreateAccessTokenPath() {
-    if (this.serviceVersion.equals("2025-08-26")) {
+    if (this.serviceVersion.equals(metadataServiceVersion2)) {
       return operationPathCreateAccessToken2;
     }
     return operationPathCreateAccessToken;
@@ -336,7 +339,7 @@ public class VpcInstanceAuthenticator
    * @return the correct IAM token path
    */
   public String getCreateIamTokenPath() {
-    if (this.serviceVersion.equals("2025-08-26")) {
+    if (this.serviceVersion.equals(metadataServiceVersion2)) {
       return operationPathCreateIamToken2;
     }
     return operationPathCreateIamToken;
