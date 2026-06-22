@@ -1,0 +1,17 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "prConcurrentLimit": 4,
+  "reviewers": ["Norbert-Biczo", "Lidia-Tarcza", "Andras-Felleg"],
+  "packageRules": [
+    {
+      "matchManagers": ["maven"],
+      "groupName": "Java dependencies",
+      "minimumReleaseAge": "3 days"
+    },
+    {
+      "matchManagers": ["npm"],
+      "extends": ["security:minimumReleaseAgeNpm"]
+    }
+  ]
+}
