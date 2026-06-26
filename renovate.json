@@ -1,0 +1,18 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "prConcurrentLimit": 4,
+  "reviewers": ["pyrooka", "diatrcz", "Andris28"],
+  "packageRules": [
+    {
+      "matchManagers": ["maven"],
+      "minimumReleaseAge": "3 days",
+      "description": "Wait 3 days before updating Java dependencies"
+    },
+    {
+      "matchManagers": ["npm"],
+      "extends": ["security:minimumReleaseAgeNpm"],
+      "description": "Wait 3 days before updating semantic release dependencies"
+    }
+  ]
+}
