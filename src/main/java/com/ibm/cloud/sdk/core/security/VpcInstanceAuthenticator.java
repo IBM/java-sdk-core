@@ -480,7 +480,7 @@ public class VpcInstanceAuthenticator
         requestBody = String.format("{\"trusted_profile\": {\"id\": \"%s\"}}", getIamProfileId());
       }
       if (!StringUtils.isEmpty(getIamProfileName())) {
-        requestBody = String.format("{\"trusted_profile\": {\"id\": \"%s\"}}", getIamProfileName());
+        requestBody = String.format("{\"trusted_profile\": {\"name\": \"%s\"}}", getIamProfileName());
       }
 
       // If we created a request body above, then set it on the request now.

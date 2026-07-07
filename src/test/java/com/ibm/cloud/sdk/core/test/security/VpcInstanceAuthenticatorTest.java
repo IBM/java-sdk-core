@@ -54,6 +54,7 @@ public class VpcInstanceAuthenticatorTest extends BaseServiceUnitTest {
 
   private static final String mockIamProfileCrn = "crn:iam-profile:123";
   private static final String mockIamProfileId = "iam-id-123";
+  private static final String mockIamProfileName = "iam-profile-name-123";
 
   private static final String operationPathCreateAccessToken = "/instance_identity/v1/token";
   private static final String operationPathCreateIamToken = "/instance_identity/v1/iam_token";
@@ -105,6 +106,31 @@ public class VpcInstanceAuthenticatorTest extends BaseServiceUnitTest {
       .build();
   }
 
+  @Test(expectedExceptions = IllegalArgumentException.class)
+  public void testBuilderErrorProfileCrnAndName() {
+    new VpcInstanceAuthenticator.Builder()
+      .iamProfileCrn(mockIamProfileCrn)
+      .iamProfileName(mockIamProfileName)
+      .build();
+  }
+
+  @Test(expectedExceptions = IllegalArgumentException.class)
+  public void testBuilderErrorProfileIdAndName() {
+    new VpcInstanceAuthenticator.Builder()
+      .iamProfileId(mockIamProfileId)
+      .iamProfileName(mockIamProfileName)
+      .build();
+  }
+
+  @Test(expectedExceptions = IllegalArgumentException.class)
+  public void testBuilderErrorAllThreeProfiles() {
+    new VpcInstanceAuthenticator.Builder()
+      .iamProfileCrn(mockIamProfileCrn)
+      .iamProfileId(mockIamProfileId)
+      .iamProfileName(mockIamProfileName)
+      .build();
+  }
+
   @Test
   public void testBuilderDefaultConfig() {
     VpcInstanceAuthenticator authenticator = new VpcInstanceAuthenticator.Builder()
@@ -113,6 +139,7 @@ public class VpcInstanceAuthenticatorTest extends BaseServiceUnitTest {
     assertNull(authenticator.getURL());
     assertNull(authenticator.getIamProfileCrn());
     assertNull(authenticator.getIamProfileId());
+    assertNull(authenticator.getIamProfileName());
 
     VpcInstanceAuthenticator auth2 = authenticator.newBuilder().build();
     assertNotNull(auth2);
@@ -143,6 +170,19 @@ public class VpcInstanceAuthenticatorTest extends BaseServiceUnitTest {
   }
 
   @Test
+  public void testBuilderCorrectConfig3() {
+    VpcInstanceAuthenticator authenticator = new VpcInstanceAuthenticator.Builder()
+        .iamProfileName(mockIamProfileName)
+        .url("url")
+        .build();
+    assertEquals(authenticator.authenticationType(), Authenticator.AUTHTYPE_VPC);
+    assertNull(authenticator.getIamProfileCrn());
+    assertNull(authenticator.getIamProfileId());
+    assertEquals(authenticator.getIamProfileName(), mockIamProfileName);
+    assertEquals(authenticator.getURL(), "url");
+  }
+
+  @Test
   public void testConfigCorrectConfig1() {
     Map<String, String> props = new HashMap<>();
     props.put(Authenticator.PROPNAME_IAM_PROFILE_CRN, mockIamProfileCrn);
@@ -165,6 +205,20 @@ public class VpcInstanceAuthenticatorTest extends BaseServiceUnitTest {
     assertEquals(authenticator.authenticationType(), Authenticator.AUTHTYPE_VPC);
     assertNull(authenticator.getIamProfileCrn());
     assertEquals(authenticator.getIamProfileId(), mockIamProfileId);
+    assertEquals(authenticator.getURL(), "url");
+  }
+
+  @Test
+  public void testConfigCorrectConfig3() {
+    Map<String, String> props = new HashMap<>();
+    props.put(Authenticator.PROPNAME_IAM_PROFILE_NAME, mockIamProfileName);
+    props.put(Authenticator.PROPNAME_URL, "url");
+
+    VpcInstanceAuthenticator authenticator = VpcInstanceAuthenticator.fromConfiguration(props);
+    assertEquals(authenticator.authenticationType(), Authenticator.AUTHTYPE_VPC);
+    assertNull(authenticator.getIamProfileCrn());
+    assertNull(authenticator.getIamProfileId());
+    assertEquals(authenticator.getIamProfileName(), mockIamProfileName);
     assertEquals(authenticator.getURL(), "url");
   }
 
@@ -240,6 +294,29 @@ public class VpcInstanceAuthenticatorTest extends BaseServiceUnitTest {
   }
 
   @Test
+  public void testRetrieveIamAccessTokenWithProfileName() throws Throwable {
+    VpcInstanceAuthenticator authenticator = new VpcInstanceAuthenticator.Builder()
+        .iamProfileName(mockIamProfileName)
+        .url(url)
+        .build();
+
+    // Set mock server to send back a good response.
+    server.enqueue(jsonResponse(vpcIamAccessTokenResponse1));
+
+    String instanceIdentityToken = "vpc-token";
+    IamToken iamToken = authenticator.retrieveIamAccessToken(instanceIdentityToken);
+    assertNotNull(iamToken);
+    assertEquals(iamToken.getAccessToken(), vpcIamAccessTokenResponse1.getAccessToken());
+
+    // Verify the request body contained the expected trusted_profile.name field.
+    RecordedRequest vpcIamTokenRequest = server.takeRequest();
+    assertNotNull(vpcIamTokenRequest);
+    String requestBody = vpcIamTokenRequest.getBody().readUtf8();
+    assertTrue(requestBody.contains("\"name\": \"" + mockIamProfileName + "\""),
+        "Expected request body to contain trusted_profile name, but was: " + requestBody);
+  }
+
+  @Test
   public void testRetrieveIamAccessTokenFailure() throws Throwable {
     VpcInstanceAuthenticator authenticator = new VpcInstanceAuthenticator.Builder()
         .iamProfileCrn(mockIamProfileCrn)
@@ -280,6 +357,31 @@ public class VpcInstanceAuthenticatorTest extends BaseServiceUnitTest {
     IamToken iamToken = authenticator.requestToken();
     assertNotNull(iamToken);
     assertEquals(iamToken.getAccessToken(), vpcIamAccessTokenResponse1.getAccessToken());
+  }
+
+  @Test
+  public void testRequestTokenSuccessWithProfileName() throws Throwable {
+    VpcInstanceAuthenticator authenticator = new VpcInstanceAuthenticator.Builder()
+        .iamProfileName(mockIamProfileName)
+        .url(url)
+        .build();
+
+    // Set mock server to send back good responses.
+    server.enqueue(jsonResponse(vpcInstanceIdentityTokenResponse));
+    server.enqueue(jsonResponse(vpcIamAccessTokenResponse1));
+
+    IamToken iamToken = authenticator.requestToken();
+    assertNotNull(iamToken);
+    assertEquals(iamToken.getAccessToken(), vpcIamAccessTokenResponse1.getAccessToken());
+
+    // Consume the first request (instance identity token) and verify the second
+    // (IAM token) request body contained trusted_profile.name.
+    server.takeRequest(); // create_access_token
+    RecordedRequest iamTokenRequest = server.takeRequest(); // create_iam_token
+    assertNotNull(iamTokenRequest);
+    String requestBody = iamTokenRequest.getBody().readUtf8();
+    assertTrue(requestBody.contains("\"name\": \"" + mockIamProfileName + "\""),
+        "Expected request body to contain trusted_profile name, but was: " + requestBody);
   }
 
   @Test
