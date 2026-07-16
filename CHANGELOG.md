@@ -1,3 +1,10 @@
+# [9.27.0](https://github.com/IBM/java-sdk-core/compare/9.26.0...9.27.0) (2026-07-16)
+
+
+### Features
+
+* **auth:** add new IAM profile selector to VPC Instance Auth ([#250](https://github.com/IBM/java-sdk-core/issues/250)) ([e9e0d22](https://github.com/IBM/java-sdk-core/commit/e9e0d2278e101bac3d5b285b845ebcc7f02a6c63))
+
 # [9.26.0](https://github.com/IBM/java-sdk-core/compare/9.25.0...9.26.0) (2026-06-19)
 
 
