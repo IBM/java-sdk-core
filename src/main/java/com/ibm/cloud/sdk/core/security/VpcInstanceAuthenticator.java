@@ -228,7 +228,7 @@ public class VpcInstanceAuthenticator
    */
   @Override
   public void validate() {
-    // At most one of iamProfileCrn or iamProfileI or iamProfileName may be specified.
+    // At most one of iamProfileCrn or iamProfileId or iamProfileName may be specified.
     int counter = 0;
     if (StringUtils.isNotEmpty(getIamProfileCrn())) {
       counter++;
@@ -236,7 +236,7 @@ public class VpcInstanceAuthenticator
     if (StringUtils.isNotEmpty(getIamProfileId())) {
       counter++;
     }
-    if (StringUtils.isNoneEmpty(getIamProfileName())) {
+    if (StringUtils.isNotEmpty(getIamProfileName())) {
       counter++;
     }
 
