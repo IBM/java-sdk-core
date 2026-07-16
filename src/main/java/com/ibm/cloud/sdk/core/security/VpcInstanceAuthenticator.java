@@ -58,6 +58,7 @@ public class VpcInstanceAuthenticator
   // Properties specific to a VpcInstanceAuthenticator.
   private String iamProfileCrn;
   private String iamProfileId;
+  private String iamProfileName;
   private String url;
   private String serviceVersion;
   private int tokenLifetime;
@@ -68,6 +69,7 @@ public class VpcInstanceAuthenticator
   public static class Builder {
     private String iamProfileCrn;
     private String iamProfileId;
+    private String iamProfileName;
     private String url;
     private String serviceVersion;
     private int tokenLifetime;
@@ -80,6 +82,7 @@ public class VpcInstanceAuthenticator
     private Builder(VpcInstanceAuthenticator obj) {
       this.iamProfileCrn = obj.iamProfileCrn;
       this.iamProfileId = obj.iamProfileId;
+      this.iamProfileName = obj.iamProfileName;
       this.url = obj.url;
       this.serviceVersion = obj.serviceVersion;
       this.tokenLifetime = obj.tokenLifetime;
@@ -100,7 +103,7 @@ public class VpcInstanceAuthenticator
      *
      * @param iamProfileCrn the CRN of the linked trusted IAM profile to be used as
      *                      the identity of the compute resource. At most one of
-     *                      iamProfileCrn or iamProfileId may be specified. If
+     *                      iamProfileCrn or iamProfileId or iamProfileName may be specified. If
      *                      neither one is specified, then the default IAM profile
      *                      defined for the compute resource will be used.
      * @return the Builder
@@ -115,13 +118,28 @@ public class VpcInstanceAuthenticator
      *
      * @param iamProfileId the id of the linked trusted IAM profile to be used as
      *                     the identity of the compute resource. At most one of
-     *                     iamProfileCrn or iamProfileId may be specified. If
+     *                     iamProfileCrn or iamProfileId or iamProfileName may be specified. If
      *                     neither one is specified, then the default IAM profile
      *                     defined for the compute resource will be used.
      * @return the Builder
      */
     public Builder iamProfileId(String iamProfileId) {
       this.iamProfileId = iamProfileId;
+      return this;
+    }
+
+    /**
+     * Sets the iamProfileName property.
+     *
+     * @param iamProfileName the name of the linked trusted IAM profile to be used as
+     *                       the identity of the compute resource. At most one of
+     *                       iamProfileCrn or iamProfileId or iamProfileName may be specified. If
+     *                       neither one is specified, then the default IAM profile
+     *                       defined for the compute resource will be used.
+     * @return the Builder
+     */
+    public Builder iamProfileName(String iamProfileName) {
+      this.iamProfileName = iamProfileName;
       return this;
     }
 
@@ -174,6 +192,7 @@ public class VpcInstanceAuthenticator
     this();
     this.iamProfileCrn = builder.iamProfileCrn;
     this.iamProfileId = builder.iamProfileId;
+    this.iamProfileName = builder.iamProfileName;
     this.url = builder.url;
     this.serviceVersion = StringUtils.isEmpty(builder.serviceVersion) ? metadataServiceVersion : builder.serviceVersion;
     this.tokenLifetime = builder.tokenLifetime == 0 ? instanceIdentityTokenLifetime : builder.tokenLifetime;
@@ -199,7 +218,8 @@ public class VpcInstanceAuthenticator
    */
   public static VpcInstanceAuthenticator fromConfiguration(Map<String, String> config) {
     return new Builder().iamProfileCrn(config.get(PROPNAME_IAM_PROFILE_CRN))
-        .iamProfileId(config.get(PROPNAME_IAM_PROFILE_ID)).url(config.get(PROPNAME_URL))
+        .iamProfileId(config.get(PROPNAME_IAM_PROFILE_ID)).iamProfileName(config.get(PROPNAME_IAM_PROFILE_NAME))
+        .url(config.get(PROPNAME_URL))
         .serviceVersion(config.get(PROPNAME_VPC_IMS_VERSION)).build();
   }
 
@@ -208,10 +228,21 @@ public class VpcInstanceAuthenticator
    */
   @Override
   public void validate() {
-    // At most one of iamProfileCrn or iamProfileId may be specified.
-    if (StringUtils.isNotEmpty(getIamProfileCrn()) && StringUtils.isNotEmpty(getIamProfileId())) {
+    // At most one of iamProfileCrn or iamProfileId or iamProfileName may be specified.
+    int counter = 0;
+    if (StringUtils.isNotEmpty(getIamProfileCrn())) {
+      counter++;
+    }
+    if (StringUtils.isNotEmpty(getIamProfileId())) {
+      counter++;
+    }
+    if (StringUtils.isNotEmpty(getIamProfileName())) {
+      counter++;
+    }
+
+    if (counter > 1) {
       throw new IllegalArgumentException(
-          String.format(ERRORMSG_ATMOST_ONE_PROP_ERROR, "iamProfileCrn", "iamProfileId"));
+          String.format(ERRORMSG_ATMOST_ONE_PROP_ERROR, "iamProfileCrn", "iamProfileId", "iamProfileName"));
     }
 
     if (!this.defaultServiceSupportedVersions.contains(this.serviceVersion)) {
@@ -259,6 +290,22 @@ public class VpcInstanceAuthenticator
    */
   protected void setIamProfileId(String iamProfileId) {
     this.iamProfileId = iamProfileId;
+  }
+
+  /**
+   * @return the iamProfileName configured on this Authenticator.
+   */
+  public String getIamProfileName() {
+    return this.iamProfileName;
+  }
+
+  /**
+   * Sets the iamProfileName property on this Authenticator.
+   *
+   * @param iamProfileName the value to set
+   */
+  protected void setIamProfileName(String iamProfileName) {
+    this.iamProfileName = iamProfileName;
   }
 
   /**
@@ -431,6 +478,9 @@ public class VpcInstanceAuthenticator
       }
       if (!StringUtils.isEmpty(getIamProfileId())) {
         requestBody = String.format("{\"trusted_profile\": {\"id\": \"%s\"}}", getIamProfileId());
+      }
+      if (!StringUtils.isEmpty(getIamProfileName())) {
+        requestBody = String.format("{\"trusted_profile\": {\"name\": \"%s\"}}", getIamProfileName());
       }
 
       // If we created a request body above, then set it on the request now.
