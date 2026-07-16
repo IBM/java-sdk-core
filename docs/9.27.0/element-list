@@ -1,0 +1,9 @@
+com.ibm.cloud.sdk.core.http
+com.ibm.cloud.sdk.core.http.gzip
+com.ibm.cloud.sdk.core.http.ratelimit
+com.ibm.cloud.sdk.core.security
+com.ibm.cloud.sdk.core.service
+com.ibm.cloud.sdk.core.service.exception
+com.ibm.cloud.sdk.core.service.model
+com.ibm.cloud.sdk.core.service.security
+com.ibm.cloud.sdk.core.util
