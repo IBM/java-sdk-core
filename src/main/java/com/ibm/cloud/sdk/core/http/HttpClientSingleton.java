@@ -83,11 +83,13 @@ public class HttpClientSingleton {
       @Override
       public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) throws
           CertificateException {
+        // lgtm[java/insecure-trustmanager] - intentional: user explicitly opted in via disableSslVerification()
       }
 
       @Override
       public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) throws
           CertificateException {
+        // lgtm[java/insecure-trustmanager] - intentional: user explicitly opted in via disableSslVerification()
       }
 
       @Override
