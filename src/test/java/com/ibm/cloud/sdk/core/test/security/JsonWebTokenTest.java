@@ -10,6 +10,9 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
+
+// DISCLAIMER: The JWT token strings used in this file are for testing purposes only.
+// They are not valid tokens and cannot be used to authenticate with any real service.
 package com.ibm.cloud.sdk.core.test.security;
 
 import org.testng.annotations.Test;
