@@ -45,6 +45,7 @@ public class CloudPakForDataAuthenticator extends TokenRequestBasedAuthenticator
   private String username;
   private String password;
   private String apikey;
+  private String accountId;
 
   /**
    * This Builder class is used to construct CloudPakForDataAuthenticator instances.
@@ -54,6 +55,7 @@ public class CloudPakForDataAuthenticator extends TokenRequestBasedAuthenticator
     private String username;
     private String password;
     private String apikey;
+    private String accountId;
     private boolean disableSSLVerification;
     private Map<String, String> headers;
     private Proxy proxy;
@@ -68,6 +70,7 @@ public class CloudPakForDataAuthenticator extends TokenRequestBasedAuthenticator
       this.username = obj.username;
       this.password = obj.password;
       this.apikey = obj.apikey;
+      this.accountId = obj.accountId;
 
       this.disableSSLVerification = obj.getDisableSSLVerification();
       this.headers = obj.getHeaders();
@@ -121,6 +124,16 @@ public class CloudPakForDataAuthenticator extends TokenRequestBasedAuthenticator
      */
     public Builder apikey(String apikey) {
       this.apikey = apikey;
+      return this;
+    }
+
+    /**
+     * Sets the accountId property.
+     * @param accountId the account ID to use when retrieving an access token
+     * @return the Builder
+     */
+    public Builder accountId(String accountId) {
+      this.accountId = accountId;
       return this;
     }
 
@@ -184,6 +197,7 @@ public class CloudPakForDataAuthenticator extends TokenRequestBasedAuthenticator
     this.username = builder.username;
     this.password = builder.password;
     this.apikey = builder.apikey;
+    this.accountId = builder.accountId;
 
     setDisableSSLVerification(builder.disableSSLVerification);
     setHeaders(builder.headers);
@@ -277,6 +291,7 @@ public class CloudPakForDataAuthenticator extends TokenRequestBasedAuthenticator
       .username(config.get(PROPNAME_USERNAME))
       .password(config.get(PROPNAME_PASSWORD))
       .apikey(config.get(PROPNAME_APIKEY))
+      .accountId(config.get(PROPNAME_CP4D_ACCOUNT_ID))
       .disableSSLVerification(Boolean.valueOf(config.get(PROPNAME_DISABLE_SSL)).booleanValue())
       .build();
   }
@@ -365,6 +380,13 @@ public class CloudPakForDataAuthenticator extends TokenRequestBasedAuthenticator
   }
 
   /**
+   * @return the accountId configured for this authenticator
+   */
+  public String getAccountId() {
+    return this.accountId;
+  }
+
+  /**
    * Obtains a CP4D access token for the configured authenticator.
    *
    * @return a Cp4dToken instance that contains the access token
@@ -379,7 +401,7 @@ public class CloudPakForDataAuthenticator extends TokenRequestBasedAuthenticator
     builder.header(HttpHeaders.USER_AGENT, getUserAgent());
 
     // Add the request body.
-    CP4DRequestBody requestBody = new CP4DRequestBody(this.username, this.password, this.apikey);
+    CP4DRequestBody requestBody = new CP4DRequestBody(this.username, this.password, this.apikey, this.accountId);
     builder.bodyContent("application/json", requestBody, null, (InputStream) null);
 
     // Invoke the POST request.
@@ -409,10 +431,14 @@ public class CloudPakForDataAuthenticator extends TokenRequestBasedAuthenticator
     @SerializedName("api_key")
     private String apikey;
 
-    CP4DRequestBody(String username, String password, String apikey) {
+    @SerializedName("account_id")
+    private String accountId;
+
+    CP4DRequestBody(String username, String password, String apikey, String accountId) {
       this.username = username;
       this.password = password;
       this.apikey = apikey;
+      this.accountId = accountId;
     }
   }
 }
