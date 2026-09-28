@@ -1,3 +1,10 @@
+## [9.27.1](https://github.com/IBM/java-sdk-core/compare/9.27.0...9.27.1) (2026-09-28)
+
+
+### Bug Fixes
+
+* prevent secret redaction from bleeding past EOL ([#259](https://github.com/IBM/java-sdk-core/issues/259)) ([237f379](https://github.com/IBM/java-sdk-core/commit/237f379d1078c4cdbc86401574ddf01f285cb581))
+
 # [9.27.0](https://github.com/IBM/java-sdk-core/compare/9.26.0...9.27.0) (2026-07-16)
 
 
