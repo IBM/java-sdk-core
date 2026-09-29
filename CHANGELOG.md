@@ -1,3 +1,10 @@
+## [9.27.2](https://github.com/IBM/java-sdk-core/compare/9.27.1...9.27.2) (2026-09-29)
+
+
+### Bug Fixes
+
+* add Native Image metadata for sdk-core-version.properties ([#258](https://github.com/IBM/java-sdk-core/issues/258)) ([4d501ea](https://github.com/IBM/java-sdk-core/commit/4d501eab678c08dd221c6cc1c45f3090d5b90344))
+
 ## [9.27.1](https://github.com/IBM/java-sdk-core/compare/9.27.0...9.27.1) (2026-09-28)
 
 
