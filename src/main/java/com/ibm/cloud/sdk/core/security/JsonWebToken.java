@@ -13,13 +13,22 @@
 
 package com.ibm.cloud.sdk.core.security;
 
+import com.google.gson.TypeAdapter;
+import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
+import com.google.gson.stream.JsonWriter;
 import com.ibm.cloud.sdk.core.util.GsonSingleton;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -58,6 +67,44 @@ public class JsonWebToken {
     return payload;
   }
 
+  /**
+   * Gson TypeAdapter that reads the "aud" claim as either a plain string or a JSON array of strings,
+   * per RFC 7519 §4.1.3.
+   */
+  static class AudienceTypeAdapter extends TypeAdapter<List<String>> {
+    @Override
+    public List<String> read(JsonReader in) throws IOException {
+      if (in.peek() == JsonToken.NULL) {
+        in.nextNull();
+        return null;
+      }
+      List<String> result = new ArrayList<>();
+      if (in.peek() == JsonToken.BEGIN_ARRAY) {
+        in.beginArray();
+        while (in.hasNext()) {
+          result.add(in.nextString());
+        }
+        in.endArray();
+      } else {
+        result.add(in.nextString());
+      }
+      return result;
+    }
+
+    @Override
+    public void write(JsonWriter out, List<String> value) throws IOException {
+      if (value == null) {
+        out.nullValue();
+        return;
+      }
+      out.beginArray();
+      for (String s : value) {
+        out.value(s);
+      }
+      out.endArray();
+    }
+  }
+
   public class Payload {
     @SerializedName("iat")
     private Long issuedAt;
@@ -68,7 +115,8 @@ public class JsonWebToken {
     @SerializedName("iss")
     private String issuer;
     @SerializedName("aud")
-    private String audience;
+    @JsonAdapter(AudienceTypeAdapter.class)
+    private List<String> audience;
     @SerializedName("uid")
     private String userId;
     private String username;
@@ -109,11 +157,24 @@ public class JsonWebToken {
     }
 
     /**
-     * Returns the "Audience" ("aud") value with this JsonWebToken.
-     * @return the aud value
+     * Returns the first "Audience" ("aud") value within this JsonWebToken.
+     * Per RFC 7519 §4.1.3, the aud claim may be a string or an array of strings.
+     * This method returns the first element for backward compatibility.
+     * Use {@link #getAudiences()} to retrieve all values.
+     * @return the first aud value, or null if absent
      */
     public String getAudience() {
-      return audience;
+      return (audience != null && !audience.isEmpty()) ? audience.get(0) : null;
+    }
+
+    /**
+     * Returns all "Audience" ("aud") values within this JsonWebToken.
+     * Per RFC 7519 §4.1.3, the aud claim may be a string or an array of strings;
+     * this method always returns a list regardless of the original JSON form.
+     * @return a list of aud values, or null if absent
+     */
+    public List<String> getAudiences() {
+      return audience != null ? Collections.unmodifiableList(audience) : null;
     }
 
     /**
