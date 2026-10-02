@@ -1,3 +1,10 @@
+# [9.28.0](https://github.com/IBM/java-sdk-core/compare/9.27.2...9.28.0) (2026-10-02)
+
+
+### Features
+
+* support `aud` with array type in JWT (RFC 7519 §4.1.3) ([#262](https://github.com/IBM/java-sdk-core/issues/262)) ([b8631cb](https://github.com/IBM/java-sdk-core/commit/b8631cb8f8242cebb12c303d25a90e9f5739854e))
+
 ## [9.27.2](https://github.com/IBM/java-sdk-core/compare/9.27.1...9.27.2) (2026-09-29)
 
 
