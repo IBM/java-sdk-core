@@ -60,6 +60,7 @@ public class Cp4dAuthenticatorTest extends BaseServiceUnitTest {
   private String testUsername = "test-username";
   private String testPassword = "test-password";
   private String testApikey = "test-apikey";
+  private String testAccountId = "test-account-id";
 
   @Override
   @BeforeMethod
@@ -210,6 +211,7 @@ public class Cp4dAuthenticatorTest extends BaseServiceUnitTest {
     assertEquals(testUsername, authenticator.getUsername());
     assertEquals(testPassword, authenticator.getPassword());
     assertNull(authenticator.getApikey());
+    assertNull(authenticator.getAccountId());
     assertFalse(authenticator.getDisableSSLVerification());
     assertNull(authenticator.getHeaders());
   }
@@ -226,8 +228,30 @@ public class Cp4dAuthenticatorTest extends BaseServiceUnitTest {
     assertEquals(testUsername, authenticator.getUsername());
     assertNull(authenticator.getPassword());
     assertEquals(testApikey, authenticator.getApikey());
+    assertNull(authenticator.getAccountId());
     assertFalse(authenticator.getDisableSSLVerification());
     assertNull(authenticator.getHeaders());
+  }
+
+  @Test
+  public void testBuilderCorrectConfigWithAccountId() {
+    CloudPakForDataAuthenticator authenticator = new CloudPakForDataAuthenticator.Builder()
+        .url(url)
+        .username(testUsername)
+        .password(testPassword)
+        .accountId(testAccountId)
+        .build();
+    assertEquals(Authenticator.AUTHTYPE_CP4D, authenticator.authenticationType());
+    assertEquals(url, authenticator.getURL());
+    assertEquals(testUsername, authenticator.getUsername());
+    assertEquals(testPassword, authenticator.getPassword());
+    assertNull(authenticator.getApikey());
+    assertEquals(testAccountId, authenticator.getAccountId());
+    assertFalse(authenticator.getDisableSSLVerification());
+    assertNull(authenticator.getHeaders());
+
+    CloudPakForDataAuthenticator auth2 = authenticator.newBuilder().build();
+    assertEquals(testAccountId, auth2.getAccountId());
   }
 
   @Test
@@ -306,6 +330,23 @@ public class Cp4dAuthenticatorTest extends BaseServiceUnitTest {
     assertEquals(testPassword, authenticator.getPassword());
     assertFalse(authenticator.getDisableSSLVerification());
     assertNull(authenticator.getHeaders());
+  }
+
+  @Test
+  public void testFromConfigWithAccountId() {
+    Map<String, String> props = new HashMap<>();
+    props.put(Authenticator.PROPNAME_URL, url);
+    props.put(Authenticator.PROPNAME_USERNAME, testUsername);
+    props.put(Authenticator.PROPNAME_PASSWORD, testPassword);
+    props.put(Authenticator.PROPNAME_CP4D_ACCOUNT_ID, testAccountId);
+
+    CloudPakForDataAuthenticator authenticator = CloudPakForDataAuthenticator.fromConfiguration(props);
+    assertEquals(Authenticator.AUTHTYPE_CP4D, authenticator.authenticationType());
+    assertEquals(url, authenticator.getURL());
+    assertEquals(testUsername, authenticator.getUsername());
+    assertEquals(testPassword, authenticator.getPassword());
+    assertNull(authenticator.getApikey());
+    assertEquals(testAccountId, authenticator.getAccountId());
   }
 
   //
@@ -416,6 +457,61 @@ public class Cp4dAuthenticatorTest extends BaseServiceUnitTest {
     requestBuilder = new Request.Builder().url("https://test.com");
     authenticator.authenticate(requestBuilder);
     verifyAuthHeader(requestBuilder, "Bearer " + refreshedTokenData.getToken());
+  }
+
+  @Test
+  public void testRequestBodyWithAccountId() throws Throwable {
+    server.enqueue(jsonResponse(tokenData));
+
+    // Mock current time to ensure the token is valid.
+    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
+
+    CloudPakForDataAuthenticator authenticator = new CloudPakForDataAuthenticator.Builder()
+        .url(url)
+        .username(testUsername)
+        .password(testPassword)
+        .accountId(testAccountId)
+        .disableSSLVerification(true)
+        .build();
+
+    Request.Builder requestBuilder = new Request.Builder().url("https://test.com");
+    authenticator.authenticate(requestBuilder);
+    verifyAuthHeader(requestBuilder, "Bearer " + tokenData.getToken());
+
+    // Verify the request body sent to the token server contains account_id.
+    RecordedRequest tokenServerRequest = server.takeRequest();
+    assertNotNull(tokenServerRequest);
+    String body = tokenServerRequest.getBody().readUtf8();
+    assertTrue(body.contains("\"account_id\":\"" + testAccountId + "\""));
+    assertTrue(body.contains("\"username\":\"" + testUsername + "\""));
+    assertTrue(body.contains("\"password\":\"" + testPassword + "\""));
+  }
+
+  @Test
+  public void testRequestBodyWithoutAccountId() throws Throwable {
+    server.enqueue(jsonResponse(tokenData));
+
+    // Mock current time to ensure the token is valid.
+    clockMock.when(() -> Clock.getCurrentTimeInSeconds()).thenReturn((long) 100);
+
+    CloudPakForDataAuthenticator authenticator = new CloudPakForDataAuthenticator.Builder()
+        .url(url)
+        .username(testUsername)
+        .apikey(testApikey)
+        .disableSSLVerification(true)
+        .build();
+
+    Request.Builder requestBuilder = new Request.Builder().url("https://test.com");
+    authenticator.authenticate(requestBuilder);
+    verifyAuthHeader(requestBuilder, "Bearer " + tokenData.getToken());
+
+    // Verify the request body sent to the token server does not contain account_id.
+    RecordedRequest tokenServerRequest = server.takeRequest();
+    assertNotNull(tokenServerRequest);
+    String body = tokenServerRequest.getBody().readUtf8();
+    assertFalse(body.contains("account_id"));
+    assertTrue(body.contains("\"username\":\"" + testUsername + "\""));
+    assertTrue(body.contains("\"api_key\":\"" + testApikey + "\""));
   }
 
   @Test
