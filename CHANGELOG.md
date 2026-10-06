@@ -1,3 +1,24 @@
+# [9.28.0](https://github.com/IBM/java-sdk-core/compare/9.27.2...9.28.0) (2026-10-02)
+
+
+### Features
+
+* support `aud` with array type in JWT (RFC 7519 §4.1.3) ([#262](https://github.com/IBM/java-sdk-core/issues/262)) ([b8631cb](https://github.com/IBM/java-sdk-core/commit/b8631cb8f8242cebb12c303d25a90e9f5739854e))
+
+## [9.27.2](https://github.com/IBM/java-sdk-core/compare/9.27.1...9.27.2) (2026-09-29)
+
+
+### Bug Fixes
+
+* add Native Image metadata for sdk-core-version.properties ([#258](https://github.com/IBM/java-sdk-core/issues/258)) ([4d501ea](https://github.com/IBM/java-sdk-core/commit/4d501eab678c08dd221c6cc1c45f3090d5b90344))
+
+## [9.27.1](https://github.com/IBM/java-sdk-core/compare/9.27.0...9.27.1) (2026-09-28)
+
+
+### Bug Fixes
+
+* prevent secret redaction from bleeding past EOL ([#259](https://github.com/IBM/java-sdk-core/issues/259)) ([237f379](https://github.com/IBM/java-sdk-core/commit/237f379d1078c4cdbc86401574ddf01f285cb581))
+
 # [9.27.0](https://github.com/IBM/java-sdk-core/compare/9.26.0...9.27.0) (2026-07-16)
 
 

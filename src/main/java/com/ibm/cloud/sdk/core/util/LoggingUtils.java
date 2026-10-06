@@ -44,9 +44,9 @@ public class LoggingUtils {
   private static final String redacted = "[redacted]";
 
   private static final Pattern reAuthHeader = Pattern.compile("(?m)^(Authorization|X-Auth\\S*): .*");
-  private static final Pattern rePropertySetting = Pattern.compile("(?i)(" + redactedTokens + ")=[^&]*(&|$)");
+  private static final Pattern rePropertySetting = Pattern.compile("(?im)(" + redactedTokens + ")=[^&\\n]*(&|$)");
   private static final Pattern reJsonField =
-      Pattern.compile("(?i)\"([^\"]*(" + redactedTokens + ")[^\"_]*)\":\\s*\"[^\\,]*\"");
+      Pattern.compile("(?i)\"([^\"]*(" + redactedTokens + ")[^\"_]*)\":\\s*\"[^\"\\n]*\"");
 
   /**
    * Redacts secrets within string "s" and returns the resulting string

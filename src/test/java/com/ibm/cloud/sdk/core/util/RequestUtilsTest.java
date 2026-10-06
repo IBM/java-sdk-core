@@ -133,6 +133,16 @@ public class RequestUtilsTest {
   }
 
   @Test
+  public void testNativeImageResourceConfigExists() throws Exception {
+    try (InputStream is = RequestUtils.class.getClassLoader()
+        .getResourceAsStream(
+            "META-INF/native-image/com.ibm.cloud/sdk-core/resource-config.json")) {
+
+      assertNotNull(is, "resource-config.json should be packaged on the classpath");
+    }
+  }
+
+  @Test
   public void testBuildUserAgent() {
     assertTrue(RequestUtils.buildUserAgent(null).startsWith("ibm-java-sdk-core-"));
     assertTrue(RequestUtils.buildUserAgent("sub-component").startsWith("ibm-java-sdk-core/sub-component-"));
