@@ -26,6 +26,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.testng.annotations.AfterMethod;
@@ -482,9 +485,10 @@ public class Cp4dAuthenticatorTest extends BaseServiceUnitTest {
     RecordedRequest tokenServerRequest = server.takeRequest();
     assertNotNull(tokenServerRequest);
     String body = tokenServerRequest.getBody().readUtf8();
-    assertTrue(body.contains("\"account_id\":\"" + testAccountId + "\""));
-    assertTrue(body.contains("\"username\":\"" + testUsername + "\""));
-    assertTrue(body.contains("\"password\":\"" + testPassword + "\""));
+    JsonObject jsonBody = JsonParser.parseString(body).getAsJsonObject();
+    assertEquals(jsonBody.get("account_id").getAsString(), testAccountId);
+    assertEquals(jsonBody.get("username").getAsString(), testUsername);
+    assertEquals(jsonBody.get("password").getAsString(), testPassword);
   }
 
   @Test
@@ -509,9 +513,10 @@ public class Cp4dAuthenticatorTest extends BaseServiceUnitTest {
     RecordedRequest tokenServerRequest = server.takeRequest();
     assertNotNull(tokenServerRequest);
     String body = tokenServerRequest.getBody().readUtf8();
-    assertFalse(body.contains("account_id"));
-    assertTrue(body.contains("\"username\":\"" + testUsername + "\""));
-    assertTrue(body.contains("\"api_key\":\"" + testApikey + "\""));
+    JsonObject jsonBody = JsonParser.parseString(body).getAsJsonObject();
+    assertFalse(jsonBody.has("account_id"));
+    assertEquals(jsonBody.get("username").getAsString(), testUsername);
+    assertEquals(jsonBody.get("api_key").getAsString(), testApikey);
   }
 
   @Test

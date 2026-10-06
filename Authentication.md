@@ -554,7 +554,11 @@ form:
 
 - url: (required) The base URL associated with the Cloud Pak for Data token service.
 
-- disableSSLVerification: (optional) A flag that indicates whether verification of the server's SSL 
+- accountId: (optional) the account ID to include in the token request. When set, it is sent as
+`account_id` in the request body to the Cloud Pak for Data token service. When not set, the field
+is omitted from the request body entirely.
+
+- disableSSLVerification: (optional) A flag that indicates whether verification of the server's SSL
 certificate should be disabled or not. The default value is `false`.
 
 - headers: (optional) A set of key/value pairs that will be sent as HTTP headers in requests
@@ -587,6 +591,8 @@ export EXAMPLE_SERVICE_AUTH_TYPE=cp4d
 export EXAMPLE_SERVICE_USERNAME=myuser
 export EXAMPLE_SERVICE_APIKEY=myapikey
 export EXAMPLE_SERVICE_URL=https://mycp4dhost.com
+# Optionally include an account ID.
+# export EXAMPLE_SERVICE_CP4D_ACCOUNT_ID=myaccountid
 ```
 Application code:
 ```java

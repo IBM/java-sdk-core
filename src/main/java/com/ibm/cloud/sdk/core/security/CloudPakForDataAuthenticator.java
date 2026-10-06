@@ -423,6 +423,8 @@ public class CloudPakForDataAuthenticator extends TokenRequestBasedAuthenticator
   // This class models the "POST /v1/authorize" request body.
   // Only one of "password" or "apikey" will be non-null so we can use this
   // class for both scenarios (username/password and username/apikey).
+  // Null fields (e.g. accountId when not configured) are omitted from the
+  // serialized JSON because GsonSingleton does not enable serializeNulls.
   @SuppressWarnings("unused")
   private static class CP4DRequestBody {
     private String username;
