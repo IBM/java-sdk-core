@@ -575,6 +575,7 @@ CloudPakForDataAuthenticator authenticator = new CloudPakForDataAuthenticator.Bu
     .url("https://mycp4dhost.com")
     .username("myuser")
     .apikey("myapikey")
+    .accountId("myaccountid")
     .build();
 
 // Create the service instance.
@@ -591,8 +592,7 @@ export EXAMPLE_SERVICE_AUTH_TYPE=cp4d
 export EXAMPLE_SERVICE_USERNAME=myuser
 export EXAMPLE_SERVICE_APIKEY=myapikey
 export EXAMPLE_SERVICE_URL=https://mycp4dhost.com
-# Optionally include an account ID.
-# export EXAMPLE_SERVICE_CP4D_ACCOUNT_ID=myaccountid
+export EXAMPLE_SERVICE_CP4D_ACCOUNT_ID=myaccountid
 ```
 Application code:
 ```java
