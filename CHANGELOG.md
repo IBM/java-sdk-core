@@ -1,3 +1,10 @@
+# [9.29.0](https://github.com/IBM/java-sdk-core/compare/9.28.0...9.29.0) (2026-10-08)
+
+
+### Features
+
+* **auth:** add support for account ID in CP4D authenticator ([#255](https://github.com/IBM/java-sdk-core/issues/255)) ([0ccb640](https://github.com/IBM/java-sdk-core/commit/0ccb640cbbda02e9fd18c9429a557b203409ae90))
+
 # [9.28.0](https://github.com/IBM/java-sdk-core/compare/9.27.2...9.28.0) (2026-10-02)
 
 
