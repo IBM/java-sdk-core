@@ -11,11 +11,15 @@ on:
   workflow_dispatch:
     # Allow this workflow to be triggered manually
 
+permissions: {}
+
 jobs:
   publish:
     name: publish-release
     runs-on: ubuntu-latest
- 
+    permissions:
+      contents: read
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
