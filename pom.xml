@@ -21,7 +21,7 @@
         <testng-slf4j-version>2.0.20</testng-slf4j-version>
         <surefire-version>3.6.0</surefire-version>
         <checkstyle-plugin-version>3.6.0</checkstyle-plugin-version>
-        <checkstyle-version>14.3.0</checkstyle-version>
+        <checkstyle-version>10.26.1</checkstyle-version>
         <jacoco-plugin-version>0.8.15</jacoco-plugin-version>
         <compiler-plugin-version>3.16.0</compiler-plugin-version>
         <okhttp3-version>5.5.0</okhttp3-version>
