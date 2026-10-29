@@ -59,7 +59,7 @@ jobs:
         uses: actions/setup-java@v6
         with:
           java-version: ${{matrix.java-version}}
-          distribution: 'adopt'
+          distribution: 'semeru'
           cache: 'maven'
 
       - name: Build & Test
