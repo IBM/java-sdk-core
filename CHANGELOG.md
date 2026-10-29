@@ -1,3 +1,10 @@
+## [9.29.1](https://github.com/IBM/java-sdk-core/compare/9.29.0...9.29.1) (2026-10-29)
+
+
+### Bug Fixes
+
+* **deps:** update all dependencies ([#264](https://github.com/IBM/java-sdk-core/issues/264)) ([b72bda5](https://github.com/IBM/java-sdk-core/commit/b72bda5628f71e7e3002f1021ae5e23e197cd2d4))
+
 # [9.29.0](https://github.com/IBM/java-sdk-core/compare/9.28.0...9.29.0) (2026-10-08)
 
 
