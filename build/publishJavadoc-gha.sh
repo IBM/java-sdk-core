@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Fail the CI step on any error (e.g. no javadocs to copy), unset variable or failed pipe.
+set -euo pipefail
+
 # Required environment variables:
 # GH_TOKEN
 # GH_REPO_SLUG
