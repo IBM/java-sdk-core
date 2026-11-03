@@ -1,3 +1,10 @@
+## [9.29.2](https://github.com/IBM/java-sdk-core/compare/9.29.1...9.29.2) (2026-11-03)
+
+
+### Bug Fixes
+
+* **build:** write javadoc output to target/site/apidocs ([#267](https://github.com/IBM/java-sdk-core/issues/267)) ([d2c2297](https://github.com/IBM/java-sdk-core/commit/d2c2297ed9568bb3ef1d04f6414a1ff4945ab82f)), closes [#pages](https://github.com/IBM/java-sdk-core/issues/pages)
+
 ## [9.29.1](https://github.com/IBM/java-sdk-core/compare/9.29.0...9.29.1) (2026-10-29)
 
 
