@@ -1,3 +1,10 @@
+## [9.29.3](https://github.com/IBM/java-sdk-core/compare/9.29.2...9.29.3) (2026-11-06)
+
+
+### Bug Fixes
+
+* **logging:** redact credential headers in debug output ([#268](https://github.com/IBM/java-sdk-core/issues/268)) ([20febf9](https://github.com/IBM/java-sdk-core/commit/20febf905eae52c19f99415166acfd54fd301f9a))
+
 ## [9.29.2](https://github.com/IBM/java-sdk-core/compare/9.29.1...9.29.2) (2026-11-03)
 
 
