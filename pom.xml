@@ -236,6 +236,8 @@
                 <version>3.12.0</version>
                 <configuration>
                     <show>public</show>
+                    <!-- Keep javadoc output at target/site/apidocs, which build/publishJavadoc-gha.sh expects. -->
+                    <outputDirectory>${project.build.directory}/site</outputDirectory>
                     <doctitle>${project.name}, version ${project.version}</doctitle>
                     <footer>IBM Corporation</footer>
                     <source>8</source>
