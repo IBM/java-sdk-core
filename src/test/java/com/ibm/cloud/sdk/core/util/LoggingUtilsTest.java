@@ -29,6 +29,57 @@ public class LoggingUtilsTest {
   }
 
   @Test
+  public void testRedactCredentialHeaders() {
+    String[] headers = {
+        "Authorization", "Proxy-Authorization", "Cookie", "Set-Cookie", "Secret",
+        "X-Auth-Token", "X-Authorization", "X-Auth-Foo-Bar" };
+    for (String header : headers) {
+      for (String name : new String[] { header, header.toLowerCase(), header.toUpperCase() }) {
+        String result = LoggingUtils.redactSecrets(name + ": s3cr3tvalue");
+        assertFalse(result.contains("s3cr3tvalue"), "header: " + name);
+        assertEquals(result, name + ": [redacted]");
+      }
+    }
+
+    // Cookie-style values with multiple attributes.
+    String result = LoggingUtils.redactSecrets("Set-Cookie: sid=abc123; Path=/; HttpOnly");
+    assertFalse(result.contains("abc123"));
+    result = LoggingUtils.redactSecrets("Cookie: a=firstval; b=secondval");
+    assertFalse(result.contains("firstval"));
+    assertFalse(result.contains("secondval"));
+
+    // A full CRLF-delimited HTTP dump: only credential headers are redacted, CRLF preserved.
+    String dump = "POST /v1/token HTTP/1.1\r\n"
+        + "Host: example.com\r\n"
+        + "authorization: Bearer tok1\r\n"
+        + "Proxy-Authorization: Basic tok2\r\n"
+        + "COOKIE: sid=tok3\r\n"
+        + "Content-Type: application/json\r\n"
+        + "X-Auth-Token: tok4\r\n"
+        + "\r\n"
+        + "body\r\n";
+    result = LoggingUtils.redactSecrets(dump);
+    for (String tok : new String[] { "tok1", "tok2", "tok3", "tok4" }) {
+      assertFalse(result.contains(tok), tok);
+    }
+    assertTrue(result.contains("Host: example.com\r\n"));
+    assertTrue(result.contains("Content-Type: application/json\r\n"));
+    assertTrue(result.contains("authorization: [redacted]\r\n"));
+    assertTrue(result.contains("\r\n\r\nbody\r\n"));
+
+    // Response containing Set-Cookie.
+    result = LoggingUtils.redactSecrets("200 OK\nSet-Cookie: session=tok5\nContent-Length: 2\n\n{}");
+    assertFalse(result.contains("tok5"));
+    assertTrue(result.contains("Content-Length: 2"));
+
+    // Non-credential headers, and names that merely resemble credential names, are untouched.
+    for (String h : new String[] {
+        "Content-Type: text/plain", "Accept: */*", "X-Request-Id: abc", "Cookies: yes", "Xx-Auth: keep" }) {
+      assertEquals(LoggingUtils.redactSecrets(h), h);
+    }
+  }
+
+  @Test
   public void testRedactProperties() {
     assertEquals(LoggingUtils.redactSecrets("...&apikey=foo&..."), "...&apikey=[redacted]&...");
     assertEquals(LoggingUtils.redactSecrets("...&apiKey=foo&..."), "...&apiKey=[redacted]&...");

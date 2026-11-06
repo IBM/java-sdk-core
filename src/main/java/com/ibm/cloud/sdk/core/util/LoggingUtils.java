@@ -6,6 +6,9 @@
 package com.ibm.cloud.sdk.core.util;
 
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -43,10 +46,46 @@ public class LoggingUtils {
   private static final String redactedTokens = String.join("|", Arrays.asList(redactedKeywords));
   private static final String redacted = "[redacted]";
 
-  private static final Pattern reAuthHeader = Pattern.compile("(?m)^(Authorization|X-Auth\\S*): .*");
+  // Names (lower-case) of HTTP headers whose values must never be logged.
+  // In addition to these, any header whose name starts with "x-auth" is also redacted.
+  // NOTE: keep this list consistent with the other SDK cores (Go, Node, Python).
+  private static final Set<String> redactedHeaderNames = new HashSet<>(Arrays.asList(
+      "authorization",
+      "proxy-authorization",
+      "cookie",
+      "set-cookie",
+      "secret"));
+  private static final String redactedHeaderPrefix = "x-auth";
+
+  // Matches a single "Name: value" header line (line terminators are not consumed).
+  private static final Pattern reHeaderLine = Pattern.compile("(?m)^([!#$%&'*+.^_`|~0-9A-Za-z-]+):[^\\r\\n]*");
   private static final Pattern rePropertySetting = Pattern.compile("(?im)(" + redactedTokens + ")=[^&\\n]*(&|$)");
   private static final Pattern reJsonField =
       Pattern.compile("(?i)\"([^\"]*(" + redactedTokens + ")[^\"_]*)\":\\s*\"[^\"\\n]*\"");
+
+  /**
+   * Returns true iff the header "name" (compared case-insensitively) is one whose value must be redacted.
+   */
+  private static boolean isRedactedHeader(String name) {
+    String lowerName = name.toLowerCase(Locale.ROOT);
+    return redactedHeaderNames.contains(lowerName) || lowerName.startsWith(redactedHeaderPrefix);
+  }
+
+  /**
+   * Redacts the value of each credential-bearing HTTP header found in "s".
+   * Header names are parsed line-by-line and compared case-insensitively.
+   */
+  private static String redactHeaders(String s) {
+    Matcher matcher = reHeaderLine.matcher(s);
+    StringBuffer sb = new StringBuffer();
+    while (matcher.find()) {
+      String name = matcher.group(1);
+      String replacement = isRedactedHeader(name) ? name + ": " + redacted : matcher.group();
+      matcher.appendReplacement(sb, Matcher.quoteReplacement(replacement));
+    }
+    matcher.appendTail(sb);
+    return sb.toString();
+  }
 
   /**
    * Redacts secrets within string "s" and returns the resulting string
@@ -59,8 +98,7 @@ public class LoggingUtils {
     String redactedString = s;
 
     // Redact secrets within any special headers.
-    Matcher matcher1 = reAuthHeader.matcher(redactedString);
-    redactedString = matcher1.replaceAll("$1: " + redacted);
+    redactedString = redactHeaders(redactedString);
 
     // Redact secrets within property settings.
     Matcher matcher2 = rePropertySetting.matcher(redactedString);
